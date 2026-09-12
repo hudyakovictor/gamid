@@ -1,0 +1,65 @@
+import Composite from '../Composite.js';
+import { RUNNING, ERROR } from '../../constants.js';
+
+class RandomSelector extends Composite {
+    constructor(config = {}, nodePool) {
+        if (nodePool) {  // Rebuild node, don't touch config
+            super(config, nodePool);
+
+        } else {
+            var {
+                children = [],
+                services,
+                title,
+                properties,
+                name = 'RandomSelector'
+            } = config;
+
+            super(
+                {
+                    children,
+                    services,
+                    title,
+                    properties,
+                    name,
+                },
+                nodePool
+            );
+
+        }
+
+    }
+
+    open(tick) {
+        var nodeMemory = this.getNodeMemory(tick);
+        nodeMemory.$runningChild = -1;  // No running child
+    }
+
+    tick(tick) {
+        if (this.children.length === 0) {
+            return ERROR;
+        }
+
+        var nodeMemory = this.getNodeMemory(tick);
+        var childIndex = nodeMemory.$runningChild;
+        if (childIndex < 0) {
+            childIndex = Math.floor(Math.random() * this.children.length);
+        }
+
+        var child = this.children[childIndex];
+        var status = child._execute(tick);
+        nodeMemory.$runningChild = (status === RUNNING) ? childIndex : -1;
+        return status;
+    }
+
+    abortChildren(tick) {
+        var nodeMemory = this.getNodeMemory(tick);
+        var child = this.children[nodeMemory.$runningChild];
+        if (child) {
+            child._abort(tick);
+            nodeMemory.$runningChild = -1;
+        }
+    }
+};
+
+export default RandomSelector;

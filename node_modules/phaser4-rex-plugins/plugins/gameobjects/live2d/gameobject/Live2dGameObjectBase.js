@@ -1,0 +1,20 @@
+import CheckPhaserVersion from '../../../utils/system/CheckPhaserVersion.js';
+import { Class as PhaserClass, GameObjects as PhaserGameObjects } from 'phaser';
+CheckPhaserVersion();
+
+const Extern = PhaserGameObjects.Extern;
+
+class Live2dGameObjectBase extends Extern { 
+
+}
+
+const Components = PhaserGameObjects.Components;
+PhaserClass.mixin(Live2dGameObjectBase,
+    [
+        Components.AlphaSingle,
+        Components.ComputedSize,
+        Components.GetBounds,
+    ]
+);
+
+export default Live2dGameObjectBase;

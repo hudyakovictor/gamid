@@ -1,0 +1,122 @@
+import { BreadthFirstSearch } from '../Traversal.js';
+import { ACTION, COMPOSITE, DECORATOR } from '../../constants.js';
+import DeepClone from '../../../../utils/object/DeepClone.js';
+import { GetSerialNumber } from '../../utils/CreateID.js'
+import IsNodeLike from '../../utils/IsNodeLike.js';
+
+var DumpProperties = function (node) {
+    var properties = node.properties;
+    if (!properties) {
+        return properties;
+    }
+
+    var output = {};
+    for (var name in properties) {
+        if (!Object.prototype.hasOwnProperty.call(properties, name)) {
+            continue;
+        }
+
+        var value = properties[name];
+        // Exclude node-like value
+        if (IsNodeLike(value)) {
+            continue;
+        }
+
+        output[name] = DeepClone(value);
+    }
+
+    return output;
+}
+
+var DumpExpression = function (expression) {
+    if (IsNodeLike(expression)) {
+        return {
+            type: 'node',
+            id: expression.id
+        };
+    }
+
+    return {
+        type: 'constant',
+        value: DeepClone(expression)
+    };
+}
+
+var Dump = function () {
+    var data = {
+        sn: GetSerialNumber(),
+        id: this.id,
+        title: this.title,
+        description: this.description,
+        root: (this.root) ? this.root.id : null,
+        properties: DumpProperties(this),
+        nodes: [],
+    };
+
+    if (!this.root) {
+        return data;
+    }
+
+    var nodes = [];
+    BreadthFirstSearch(this.root, function (child) {
+        nodes.push(child);
+    })
+
+    for (var i = 0, cnt = nodes.length; i < cnt; i++) {
+        var node = nodes[i];
+
+        var spec = {
+            id: node.id,
+            name: node.name,
+            title: node.title,
+            description: node.description,
+            properties: DumpProperties(node)
+        };
+
+        // Each node can have expressions
+        if (node.expressions) {
+            if (Array.isArray(node.expressions)) {
+                spec.expressions = node.expressions.map(DumpExpression);
+
+            } else {
+                spec.expressions = {};
+                for (var name in node.expressions) {
+                    if (Object.prototype.hasOwnProperty.call(node.expressions, name)) {
+                        spec.expressions[name] = DumpExpression(node.expressions[name]);
+                    }
+                }
+            }
+        }
+
+        switch (node.category) {
+            case COMPOSITE:
+                spec.children = node.children.map((child) => child.id);
+
+                if (node.services) {
+                    spec.services = node.services.map((child) => child.id);
+                }
+
+                break;
+
+            case DECORATOR:
+                if (node.child) {
+                    spec.child = node.child.id;
+                }
+
+                break;
+
+            case ACTION:
+                if (node.services) {
+                    spec.services = node.services.map((child) => child.id);
+                }
+
+                break;
+        }
+
+        data.nodes.push(spec);
+    }
+
+    return data;
+}
+
+export default Dump;
