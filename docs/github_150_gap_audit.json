@@ -1,0 +1,48 @@
+{
+  "audit_date": "2026-09-14",
+  "audit_type": "150 additional repository gap-analysis passes",
+  "passes": 150,
+  "clusters": {
+    "repository_and_process": 20,
+    "architecture_and_contracts": 20,
+    "client_and_ux": 20,
+    "scenario_content_and_data": 20,
+    "learning_and_progression": 15,
+    "economy_monetization_growth": 15,
+    "qa_security_accessibility": 20,
+    "assets_motion_and_performance": 20
+  },
+  "scope_note": "Analysis used repository structure, recent commits, open issues, and available documentation metadata; absence findings mean not visible in inspected repository, not proof that code does not exist elsewhere.",
+  "priority_summary": {
+    "P0": 2,
+    "P1": 13
+  },
+  "findings": [
+    {"id":"F-001","severity":"P0","title":"No real implementation tree is visible","action":"Confirm authoritative implementation repository or create application scaffold."},
+    {"id":"F-002","severity":"P0","title":"No executable CI quality gates observed","action":"Add CI for install, typecheck, lint, unit, integration, E2E, build, security, accessibility, and artifacts."},
+    {"id":"F-003","severity":"P1","title":"Canonical document versioning is not formalized","action":"Add document ownership, version, supersedes, and link checks."},
+    {"id":"F-004","severity":"P1","title":"AGENTS contract is not visibly enforced","action":"Add preflight and invariant validation."},
+    {"id":"F-005","severity":"P1","title":"No machine-readable API contract visible","action":"Add OpenAPI/JSON Schema, generated types, and contract tests."},
+    {"id":"F-006","severity":"P1","title":"Database migrations and seed are not visible","action":"Add schema, migrations, seed, rollback, and DB tests."},
+    {"id":"F-007","severity":"P1","title":"Visual lab is not visible as executable code","action":"Implement fixture-driven visual lab and visual regression."},
+    {"id":"F-008","severity":"P1","title":"ScenarioPackage pipeline is not visible as executable code","action":"Implement schema, validator, importer, projections, and replay tests."},
+    {"id":"F-009","severity":"P1","title":"Historical provider adapters are not visible","action":"Implement provider interfaces, free MVP adapter, snapshots, provenance, and replay."},
+    {"id":"F-010","severity":"P1","title":"Learning compression ladder is not connected to executable content","action":"Create learning content registry linking modules, Cards, Entities, scenarios, debrief, and rematch."},
+    {"id":"F-011","severity":"P1","title":"Economy simulation is not executable ledger validation","action":"Implement ledger, idempotency, sinks, caps, reconciliation, and tests."},
+    {"id":"F-012","severity":"P1","title":"Asset provenance policy has no visible registry","action":"Add asset registry, stable IDs, license validator, and release blockers."},
+    {"id":"F-013","severity":"P1","title":"Security and secret scanning workflow is not visible","action":"Add secret, dependency, environment, and log-redaction checks."},
+    {"id":"F-014","severity":"P1","title":"Accessibility harness is not visible","action":"Add axe/Playwright, keyboard, focus, screen-reader, and reduced-motion checks."},
+    {"id":"F-015","severity":"P1","title":"Performance budget enforcement is not visible","action":"Add mobile performance smoke, asset budgets, and render benchmarks."}
+  ],
+  "next_order": [
+    "Confirm implementation repository scope",
+    "Add CI and preflight",
+    "Add API/schema contract",
+    "Add DB migrations and seed",
+    "Implement vertical slice",
+    "Implement ScenarioPackage and provider snapshots",
+    "Build visual lab and motion QA",
+    "Implement Pip ledger",
+    "Run first executable whole-system audit"
+  ]
+}
