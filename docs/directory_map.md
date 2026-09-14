@@ -36,10 +36,10 @@ Start at `docs/README.md`.
 ## Economy and growth
 
 - `economy_monetization_referrals_v1.md`
-- `pip_economy_150_simulation.md`
-- `150_simulation_results.json`
 - `topbar_currency_ui_spec.md`
 - `referral_and_growth_spec.md`
 - `economy_and_development_addendum.md`
+
+Audit and simulation outputs are not listed here. Their resulting decisions are incorporated into the active specifications.
 
 When documents conflict, follow the canonical hierarchy in `docs/README.md`, then update dependent documents and run the integration audit.
