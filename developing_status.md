@@ -8,15 +8,26 @@ The repository contains the product specification, curriculum, economy rules, mo
 
 The project is **not yet accepted as a complete executable implementation**. Iteration 00/01 now provides versioned contracts, content validation, deterministic foundation scoring, a public scenario projection endpoint, tests, scripts, and CI configuration.
 
+## Acceptance status
+
+```text
+Documentation-only: no longer true
+Executable foundation: PASS
+Production vertical slice: NOT YET ACCEPTED
+Overall product: BLOCKED
+```
+
+The foundation is executable, but the product remains blocked until database, auth, persistence, real historical providers, the Phaser client, Pips ledger, production asset provenance, and the complete vertical slice are implemented and evidenced.
+
 ## Immediate next sequence
 
-1. Confirm whether `hudyakovictor/ssarena` is the authoritative runtime repository.
-2. Complete the executable application scaffold and install dependencies.
-3. Add database migrations and repeatable seed fixtures.
-4. Implement server-side auth and decision-run persistence.
-5. Implement the first vertical slice and ScenarioPackage reveal pipeline.
-6. Add security, accessibility, performance and release checks.
-7. Implement the first vertical slice:
+1. Confirm `hudyakovictor/ssarena` as the authoritative runtime repository.
+2. Foundation — executable scaffold, scripts, CI and baseline fixture. **PASS**.
+3. Real contract tests.
+4. Database, migrations and repeatable seed fixtures.
+5. ScenarioPackage validator/importer.
+6. Scoring golden fixtures and production scoring service.
+7. Phaser client vertical slice:
 
 ```text
 bootstrap
@@ -24,19 +35,17 @@ bootstrap
 → evidence
 → decision
 → seal
-→ outcome
+→ historical reveal
 → score
-→ explanation
+→ debrief
 → progression
-→ Pips
 → rematch
 ```
 
-8. Implement ScenarioPackage validation and public/hidden projections.
-9. Implement free-first historical data adapters and immutable snapshots.
-10. Implement the fixture-driven visual lab, motion QA, and asset registry.
-11. Implement the server-authoritative Pip ledger.
-12. Run the first executable whole-system integration audit.
+8. Real public/hidden projections and historical snapshot pipeline.
+9. Server-authoritative Pips ledger.
+10. Visual lab, motion/accessibility QA and production asset provenance.
+11. Full integration audit and release evidence.
 
 ## Decision policy
 

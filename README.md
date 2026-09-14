@@ -32,12 +32,15 @@ acceptance criteria
 ## Текущий статус
 
 ```text
-Phase: Foundation / executable scaffold in progress
+Phase: Executable foundation / production vertical slice not yet accepted
 Overall specification readiness: 81/100
+Executable foundation: PASS
+Production vertical slice: NOT YET ACCEPTED
+Overall product: BLOCKED
 Primary platform: Telegram Mini App
 Primary payment: Telegram Stars/XTR
-Primary chain target: none in MVP; TON is future option
-Current priority: contracts → database → API skeleton → content fixtures → vertical slice
+Primary chain target: none in MVP
+Current priority: real contract tests → database/migrations/seed → ScenarioPackage validator/importer → scoring fixtures → Phaser vertical slice
 ```
 
 Не начинать полноценный production-polish клиента, пока не закрыт vertical slice:
