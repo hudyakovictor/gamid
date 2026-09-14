@@ -1,11 +1,15 @@
 ---
 name: signal-arena
-description: Signal Arena project overlay for routing the general game-development skill to the correct sub-skills and enforcing project-specific learning, scenario, naming, data, motion, and QA invariants.
+description: Signal Arena project overlay for routing the general game-development skill to the correct sub-skills and enforcing project-specific learning, scenario, naming, data, asset, motion, and QA invariants.
 ---
 
 # Signal Arena Project Overlay
 
 This is a project-specific overlay, not a replacement for the general game-development skill. Use the archive's general game-development skill as the orchestrator.
+
+## Mandatory project contract
+
+Read `AGENTS.md` before any task. Then read `docs/README.md` and only the relevant linked documents. Do not ingest the entire documentation hub at every startup.
 
 ## Routing
 
@@ -17,11 +21,7 @@ This is a project-specific overlay, not a replacement for the general game-devel
 - Sound and adaptive audio: `game-audio`.
 - Multiplayer and networking: `multiplayer`.
 
-Do not duplicate or replace the archive's general skills.
-
 ## Relevant documents
-
-Read only the smallest relevant set through `docs/README.md`:
 
 - `full_game_spec.md`
 - `academy_plan_99.md`
@@ -30,9 +30,8 @@ Read only the smallest relevant set through `docs/README.md`:
 - `docs/scenario_authoring_schema_99.md`
 - `docs/historical_data_api_integration_plan.md`
 - `docs/economy_monetization_referrals_v1.md`
-- `docs/motion_interaction_system_spec.md` for motion or interaction work
-
-Do not ingest the whole documentation hub at every startup.
+- `docs/asset_provenance_and_workflow.md` for asset/source work
+- `docs/motion_interaction_system_spec.md` for motion/interaction work
 
 ## Invariants
 
@@ -43,23 +42,11 @@ Do not ingest the whole documentation hub at every startup.
 - Important curriculum topics appear by approximately Level 40; later levels emphasize interleaving, transfer, delayed rematches, blind practice, specialized theory capsules, and rolling reliability.
 - Use Theory Module → Worked Example → Skill Card → Card Header → Recall → Decision → Debrief → Delayed Rematch.
 - Scenario data is point-in-time; future data and hidden Entity data stay server-side before seal.
-- Client never connects directly to the database or external providers.
+- Client never connects directly to database or external providers.
 - Pips and Stars never change score, outcome, ranking, or risk advantage.
-- Motion must communicate purpose, state, hierarchy, or causality; do not add decorative motion without a reason.
-
-## Motion invariants
-
-- Enter: usually `ease-out`.
-- Exit: usually `ease-in`.
-- In-scene movement/shared-axis: usually `ease-in-out`.
-- Frequent input feedback: approximately 100–180 ms.
-- State transitions: approximately 200–400 ms.
-- Rare celebrations: approximately 500–900 ms and skippable.
-- Four-step tasks may auto-advance after valid selection with a visible step indicator, short comprehension pause, undo/back behavior where appropriate, and reduced-motion/accessibility support.
-- Decision seal must be visibly irreversible.
-- Reveal must prioritize causal explanation over decoration.
-- Completion celebrations reward process quality, not lucky outcome.
-- `prefers-reduced-motion` must preserve meaning, focus, and state.
+- Every non-trivial asset has stable assetId and provenance.
+- Unknown-license assets are prohibited in production.
+- Motion communicates purpose, state, hierarchy, or causality; no decorative motion without a reason.
 
 ## Contract-first workflow
 
@@ -72,12 +59,10 @@ contract
 → whole-system audit
 ```
 
-Use `ScenarioPackage` and separate public pre-decision, player decision, hidden resolver, and reveal projections.
-
 ## Quality gate
 
-A task is not complete after code is written. Run relevant unit, integration, contract, E2E, typecheck, lint, build, visual regression, responsive, accessibility, reduced-motion, future-leak, deterministic replay, economy/idempotency, manual QA, and evidence checks.
+A task is not complete after code is written. Run relevant unit, integration, contract, E2E, typecheck, lint, build, visual regression, responsive, accessibility, reduced-motion, asset provenance, future-leak, deterministic replay, economy/idempotency, manual QA, and evidence checks.
 
 Use `PLANNED`, `IN_PROGRESS`, `BLOCKED`, `READY_FOR_REVIEW`, `ACCEPTED`, or `REJECTED`. Never claim `ACCEPTED` with a failed mandatory gate.
 
-Run the periodic integration audit from `docs/implementation_plan_iteration_prompts.md` after every 3–5 merged PRs, before release candidates, and after shared contract, API, database, scoring, economy, localization, visual, or motion changes.
+Run the periodic integration audit from `docs/implementation_plan_iteration_prompts.md` after every 3–5 merged PRs, before release candidates, and after shared contract, API, database, scoring, economy, localization, visual, asset, or motion changes.

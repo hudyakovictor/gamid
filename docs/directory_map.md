@@ -1,11 +1,45 @@
-# Directory Map
+# Signal Arena Documentation Map
 
-The repository documentation now includes the canonical economy package:
+Start at `docs/README.md`.
 
-- `docs/economy_monetization_referrals_v1.md` — currencies, Pip sinks, Stars monetization, referrals, tournaments, ledger, events, guardrails.
-- `docs/pip_economy_150_simulation.md` — 150-trial balance audit, assumptions, target output, corrections, acceptance thresholds.
-- `docs/150_simulation_results.json` — machine-readable audit baseline.
-- `docs/topbar_currency_ui_spec.md` — PipGem and Stars Top Bar icon specification.
-- `docs/referral_and_growth_spec.md` — referral loop, rewards, caps, anti-abuse, metrics.
+## Mandatory project context
 
-The existing 20/80, architecture, CRM, brand, and game-spec documents remain authoritative where they do not conflict with this package. In a conflict, the newer economy package governs economy-specific behavior.
+- `../AGENTS.md`
+- `.claude/skills/signal-arena/SKILL.md`
+
+## Canonical
+
+- `../full_game_spec.md`
+- `../academy_plan_99.md`
+- `../style-tone.txt`
+- `../brand.md`
+
+## Learning and content
+
+- `learning_science_evidence_and_curriculum_plan.md`
+- `traditional_course_gap_analysis.md`
+- `scenario_authoring_and_historical_data_spec.md`
+- `scenario_authoring_schema_99.md`
+- `historical_data_api_integration_plan.md`
+
+## Development and QA
+
+- `system_architecture_v4.md`
+- `master_prompt_integration.md`
+- `implementation_plan_iteration_prompts.md`
+- `motion_interaction_system_spec.md`
+- `asset_provenance_and_workflow.md`
+- `acceptance_matrix.md`
+- `final_20_80_audit.md`
+- `crm_stack_spec.md`
+
+## Economy and growth
+
+- `economy_monetization_referrals_v1.md`
+- `pip_economy_150_simulation.md`
+- `150_simulation_results.json`
+- `topbar_currency_ui_spec.md`
+- `referral_and_growth_spec.md`
+- `economy_and_development_addendum.md`
+
+When documents conflict, follow the canonical hierarchy in `docs/README.md`, then update dependent documents and run the integration audit.

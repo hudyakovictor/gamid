@@ -2,28 +2,40 @@
 
 Start here for project documentation. This hub is a human navigation layer; agents should receive only relevant linked documents.
 
+## Mandatory startup
+
+Every agent task begins with:
+
+```text
+AGENTS.md
+→ docs/README.md
+→ relevant archive sub-skill
+→ relevant Signal Arena documents
+→ focused task prompt
+```
+
 ## Canonical hierarchy
 
-1. `../full_game_spec.md` — product, game loop, Cards, unified Entities, Academy/Exam/Arena, scoring, Decision Trace, and core UX.
-2. `../academy_plan_99.md` — curriculum, learning outcomes, Source Groups, Cards, Protocols, Entities, progression, and mastery.
-3. `../style-tone.txt` and `../brand.md` — voice and visual identity.
-4. `system_architecture_v4.md` — technical architecture.
-5. `master_prompt_integration.md` — implementation principles.
-6. `implementation_plan_iteration_prompts.md` — human-controlled iteration plan, Definition of Done, focused prompts, and periodic audit.
-7. `learning_science_evidence_and_curriculum_plan.md` — learning mechanics, compression ladder, curriculum pacing, measurement, and claim boundaries.
-8. `scenario_authoring_and_historical_data_spec.md` — historical source and scenario workflow.
-9. `scenario_authoring_schema_99.md` — ScenarioPackage, Level 1–99, complexity, content layers, and publication checks.
-10. `historical_data_api_integration_plan.md` — provider adapters, snapshots, provenance, caching, and API gates.
-11. `traditional_course_gap_analysis.md` — traditional-course gaps translated into Signal Arena mechanics and measurements.
-12. `motion_interaction_system_spec.md` — motion, easing, preloader, screen transitions, auto-advance, celebrations, accessibility, and motion QA.
-13. `economy_monetization_referrals_v1.md` — Stars, Pips, sinks, monetization, referrals, ledger, and guardrails.
-14. `pip_economy_150_simulation.md` and `150_simulation_results.json` — initial economy baseline.
-15. `topbar_currency_ui_spec.md` — Stars and PipGem UI.
-16. `referral_and_growth_spec.md` — referral lifecycle and anti-abuse.
-17. `economy_and_development_addendum.md` — additional economy simulation and cross-layer development gates.
-18. `acceptance_matrix.md` and `final_20_80_audit.md` — acceptance and release checks.
-19. `crm_stack_spec.md` — analytics and CRM.
-20. `.claude/skills/signal-arena/SKILL.md` — project overlay and routing layer for the archive's general game-development skill.
+1. `../full_game_spec.md`
+2. `../academy_plan_99.md`
+3. `../style-tone.txt` and `../brand.md`
+4. `system_architecture_v4.md`
+5. `master_prompt_integration.md`
+6. `implementation_plan_iteration_prompts.md`
+7. `learning_science_evidence_and_curriculum_plan.md`
+8. `scenario_authoring_and_historical_data_spec.md`
+9. `scenario_authoring_schema_99.md`
+10. `historical_data_api_integration_plan.md`
+11. `traditional_course_gap_analysis.md`
+12. `motion_interaction_system_spec.md`
+13. `asset_provenance_and_workflow.md`
+14. `economy_monetization_referrals_v1.md`
+15. `pip_economy_150_simulation.md` and `150_simulation_results.json`
+16. `topbar_currency_ui_spec.md`
+17. `referral_and_growth_spec.md`
+18. `economy_and_development_addendum.md`
+19. `acceptance_matrix.md`, `final_20_80_audit.md`, and `crm_stack_spec.md`
+20. `.claude/skills/signal-arena/SKILL.md`
 
 ## Skill routing
 
@@ -37,7 +49,7 @@ game-development
 └── multiplayer
 ```
 
-For motion work use `game-art` plus `motion_interaction_system_spec.md`. The overlay does not replace archive skills.
+The Signal Arena overlay routes tasks to archive skills and adds project invariants. It does not replace or duplicate them.
 
 ## Recommended paths
 
@@ -50,7 +62,7 @@ full_game_spec.md
 → traditional_course_gap_analysis.md
 ```
 
-### Content and historical data
+### Content and data
 
 ```text
 full_game_spec.md
@@ -60,27 +72,16 @@ full_game_spec.md
 → historical_data_api_integration_plan.md
 ```
 
-### Implementation and motion
+### Implementation, assets, and motion
 
 ```text
-system_architecture_v4.md
-→ master_prompt_integration.md
+AGENTS.md
 → implementation_plan_iteration_prompts.md
 → .claude/skills/signal-arena/SKILL.md
 → relevant archive sub-skill
-→ motion_interaction_system_spec.md when applicable
+→ asset_provenance_and_workflow.md or motion_interaction_system_spec.md
 → acceptance_matrix.md
 → final_20_80_audit.md
-```
-
-### Economy and growth
-
-```text
-economy_monetization_referrals_v1.md
-→ pip_economy_150_simulation.md
-→ topbar_currency_ui_spec.md
-→ referral_and_growth_spec.md
-→ economy_and_development_addendum.md
 ```
 
 ## Cross-document invariants
@@ -94,5 +95,7 @@ economy_monetization_referrals_v1.md
 - Essential theory is introduced by approximately Level 40 and returns through interleaving, specialization, transfer, and reliability.
 - Theory Module → Worked Example → Skill Card → Card Header → Recall → Decision → Debrief → Rematch.
 - Pips and Stars never change score, outcome, ranking, or risk advantage.
+- Every non-trivial asset has provenance and a stable assetId.
+- Unknown-license assets never enter production.
 - Motion communicates purpose, state, hierarchy, and causality; reduced motion preserves meaning.
 - No iteration is accepted without tests, manual QA, evidence, and explicit status.

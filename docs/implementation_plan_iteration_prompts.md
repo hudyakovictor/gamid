@@ -6,13 +6,31 @@
 
 ## Cross-document contract
 
-Before any implementation task, consult only the relevant documents through `docs/README.md`. The canonical product model is `../full_game_spec.md`; curriculum is `../academy_plan_99.md`; scenario contracts are `scenario_authoring_schema_99.md`; historical sources and APIs are `scenario_authoring_and_historical_data_spec.md` and `historical_data_api_integration_plan.md`; learning mechanics are in `learning_science_evidence_and_curriculum_plan.md`; motion is in `motion_interaction_system_spec.md`; economy is in `economy_monetization_referrals_v1.md`.
+Before any implementation task, read `AGENTS.md`, then `docs/README.md`, then only the relevant archive skill and project documents. The canonical product model is `../full_game_spec.md`; curriculum is `../academy_plan_99.md`; scenario contracts are `scenario_authoring_schema_99.md`; historical sources and APIs are `scenario_authoring_and_historical_data_spec.md` and `historical_data_api_integration_plan.md`; learning mechanics are in `learning_science_evidence_and_curriculum_plan.md`; motion is in `motion_interaction_system_spec.md`; asset workflow is in `asset_provenance_and_workflow.md`; economy is in `economy_monetization_referrals_v1.md`.
 
-When a shared concept changes, update the canonical document first, then all dependent documents, fixtures, schemas, tests, and prompts. Run the whole-system audit after the change.
+Every focused task prompt must include a dependency block:
+
+```md
+## Task context
+
+Read:
+- relevant canonical document
+- relevant technical document
+- relevant QA document
+- relevant asset/motion document, if applicable
+
+Relevant invariants:
+- ...
+
+Acceptance gates:
+- ...
+```
+
+When a shared concept changes, update the canonical source first, then dependent documents, fixtures, schemas, tests, prompts, and asset registry. Run the whole-system audit after the change.
 
 ## Universal Definition of Done
 
-Every iteration requires implementation, unit tests, integration tests where boundaries changed, contract tests when API changed, error-path tests, idempotency tests for mutations, regression tests, typecheck, lint, build, manual QA, visual/responsive QA for UI, accessibility checks, reduced-motion QA for motion, data-integrity checks, evidence, known limitations, and explicit status.
+Every iteration requires implementation, unit tests, integration tests where boundaries changed, contract tests when API changed, error-path tests, idempotency tests for mutations, regression tests, typecheck, lint, build, manual QA, visual/responsive QA for UI, accessibility checks, reduced-motion QA for motion, asset provenance checks for asset work, data-integrity checks, evidence, known limitations, and explicit status.
 
 Blocking conditions:
 
@@ -26,6 +44,8 @@ duplicate reward risk
 client-authoritative score or balance
 future-data leak
 hidden Entity leak
+unknown-license production asset
+missing asset provenance
 motion blocks meaningful action
 missing evidence
 ```
@@ -59,42 +79,51 @@ motion tokens
 → reduced-motion/accessibility QA
 ```
 
-Scenario authoring and API gates can proceed after the contract:
+Asset implementation is a visual/content stream:
 
 ```text
-Contract
-→ API-01 provider interfaces
-→ API-02 Binance adapter
-→ API-03 snapshots/provenance
-→ scenario schema validator
-→ scenario import
-→ client/API/scoring E2E
+asset need
+→ existing asset/license check
+→ original/generated/custom decision
+→ provenance record
+→ stable assetId
+→ import
+→ visual/responsive/accessibility QA
+→ release approval
 ```
 
-## Required scenario gates
+## Required task gates
 
-Every authored scenario must pass schema, source availability, future-leak, hidden Entity, import, reveal determinism, client projection, scoring, E2E, and human content checks in `scenario_authoring_schema_99.md`.
+### Scenario gates
 
-## Required learning gates
+Schema, source availability, future-leak, hidden Entity, import, reveal determinism, client projection, scoring, E2E, and human content checks in `scenario_authoring_schema_99.md`.
 
-Every learning feature must connect Theory Module, Worked Example, Skill Card, Card Header, recall, decision, debrief, and delayed rematch according to `learning_science_evidence_and_curriculum_plan.md`.
+### Learning gates
 
-## Required motion gates
+Theory Module, Worked Example, Skill Card, Card Header, recall, decision, debrief, and delayed rematch linkage in `learning_science_evidence_and_curriculum_plan.md`.
 
-Every non-trivial animation must declare purpose, trigger, before/after states, easing, duration, interruption policy, reduced-motion fallback, and sound behavior where relevant. Check enter/exit/in-scene easing, auto-advance, focus, mobile layout, visual regression, reduced motion, and performance using `motion_interaction_system_spec.md`.
+### Motion gates
 
-## Required economy gates
+Purpose, trigger, states, easing, duration, interruption, reduced-motion fallback, focus, auto-advance, visual regression, accessibility, and performance in `motion_interaction_system_spec.md`.
 
-Every reward or spend mutation must use the server-authoritative ledger, idempotency key, reconciliation, and no-pay-to-win checks from `economy_monetization_referrals_v1.md`.
+### Asset gates
+
+Stable assetId, origin, source, license/permission, commercial/modification rights, sizes, formats, fallback, visual QA, reduced-motion behavior where animated, and no placeholder in release builds in `asset_provenance_and_workflow.md`.
+
+### Economy gates
+
+Server-authoritative ledger, idempotency, reconciliation, and no-pay-to-win checks in `economy_monetization_referrals_v1.md`.
 
 ## Periodic whole-system validation prompt
 
-Run after every 3–5 merged PRs, before a release candidate, and after shared type/API/database/scoring/economy/localization/visual-state/motion changes.
+Run after every 3–5 merged PRs, before a release candidate, and after shared type/API/database/scoring/economy/localization/visual-state/motion/asset changes.
 
 ```text
 Audit the complete Signal Arena system. Do not silently fix issues before reporting.
 
-Read docs/README.md and the relevant canonical files.
+Read AGENTS.md, docs/README.md, the relevant canonical documents,
+and the current git diff/last merged PRs.
+
 Check:
 - client/API/schema compatibility;
 - migrations, seed, and snapshots;
@@ -104,8 +133,9 @@ Check:
 - exact English Entity names;
 - Level 1–99 rules;
 - deterministic scoring;
-- Pips ledger and entitlement integrity;
+- Pip ledger and entitlement integrity;
 - referral and tournament constraints;
+- asset IDs, provenance, licenses, fallbacks, and release safety;
 - loading/error/locked/sealed/result states;
 - motion purpose, timing, easing, interruption, auto-advance, reduced motion,
   celebration, and performance;

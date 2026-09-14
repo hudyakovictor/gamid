@@ -1,372 +1,99 @@
-# SIGNAL ARENA — AGENTS.md
+# Signal Arena Agent Contract
 
-## 1. Mission
+This file is mandatory project context for every coding, content, design, asset, QA, and documentation task in this repository.
 
-Signal Arena is a Telegram Mini App educational game built around decision quality, historical scenarios, fair scoring, Stars monetization and future platform adapters.
+## Required startup order
 
-The product must work without a token or blockchain.
+Before changing files:
 
-## 2. Repository map
+1. Read this `AGENTS.md`.
+2. Read `docs/README.md`.
+3. Identify the task type.
+4. Select the relevant archive game-development sub-skill.
+5. Read only the relevant Signal Arena documents.
+6. List scope, files, dependencies, tests, asset/source requirements, and acceptance gates.
+7. Stop and ask for clarification if canonical documents conflict.
 
-```text
-apps/
-  game-client/       Phaser 4 + TypeScript + Vite + rexUI
-  api-server/        Fastify + TypeScript + Zod + Drizzle
-  admin-crm/         Next.js + React + TypeScript + Tailwind + shadcn/ui
-  landing/           Next.js + TypeScript + Tailwind
+Do not ingest every document for every task. Use the smallest relevant context, but never skip this contract or the documentation hub.
 
-packages/
-  contracts/         shared Zod schemas and DTOs
-  domain/            pure business rules
-  db/                Drizzle schema, migrations, repositories
-  content/           content schemas, fixtures and validators
-  adapters/          Telegram, Stars, Ads, AI, future platforms/chains
-  analytics/         event taxonomy and telemetry contracts
-  config/            environment and feature flags
-  ui-game/           Phaser/rexUI helpers
-  ui-crm/            CRM components
-  agent-runtime/     AI tools, jobs and policies
+## Archive skill routing
 
-workers/
-  payments/
-  content/
-  localization/
-  analytics/
-  ai/
+The repository uses the general archive `game-development` skill as orchestrator:
 
-docs/
-  product/
-  architecture/
-  monetization/
-  ai/
-  localization/
-  operations/
+- Browser, Phaser, WebGL, PWA, performance: `web-games`.
+- 2D rendering, charts, sprites, layout: `2d-games`.
+- Core loop, progression, balance, player psychology: `game-design`.
+- Visual style, assets, animation, art direction: `game-art`.
+- Motion, transitions, interaction timing: `game-art` + `docs/motion_interaction_system_spec.md`.
+- Audio: `game-audio`.
+- Multiplayer: `multiplayer`.
+
+Project overlay: `.claude/skills/signal-arena/SKILL.md`.
+
+## Canonical invariants
+
+- The product has one unified `Entity` group.
+- Canonical Entity names remain exact English in every locale.
+- Do not translate, transliterate, or invent Entity names.
+- Do not introduce Enemy, Boss, or MasteryBoss as replacement top-level categories.
+- Scenario `level` is an integer from 1 to 99 and is not a publication quality score.
+- Important curriculum topics appear by approximately Level 40; later levels emphasize interleaving, transfer, delayed rematches, specialized theory, and rolling reliability.
+- Content ladder: Theory Module → Worked Example → Skill Card → Card Header → Recall → Decision → Debrief → Delayed Rematch.
+- Scenario data is point-in-time; future data and hidden Entity data remain server-side before seal.
+- Client never connects directly to database or external providers.
+- Pips and Stars never change score, outcome, ranking, or risk advantage.
+- No feature is accepted without tests, checklist, evidence, and explicit status.
+
+## Document dependency blocks
+
+Every task prompt must contain:
+
+```md
+## Task context
+
+Read:
+- relevant canonical document
+- relevant technical document
+- relevant QA document
+
+Relevant invariants:
+- ...
+
+Acceptance gates:
+- ...
 ```
 
-## 3. Agent task routing
+Never silently implement a shared concept from memory when a canonical document exists.
 
-### Client agent
+## Asset and source requirements
 
-Use when the instruction contains:
+Every non-trivial asset or external source must have provenance before acceptance. Use `docs/asset_provenance_and_workflow.md`.
 
-```text
-клиент
-игра
-Phaser
-сцена
-UI
-rexUI
-анимация
-график
-Decision Workspace
-магазин на клиенте
-профиль
-турнирный экран
-```
+Approved origins:
 
-Allowed scope:
+- `original` — created specifically for Signal Arena;
+- `generated` — generated for the project and reviewed;
+- `licensed` — external asset with verified license;
+- `public_domain` — verified public-domain asset;
+- `placeholder` — temporary development-only asset.
 
-```text
-apps/game-client
-packages/ui-game
-packages/contracts
-packages/content/fixtures
-packages/analytics
-```
+Unknown-license assets are prohibited in production. Core brand assets, PipGem, Entity portraits, unique UI effects, and canonical icons should normally be original or generated for Signal Arena.
 
-Do not edit:
+Use stable `assetId` references, not fragile filenames. Do not put gameplay logic behind an unregistered asset.
 
-```text
-apps/api-server/src/domain rules
-apps/admin-crm
-packages/db migrations
-payment fulfillment logic
-scoring authority
-```
+## Mandatory completion report
 
-### Backend agent
+Every task must report:
 
-Use when the instruction contains:
+- task scope;
+- relevant documents and skills used;
+- changed files;
+- assets/sources added and provenance;
+- tests run and exact results;
+- manual QA;
+- visual/responsive/accessibility QA where applicable;
+- known limitations;
+- evidence;
+- final status: `ACCEPTED`, `BLOCKED`, or `REJECTED`.
 
-```text
-backend
-API
-сервер
-база
-Drizzle
-Fastify
-auth
-Stars
-payment
-refund
-score
-entitlement
-inventory
-турниры
-логи
-```
-
-Allowed scope:
-
-```text
-apps/api-server
-packages/domain
-packages/db
-packages/contracts
-packages/adapters
-packages/analytics
-workers
-```
-
-Do not edit client rendering or CRM pages unless the task explicitly requires a contract change.
-
-### CRM agent
-
-Use when the instruction contains:
-
-```text
-CRM
-админка
-администратор
-каталог
-пользователи
-платежи
-контент
-локализация
-AI jobs
-feature flags
-аудит
-```
-
-Allowed scope:
-
-```text
-apps/admin-crm
-packages/ui-crm
-packages/contracts
-```
-
-CRM must call Admin API. Never access the database directly from browser code.
-
-### Landing agent
-
-Use when the instruction contains:
-
-```text
-лендинг
-маркетинговая страница
-SEO
-roadmap
-Founder Pack presentation
-public page
-```
-
-Allowed scope:
-
-```text
-apps/landing
-packages/contracts/public
-```
-
-Landing cannot access private database tables or admin endpoints.
-
-### Content agent
-
-Use when the instruction contains:
-
-```text
-сценарий
-карта
-сущность
-урок
-rubric
-контент
-```
-
-Allowed scope:
-
-```text
-packages/content
-apps/admin-crm content modules
-scripts/validate-scenarios
-```
-
-Every published scenario requires schema validation, fairness review and versioning.
-
-### AI/operations agent
-
-Use when the instruction contains:
-
-```text
-AI
-агент
-рутина
-логи
-аналитика
-баланс
-перевод
-локализация
-```
-
-Allowed scope:
-
-```text
-packages/agent-runtime
-workers/ai
-workers/analytics
-workers/localization
-docs/ai
-```
-
-AI agents may propose changes. They may not autonomously modify money, score, rewards, bans, prices, rubrics or token features.
-
-## 4. Non-negotiable architecture rules
-
-1. Client, API, CRM and landing are separate applications.
-2. Shared API schemas live in `packages/contracts`.
-3. Domain rules live in `packages/domain`, not in Phaser or React.
-4. The client never connects directly to the database.
-5. CRM never connects directly to the database from browser code.
-6. The API is authoritative for score, hidden future, payments, inventory and entitlements.
-7. The client never grants itself currency or purchased items.
-8. Telegram SDK is accessed only through an adapter.
-9. Payment providers are separate from platform adapters.
-10. Chain adapters are separate from payment providers.
-11. All content is versioned and localized through keys.
-12. All dangerous admin actions are audited.
-13. All payment fulfillment is idempotent.
-14. No token is required for the game to work.
-15. No paid item may affect score, outcome, mastery or tournament ranking.
-
-## 5. Contract-first workflow
-
-Before implementing a cross-app feature:
-
-```text
-1. Define or update Zod contract in packages/contracts.
-2. Add request/response examples.
-3. Add API route or command.
-4. Add mock fixture.
-5. Add server validation.
-6. Add client integration.
-7. Add CRM integration if the feature is manageable there.
-8. Add analytics events.
-9. Add tests.
-10. Update docs and changelog.
-```
-
-A client-only API shape is forbidden.
-
-## 6. Content workflow
-
-```text
-CRM draft
-→ API validation
-→ content schema validation
-→ fairness review
-→ localization
-→ publish version
-→ public API
-→ game client
-```
-
-The client may use fixtures during development, but fixtures must pass the same schemas as database content.
-
-## 7. Feature workflow example
-
-For a new shop item:
-
-```text
-contracts/catalog.ts
-→ db catalog migration
-→ API catalog endpoint
-→ CRM catalog form
-→ client catalog card
-→ order endpoint
-→ Stars webhook
-→ entitlement ledger
-→ inventory
-→ equipment/public profile
-→ analytics
-→ tests
-```
-
-For a new scenario:
-
-```text
-content schema
-→ scenario fixture
-→ validator
-→ DB seed/migration
-→ API scenario endpoint
-→ client rendering
-→ scoring rubric
-→ CRM review screen
-→ localization keys
-→ analytics events
-```
-
-## 8. Required response format for agents
-
-Every agent must report:
-
-```text
-Scope:
-Files changed:
-Contracts changed:
-Database/migrations:
-API routes:
-Feature flags:
-Analytics events:
-Tests:
-Risks:
-Not implemented:
-```
-
-## 9. Validation commands
-
-Use the repository scripts when available:
-
-```bash
-pnpm typecheck
-pnpm lint
-pnpm test
-pnpm test:e2e
-pnpm validate:contracts
-pnpm validate:content
-pnpm validate:locales
-pnpm build
-```
-
-Do not claim success if a command was not run.
-
-## 10. Definition of done
-
-A feature is not complete until:
-
-- shared contracts compile;
-- server validates input and output;
-- client handles loading/error/empty states;
-- CRM can manage the feature if it is operational content;
-- database migration is reversible or documented;
-- analytics events exist;
-- feature flag exists for risky functionality;
-- payment/refund behavior is defined where relevant;
-- tests cover happy path and failure path;
-- docs are updated;
-- no secret is committed.
-
-## 11. Scope discipline
-
-Do not prematurely implement:
-
-```text
-multi-chain token
-bridges
-DAO
-creator payouts
-AI autonomous economy changes
-real-money trading
-```
-
-Build the Telegram MVP and shared contracts first.
+A failed mandatory gate must not be described as complete.
