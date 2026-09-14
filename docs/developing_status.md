@@ -17,7 +17,7 @@ Production vertical slice: NOT YET ACCEPTED
 Overall product: BLOCKED
 ```
 
-The foundation, database/migration/seed gate, ScenarioPackage importer/projection boundary, and foundation scenario-run lifecycle are executable and locally evidenced, but the product remains blocked until authentication, production scoring service, real historical providers, Phaser client, Pips ledger, production asset provenance, structured logging/alerting, and the complete vertical slice are implemented and evidenced. Logging, metrics, tracing, audit events, alerts, and incident response are specified in `observability_and_incident_response.md`; they are not yet shipped by the current foundation.
+The foundation, database/migration/seed gate, ScenarioPackage importer/projection boundary, and foundation scenario-run lifecycle are executable and locally evidenced, but the product remains blocked until authentication, production scoring service, real historical providers, Phaser client, Pips ledger, structured logging/alerting, visual/release asset QA, and the complete vertical slice are implemented and evidenced. Entity portraits and Skill Card artwork are original project assets with provenance recorded in `assets/asset-manifest.json`; they remain draft until QA approval. Logging, metrics, tracing, audit events, alerts, and incident response are specified in `observability_and_incident_response.md`; they are not yet shipped by the current foundation.
 
 ## Immediate next sequence
 
@@ -45,7 +45,7 @@ bootstrap
 
 9. Historical provider adapters and point-in-time snapshot pipeline.
 10. Server-authoritative Pips ledger.
-11. Visual lab, motion/accessibility QA and production asset provenance.
+11. Visual lab, motion/accessibility QA and production asset release approval.
 12. Vercel alpha deployment and provider/payment smoke test.
 13. AI agent runtime contracts, isolated job runner, and CRM approvals.
 14. Roadmap control plane: contracts, gate/evidence ingestion, blocker calculation, Admin API and CRM views.

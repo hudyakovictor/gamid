@@ -3,16 +3,18 @@
   "manifestStatus": "draft",
   "provenanceDefaults": {
     "kind": "image",
-    "origin": "placeholder",
-    "source": "existing repository asset; provenance not yet verified",
-    "license": "UNVERIFIED",
-    "commercialUseAllowed": false,
-    "modificationAllowed": false,
-    "attributionRequired": true,
+    "origin": "original",
+    "source": "Created specifically for Signal Arena by the project owner",
+    "creator": "Signal Arena project owner",
+    "createdAt": "2026-09-14",
+    "license": "Proprietary Signal Arena project asset",
+    "commercialUseAllowed": true,
+    "modificationAllowed": true,
+    "attributionRequired": false,
     "fallback": null,
     "status": "draft",
     "releaseEligible": false,
-    "replacementPlan": "Verify provenance and rights, or replace with original/generated artwork before production release."
+    "replacementPlan": "Complete visual, responsive and accessibility QA, then approve for the release build."
   },
   "assets": [
     { "assetId": "entity_anchor_golem_portrait", "path": "assets/entities/anchor_golem.jpg" },
