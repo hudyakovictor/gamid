@@ -1,4 +1,4 @@
-# SIGNAL ARENA — Full Game Design Specification v3.0
+# SIGNAL ARENA — Full Game Design Specification
 
 ## 0. Product contract
 

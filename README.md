@@ -12,10 +12,10 @@ Signal Arena учит принимать решения до раскрытия 
 
 ```text
 1. AGENTS.md
-2. developing_status.md
-3. CONTRIBUTING.md
-4. full_game_spec.md
-5. docs/system_architecture_v4.md
+2. docs/README.md
+3. game-development-skill/SKILL.md и релевантный sub-skill
+4. relevant Signal Arena documents
+5. focused task prompt
 ```
 
 Затем определи:
@@ -33,14 +33,14 @@ acceptance criteria
 
 ```text
 Phase: Executable foundation / production vertical slice not yet accepted
-Overall specification readiness: 81/100
+Documentation and executable foundation: tracked in docs/developing_status.md
 Executable foundation: PASS
 Production vertical slice: NOT YET ACCEPTED
 Overall product: BLOCKED
 Primary platform: Telegram Mini App
 Primary payment: Telegram Stars/XTR
 Primary chain target: none in MVP
-Current priority: real contract tests → database/migrations/seed → ScenarioPackage validator/importer → scoring fixtures → Phaser vertical slice
+Current priority: authentication boundary → scoring fixtures/service → historical provider adapters → Phaser vertical slice
 ```
 
 Не начинать полноценный production-polish клиента, пока не закрыт vertical slice:
@@ -63,31 +63,35 @@ auth
 ### Управление разработкой
 
 - [AGENTS.md](AGENTS.md) — роли AI-агентов, границы директорий, contract-first workflow и запрещённые зависимости.
-- [CONTRIBUTING.md](CONTRIBUTING.md) — ветки, commits, PR, labels, review comments и merge policy.
-- [developing_status.md](developing_status.md) — последовательность фаз, параллельные потоки и чеклисты приёмки.
+- [CONTRIBUTING.md](docs/CONTRIBUTING.md) — ветки, commits, PR, labels, review comments и merge policy.
+- [developing_status.md](docs/developing_status.md) — последовательность фаз, параллельные потоки и чеклисты приёмки.
 
 ### Продукт
 
-- [Full Game Specification](full_game_spec.md) — каноничное ТЗ игры, client stack, режимы, scoring, Shop, profiles и tournaments.
-- [Academy Plan](academy_plan_99.md) — структура обучения и curriculum.
-- [Brand](brand.md) — визуальное направление Signal Arena.
-- [Style and Tone](style-tone.txt) — панк-таблоидная криптосатира и правила текстов.
-- [Competitors](competitors.md) — конкурентный анализ и позиционирование.
+- [Full Game Specification](docs/full_game_spec.md) — каноничное ТЗ игры, client stack, режимы, scoring, Shop, profiles и tournaments.
+- [Academy Plan](docs/academy_plan.md) — структура обучения и curriculum.
+- [Brand](docs/brand.md) — визуальное направление Signal Arena.
+- [Style and Tone](docs/style-tone.txt) — панк-таблоидная криптосатира и правила текстов.
+- [Competitors](docs/competitors.md) — конкурентный анализ и позиционирование.
 
 ### Монетизация и экономика
 
-- [Monetization](monetization.txt) — Stars, Founder Packs, subscriptions, rewarded ads, anti-pay-to-win и token readiness gates.
-- [Repository Gap Audit](docs/github_150_gap_audit.md) — inventory audit и P0/P1 implementation gaps.
-- [Readiness Score](docs/signal_arena_readiness_score.md) — оценка ТЗ по 15 факторам.
+- [Monetization](docs/monetization.txt) — Stars, Founder Packs, subscriptions, rewarded ads, anti-pay-to-win и token readiness gates.
+- [Architecture and Operations](docs/system_architecture.md) — topology, environments, security, scaling, and deployment.
+- [Security Architecture](docs/security_architecture.md) — browser, identity, API, admin, provider, and data controls.
+- [Observability](docs/observability_and_incident_response.md) — structured logs, metrics, alerts, and incident workflow.
 
 ### Архитектура
 
-- [System Architecture](docs/system_architecture_v4.md) — monorepo, applications, packages, APIs, AI, localization, profiles and tournaments.
+- [System Architecture](docs/system_architecture.md) — monorepo, topology, applications, packages, APIs, security boundaries and deployment.
+- [Security Architecture](docs/security_architecture.md) — XSS, identity, API, admin, provider, and data controls.
+- [Deployment and Environments](docs/deployment_and_environments.md) — local, staging, production and two-surface topology.
+- [Performance and Scaling](docs/performance_and_scaling.md) — stateless services, backpressure, queues, caching and load gates.
+- [Observability](docs/observability_and_incident_response.md) — logs, traces, metrics, alerts and incident workflow.
+- [Roadmap Control Plane](docs/roadmap_and_release_control_plane.md) — stages, dependencies, gates, blockers, evidence and release readiness.
 - [CRM Stack](docs/crm_stack_spec.md) — отдельный стек CRM и Admin API.
 - [Multichain Readiness](docs/multichain_readiness_assessment.md) — Base, MiniPay, Solana Mobile, adapters и общий backend.
 - [Interactive Motion](docs/interactive_motion_spec.md) — интерактив, анимации, haptics, sound и reduced motion.
-
-- [Repository Migration Map](docs/repository_migration_map.md) — соответствие старых и новых документов.
 
 ## Архитектурная схема
 
@@ -351,8 +355,8 @@ pnpm build
 
 ```text
 Read AGENTS.md
-Read developing_status.md
-Read CONTRIBUTING.md
+Read docs/developing_status.md
+Read docs/CONTRIBUTING.md
 Identify role and phase
 Inspect existing contracts
 Define scope

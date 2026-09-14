@@ -12,6 +12,8 @@
     "validate:contracts": "node --import tsx scripts/validate-contracts.ts",
     "validate:content": "node --import tsx scripts/validate-content.ts",
     "validate:locales": "node --import tsx scripts/validate-locales.ts",
+    "validate:assets": "node --import tsx scripts/validate-assets.ts",
+    "validate:public-client": "node --import tsx scripts/validate-public-client.ts",
     "dev:api": "node --import tsx apps/api-server/src/main.ts",
     "db:migrate": "node --import tsx scripts/migrate-db.ts",
     "db:seed": "node --import tsx scripts/seed-db.ts"

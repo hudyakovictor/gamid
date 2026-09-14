@@ -11,29 +11,29 @@ AGENTS.md
   краткие обязательные правила для всех агентов,
   роли, границы директорий, contract-first и запреты.
 
-CONTRIBUTING.md
+docs/CONTRIBUTING.md
   ветки, commits, PR, review tags и merge policy.
 
-developing_status.md
+docs/developing_status.md
   текущая фаза, последовательность и acceptance gates.
 
 README.md
   навигация по проекту, текущий статус и ссылки.
 
-full_game_spec.md
+docs/full_game_spec.md
   каноничное продуктовое и игровое ТЗ.
 
-monetization.txt
-  коммерческая модель, Stars, Founder Packs, marketplace и GameFi.
+docs/monetization.txt
+  коммерческая модель, Stars, Founder Packs, anti-pay-to-win и deferred platform work.
 
-docs/MASTER_PROMPT.md
-  рабочий prompt для Agent Mode и его компактная версия.
-
-docs/ACCEPTANCE_MATRIX.md
+docs/acceptance_matrix.md
   проверяемые критерии приёмки.
 
-docs/RISK_REGISTER.md
-  риски и способы снижения.
+docs/p0_p1_remediation_plan.md
+  активные технические блокеры и порядок их закрытия.
+
+docs/security_architecture.md
+  security controls, trust boundaries and release requirements.
 ```
 
 ## Приоритет правил
@@ -43,11 +43,11 @@ docs/RISK_REGISTER.md
 ```text
 1. Security, privacy and data integrity.
 2. README and current developing_status phase.
-3. full_game_spec.md.
-4. docs/architecture and acceptance matrix.
-5. monetization rules.
-6. docs/MASTER_PROMPT.md.
-7. Current implementation.
+3. docs/full_game_spec.md and docs/academy_plan.md.
+4. docs/system_architecture.md and docs/acceptance_matrix.md.
+5. docs/security_architecture.md, deployment and observability controls.
+6. docs/monetization.txt rules and deferred-platform decisions.
+7. Current implementation, only where it does not contradict the documents above.
 ```
 
 ## Как использовать в Arena.ai
@@ -58,13 +58,14 @@ docs/RISK_REGISTER.md
 Репозиторий:
 https://github.com/hudyakovictor/ssarena
 
-Прочитай AGENTS.md, README.md, developing_status.md,
-CONTRIBUTING.md и docs/MASTER_PROMPT.md.
+Прочитай AGENTS.md, README.md, docs/README.md,
+docs/developing_status.md, docs/CONTRIBUTING.md и relevant canonical documents.
 
 Роль: Client Agent.
 Задача: <одна ограниченная задача>.
 Работай только в разрешённых директориях.
-Сначала проверь contracts и текущую фазу.
+Сначала проверь contracts, current phase, security boundary and acceptance gates.
+Не добавляй hidden/future truth или authoritative scoring в public client.
 В конце выведи обязательный отчёт агента.
 ```
 

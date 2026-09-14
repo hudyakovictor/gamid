@@ -216,6 +216,7 @@ pnpm test:e2e
 pnpm validate:contracts
 pnpm validate:content
 pnpm validate:locales
+pnpm validate:assets
 pnpm build
 ```
 
@@ -335,7 +336,7 @@ SECURITY: ...
 Перед кодом агент обязан:
 
 1. Прочитать `AGENTS.md`.
-2. Прочитать `developing_status.md`.
+2. Прочитать `docs/developing_status.md`.
 3. Определить текущую фазу.
 4. Найти существующий контракт.
 5. Проверить похожие модули.

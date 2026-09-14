@@ -51,6 +51,11 @@ GET /api/v1/admin/locales
 GET /api/v1/admin/ai-jobs
 GET /api/v1/admin/logs
 GET /api/v1/admin/audit
+GET /api/v1/admin/roadmap
+GET /api/v1/admin/roadmap/stages
+GET /api/v1/admin/roadmap/blockers
+GET /api/v1/admin/roadmap/dependency-graph
+GET /api/v1/admin/roadmap/releases/:releaseId/readiness
 ```
 
 Изменения:
@@ -64,6 +69,11 @@ POST /api/v1/admin/users/:id/unrestrict
 POST /api/v1/admin/scenarios/:id/review
 POST /api/v1/admin/locales/:id/publish
 POST /api/v1/admin/ai-jobs/:id/approve
+POST /api/v1/admin/roadmap/items/:itemId/status
+POST /api/v1/admin/roadmap/blockers/:blockerId/resolve
+POST /api/v1/admin/roadmap/gates/:gateId/evidence
+POST /api/v1/admin/roadmap/releases/:releaseId/review
+POST /api/v1/admin/roadmap/stages/:stageId/accept
 ```
 
 Каждый mutation endpoint обязан писать audit event.
@@ -81,7 +91,16 @@ POST /api/v1/admin/ai-jobs/:id/approve
 - ad revenue;
 - infrastructure health;
 - pending AI jobs;
-- alerts.
+- alerts;
+- roadmap readiness;
+- open P0/P1 blockers;
+- failed release gates;
+- evidence freshness;
+- agent approval queue.
+
+### Roadmap and release control
+
+CRM reads roadmap state through Admin API and never mutates the database directly. The screen must show stage readiness, hard dependencies, blockers, gate evidence, owners, expiry, and the exact reason a release is blocked. See `roadmap_and_release_control_plane.md`.
 
 ### Users
 

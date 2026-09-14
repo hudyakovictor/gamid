@@ -120,7 +120,7 @@ Prefer original/generated assets for:
 
 Licensed assets may be used for generic backgrounds, ambient textures, neutral interface elements, and temporary prototypes when the license is documented.
 
-Historical charts and market data are not decorative assets. They must use the scenario data/provenance pipeline described in `scenario_authoring_and_historical_data_spec.md` and `historical_data_api_integration_plan.md`.
+Historical charts and market data are not decorative assets. They must use the executable ScenarioPackage and validation boundaries in `../packages/contracts/src/scenario.ts` and `../packages/content/src/validate.ts`, together with the point-in-time and source requirements in `full_game_spec.md`.
 
 ## 7. Asset acceptance gates
 

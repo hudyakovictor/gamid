@@ -1,4 +1,4 @@
-# SIGNAL ARENA — System Architecture v4
+# SIGNAL ARENA — System Architecture
 
 ## 1. Monorepo structure
 
@@ -43,7 +43,41 @@ scripts/
 
 Client, API, CRM and landing are отдельными приложениями. Общие типы и бизнес-контракты находятся в `packages/`, а не копируются между приложениями.
 
-## 2. Game client stack
+## 2. Runtime topology
+
+Signal Arena uses two application surfaces with a private data plane:
+
+```text
+Public web surface
+  landing + static game client
+  CDN/WAF/TLS
+  no database or secret credentials
+
+Private application surface
+  API service
+  workers
+  separate admin service with private access policy
+
+Private data plane
+  PostgreSQL
+  Redis and queues
+  object storage
+  backups and observability
+```
+
+The public web surface can be deployed independently from the private application surface. The API and admin service may share a host in an early environment, but they remain separate processes, origins, runtime identities, authorization policies, and deployable units. The database is never publicly routable.
+
+## 3. Environment portability
+
+Local development uses SQLite and fixtures for fast feedback. Staging and production use PostgreSQL-ready repositories, private configuration, migrations, backups, and the same immutable application artifact. Environment-specific values are injected at runtime; production data and secrets never enter local or preview environments.
+
+The API is stateless between requests. Scenario truth, run state, score, balances, entitlements, and audit events live in authoritative stores. Redis and workers provide coordination and asynchronous work, not a second source of truth. The first Telegram alpha may use Vercel for the public edge, but Vercel is not the authoritative database or worker runtime; see `vercel_alpha_and_platform_strategy.md`.
+
+## 4. Security and observability boundaries
+
+The API validates every request and response through shared contracts, enforces authentication and authorization, applies timeouts and rate limits, and emits structured logs with request/trace IDs. The client never calls databases or external providers. Admin mutations require separate access control and append-only audit events. See `security_architecture.md`, `deployment_and_environments.md`, `performance_and_scaling.md`, and `observability_and_incident_response.md`.
+
+## 5. Game client stack
 
 ### Core
 
@@ -98,7 +132,7 @@ apps/game-client/src/
 
 Telegram SDK используется только через `platform/TelegramAdapter`.
 
-## 3. CRM stack
+## 6. CRM stack
 
 CRM не использует Phaser и rexUI.
 
@@ -116,7 +150,7 @@ CRM не использует Phaser и rexUI.
 
 Подробнее: `crm_stack_spec.md`.
 
-## 4. API server stack
+## 7. API server stack
 
 - Fastify.
 - TypeScript.
@@ -129,7 +163,7 @@ CRM не использует Phaser и rexUI.
 - Pino structured logging.
 - OpenTelemetry-ready tracing.
 
-## 5. Landing stack
+## 8. Landing stack
 
 - Next.js.
 - TypeScript.
@@ -138,7 +172,7 @@ CRM не использует Phaser и rexUI.
 - Direct links to Telegram Mini App.
 - No direct database access.
 
-## 6. Domain boundaries
+## 9. Domain boundaries
 
 ```text
 identity
@@ -171,11 +205,15 @@ moderation
 ai-jobs
 admin
 audit
+roadmap
+release-control
+blockers
+evidence
 ```
 
-Each module contains domain types, commands, queries, schemas, repositories, services, handlers and tests.
+Each module contains domain types, commands, queries, schemas, repositories, services, handlers and tests. Roadmap, gate, blocker, evidence, dependency, and release-control records are authoritative operational data exposed to Admin CRM through Admin API. See `roadmap_and_release_control_plane.md`.
 
-## 7. Public profiles and cosmetics
+## 10. Public profiles and cosmetics
 
 Cosmetics require backend support from the beginning because they become valuable when visible in tournament leaderboards and public profiles.
 
@@ -226,7 +264,7 @@ equipped_items
 
 Equipment changes presentation only. It cannot affect score, ranking, risk, evidence, scenario or mastery.
 
-## 8. Store
+## 11. Store
 
 Store is a primary navigation destination in MVP.
 
@@ -263,7 +301,7 @@ POST /api/v1/payments/telegram-stars/webhook
 POST /api/v1/orders/:id/refund
 ```
 
-## 9. Tournaments
+## 12. Tournaments
 
 Tournament backend is designed early, but the full UI and matchmaking can be feature-flagged.
 
@@ -282,7 +320,7 @@ tournament_audit
 
 Leaderboard profile click opens public profile drawer with equipped cosmetics and selected achievements.
 
-## 10. Localization
+## 13. Localization
 
 All UI and content are key-based.
 
@@ -314,7 +352,7 @@ ru-RU
 
 AI translation is draft-only until reviewed.
 
-## 11. AI integration
+## 14. AI integration
 
 ### AI provider
 
@@ -347,6 +385,8 @@ AI_FEATURE_TRANSLATION=true
 - support classification;
 - insight drafts.
 
+Agent jobs are isolated, asynchronous, typed, budgeted, and deny-by-default. They receive fixtures, redacted snapshots, or approved aggregates rather than unrestricted database access. See `ai_agent_operations_architecture.md` for agent roles, data classes, tool permissions, approval gates, and marketing guardrails.
+
 ### High-risk actions requiring approval
 
 - score changes;
@@ -357,7 +397,7 @@ AI_FEATURE_TRANSLATION=true
 - scenario publication;
 - token/on-chain activation.
 
-## 12. Observability
+## 15. Observability
 
 Structured logs:
 
@@ -397,7 +437,7 @@ ai.job.created
 ai.job.approved
 ```
 
-## 13. Feature flags
+## 16. Feature flags
 
 ```text
 FEATURE_SHOP
@@ -412,7 +452,7 @@ FEATURE_TON_CONNECT
 FEATURE_TOKEN_ROADMAP_BANNER
 ```
 
-## 14. MVP and deferred work
+## 17. MVP and deferred work
 
 ### Implement now
 
@@ -445,7 +485,7 @@ FEATURE_TOKEN_ROADMAP_BANNER
 - AI auto-ban;
 - multi-chain bridges.
 
-## 15. Deployment
+## 18. Deployment
 
 Early:
 

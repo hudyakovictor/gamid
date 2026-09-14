@@ -47,7 +47,7 @@ This document consolidates all crypto market competitors identified across the p
 - **Status**: Wave 1 ✅
 - **Price**: $24.99/month; "daily keys" = quota of free lessons/day (like chess.com 3 puzzles)
 - **Streaks/XP/leagues, but "without overdoing it in competition"** [130,131]; Rive animations, one file for all platforms
-- **Our advantage**: Quota model validated TWICE (Brilliant keys, chess.com puzzles) → our "3 fix-missions/day free" = legitimate v2 monetization candidate (not v1)
+- **Our advantage**: Quota model validated TWICE (Brilliant keys, chess.com puzzles) → our "3 fix-missions/day free" is a candidate for a later monetization phase, not the initial launch
 
 ### 7. Coinbase Learn & Earn
 - **Status**: Wave 2 ✅
@@ -104,8 +104,8 @@ This document consolidates all crypto market competitors identified across the p
 4. **KPI corridor is realistic** — Market D1 27-32% vs our 40; session 8-12 min and 2-4 runs = our design exactly (benchmarks 35-36)
 5. **Streak "day with closed error"** — Only honest version of Duolingo mechanic: reward for process analysis, not for click fact
 6. **Cosmetic-led monetization validated three times** — 42% IAP multiplayer; season $5-15/4-8 weeks; mid-spender = target, not kit
-7. **P2E model studied** — v1 without payments and v3 proof-of-skill = only surviving sequence
-8. **Phaser 4 risk mitigated** — Standard objects compatible, our stack (Graphics/Text/tweens/scenes) unaffected by breaking changes; Canvas deprecated — we already use WebGL; Upgrade to ^4.2.1 safe
+7. **Payment sequencing matters** — gameplay value and proof of learning come before optional digital goods; Signal Arena excludes P2E and tradable assets
+8. **Phaser 4 risk mitigated** — Standard objects compatible, our stack (Graphics/Text/tweens/scenes) unaffected by breaking changes; Canvas deprecated — we already use WebGL; the selected `^4.2.1` dependency remains a compatibility detail
 
 ### Underserved/Nich Markets (Our Blue Ocean)
 - **No trading educator teaches DECISIONS before click** — All teach execution only

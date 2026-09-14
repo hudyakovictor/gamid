@@ -1,4 +1,4 @@
-# Signal Arena Economy, Monetization & Referral Specification v1
+# Signal Arena Economy, Monetization & Referral Specification
 
 Status: proposed canonical economy baseline
 Date: 2026-09-14

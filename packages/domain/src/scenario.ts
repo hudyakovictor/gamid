@@ -7,6 +7,10 @@ import {
   type ScenarioPublicProjection,
   type ScenarioRevealProjection
 } from "../../contracts/src/scenario.js";
+import {
+  DecisionTraceSchema,
+  type DecisionTrace
+} from "../../contracts/src/run.js";
 
 export function toPublicScenarioProjection(
   scenario: ScenarioPackage
@@ -50,6 +54,27 @@ export function toScenarioRevealProjection(
     debrief,
     rematchLogic
   };
+}
+
+export function assertDecisionTraceAllowed(
+  scenario: ScenarioPackage,
+  decision: DecisionTrace
+): void {
+  const parsedDecision = DecisionTraceSchema.parse(decision);
+  assertActionAllowed(scenario, parsedDecision.action);
+
+  const availableSourceIds = new Set(
+    scenario.availableSources.map((source) => source.sourceId)
+  );
+  const uniqueEvidenceIds = new Set(parsedDecision.evidenceSourceIds);
+
+  if (uniqueEvidenceIds.size !== parsedDecision.evidenceSourceIds.length) {
+    throw new Error("Decision evidence cannot contain duplicate sources");
+  }
+
+  if (parsedDecision.evidenceSourceIds.some((sourceId) => !availableSourceIds.has(sourceId))) {
+    throw new Error(`Decision evidence source is unavailable for ${scenario.scenarioId}`);
+  }
 }
 
 export function assertActionAllowed(

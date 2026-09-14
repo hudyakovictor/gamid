@@ -46,5 +46,11 @@ jobs:
       - name: Locale validation
         run: pnpm validate:locales
 
+      - name: Asset manifest validation
+        run: pnpm validate:assets
+
+      - name: Public client boundary validation
+        run: pnpm validate:public-client
+
       - name: Build
         run: pnpm build

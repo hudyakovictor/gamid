@@ -1,4 +1,4 @@
-# SIGNAL ARENA — Monetization v2
+# SIGNAL ARENA — Monetization
 
 ## 1. Цель
 
@@ -13,8 +13,7 @@ Signal Arena монетизируется как образовательная 
 → удержание
 → Stars-выручка
 → реклама
-→ marketplace
-→ GameFi после доказательств
+→ non-competitive digital goods
 ```
 
 ## 2. Платёжный рельс Telegram
@@ -220,37 +219,23 @@ Net revenue = Stars net
 - content cost per completed scenario;
 - LTV/CAC after sufficient observation.
 
-## 11. Token communication
+## 11. Platform and economy boundary
 
-Рекомендуемый текст:
+Signal Arena launches as a standalone educational game. Academy, Exam, Arena, progression, scoring, and Pips work without a token, wallet, NFT, P2E, DAO, real trading, or marketplace.
 
-> Signal Arena запускается как самостоятельная образовательная игра. Все основные режимы и прогресс работают без токена. В будущем команда может рассмотреть TON-based on-chain economy, если накопленные продуктовые метрики, спрос игроков, безопасность экономики и юридическая проверка подтвердят целесообразность. Этот анонс не является обещанием выпуска, распределения, стоимости или доходности токена.
+These mechanisms are not part of the current product plan and must not appear in checkout copy, rewards, ranking, score, or gameplay logic. Optional future platform research cannot be treated as a promise or entitlement.
 
-### Запрещено
+### Forbidden communication
 
-- «Токен точно будет».
-- «Играйте сейчас — получите токены».
-- «Founder pack даёт право на токены».
-- «Токен будет расти».
-- «Ранние игроки заработают».
+- A token is guaranteed.
+- Play now to receive tokens.
+- A Founder Pack grants token rights.
+- A token will increase in value.
+- Early players will earn money.
 
-## 12. Token readiness gates
+## 12. Release boundary
 
-Рассмотрение токена возможно только после:
-
-```text
-устойчивого D30 retention
-реальных платящих пользователей
-стабильной Stars-выручки
-off-chain marketplace usage
-anti-bot/anti-sybil
-юридического анализа
-экономического stress-test
-смарт-контрактного аудита
-плана ликвидности
-```
-
-До этого токен остаётся roadmap-возможностью.
+Any future platform proposal would require a separately approved product decision, legal review, security review, economic stress test, and a new acceptance gate. It is not a dependency for the current game, client, API, economy, or release.
 
 ## 13. Experiments
 
@@ -280,7 +265,7 @@ Guardrails:
 Любой SKU обязан иметь один тип:
 
 ```ts
-type MarketplaceItemEffect =
+type CatalogItemEffect =
   | "COSMETIC"
   | "CONTENT_ACCESS"
   | "ANALYTICS_ACCESS"

@@ -6,7 +6,7 @@
 
 ## Cross-document contract
 
-Before any implementation task, read `AGENTS.md`, then `docs/README.md`, then only the relevant archive skill and project documents. The canonical product model is `../full_game_spec.md`; curriculum is `../academy_plan_99.md`; scenario contracts are `scenario_authoring_schema_99.md`; historical sources and APIs are `scenario_authoring_and_historical_data_spec.md` and `historical_data_api_integration_plan.md`; learning mechanics are in `learning_science_evidence_and_curriculum_plan.md`; motion is in `motion_interaction_system_spec.md`; asset workflow is in `asset_provenance_and_workflow.md`; economy is in `economy_monetization_referrals_v1.md`.
+Before any implementation task, read `AGENTS.md`, then `docs/README.md`, then only the relevant archive skill and project documents. The canonical product model is `full_game_spec.md`; curriculum is `academy_plan.md`; executable scenario contracts are `../packages/contracts/src/scenario.ts`; historical source planning is documented in `full_game_spec.md` until provider adapters are added; learning mechanics are in `academy_plan.md`; motion is in `motion_interaction_system_spec.md`; asset workflow is in `asset_provenance_and_workflow.md`; economy is in `economy_monetization_referrals.md`; security, deployment, scaling, and observability are in `security_architecture.md`, `deployment_and_environments.md`, `performance_and_scaling.md`, and `observability_and_incident_response.md`.
 
 Every focused task prompt must include a dependency block:
 
@@ -26,7 +26,7 @@ Acceptance gates:
 - ...
 ```
 
-When a shared concept changes, update the canonical source first, then dependent documents, fixtures, schemas, tests, prompts, and asset registry. Run the whole-system audit after the change.
+When a shared concept changes, update the canonical source first, then dependent documents, fixtures, schemas, tests, prompts, asset registry, and the internal roadmap item/gates. Run the whole-system audit after the change. Roadmap status is stored through the control-plane domain, not by editing this document.
 
 ## Universal Definition of Done
 
@@ -96,11 +96,11 @@ asset need
 
 ### Scenario gates
 
-Schema, source availability, future-leak, hidden Entity, import, reveal determinism, client projection, scoring, E2E, and human content checks in `scenario_authoring_schema_99.md`.
+Schema, source availability, future-leak, hidden Entity, import, reveal determinism, client projection, scoring, E2E, and human content checks in `../packages/contracts/src/scenario.ts` and `../packages/content/src/validate.ts`.
 
 ### Learning gates
 
-Theory Module, Worked Example, Skill Card, Card Header, recall, decision, debrief, and delayed rematch linkage in `learning_science_evidence_and_curriculum_plan.md`.
+Theory Module, Worked Example, Skill Card, Card Header, recall, decision, debrief, and delayed rematch linkage in `academy_plan.md` and `full_game_spec.md`.
 
 ### Motion gates
 
@@ -112,7 +112,11 @@ Stable assetId, origin, source, license/permission, commercial/modification righ
 
 ### Economy gates
 
-Server-authoritative ledger, idempotency, reconciliation, and no-pay-to-win checks in `economy_monetization_referrals_v1.md`.
+Server-authoritative ledger, idempotency, reconciliation, and no-pay-to-win checks in `economy_monetization_referrals.md`.
+
+## Roadmap control-plane rule
+
+Every implementation task must link to one roadmap item and one or more gates. A failed mandatory check creates or updates a blocker with evidence. A task is not ready for review until its required evidence is attached. A stage is not accepted until the Admin release-readiness calculation reports no unresolved release blocker and the human approval is recorded. See `roadmap_and_release_control_plane.md`.
 
 ## Periodic whole-system validation prompt
 

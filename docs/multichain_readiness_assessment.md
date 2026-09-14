@@ -2,29 +2,22 @@
 
 ## Verdict
 
-Да, архитектура уже продумана для будущего выхода за Telegram/TON, но важное различие:
+Архитектура должна поддерживать будущий выход за Telegram без копирования игры и backend. Сейчас это подготовка контрактов и границ, а не готовность к немедленному запуску всех платформ.
 
 ```text
-готовность ядра к другим платформам: высокая
-готовность реального запуска на Base/MiniPay/Solana: пока средняя
+Telegram Mini App: first launch target
+Base: first future web/platform adapter
+MiniPay/Celo: optional later distribution route
+Solana Mobile: separate packaging and publishing route
 ```
 
-Текущий ориентир:
+Текущий статус:
 
-| Область | Готовность |
-|---|---:|
-| Переиспользование игрового клиента | 90/100 |
-| Общий backend и matchmaking | 88/100 |
-| Платформенные adapters | 82/100 |
-| Identity linking | 78/100 |
-| Платёжные adapters | 76/100 |
-| Chain adapters | 74/100 |
-| Base launch readiness | 68/100 |
-| MiniPay launch readiness | 64/100 |
-| Solana Mobile launch readiness | 55/100 |
-| Реальная multichain operations readiness | 61/100 |
-
-Средняя готовность к будущему мультичейн-масштабированию: **75/100**.
+- game domain and scoring are designed to be platform-neutral;
+- identity linking is specified but not implemented in production;
+- platform and payment adapters are contracts/plans, not live integrations;
+- Telegram remains the only first-launch platform;
+- wallets, on-chain assets, and chain-dependent progression remain disabled in the MVP.
 
 ## Что уже правильно заложено
 
@@ -86,7 +79,7 @@ Telegram identity
 + wallet identity
 ```
 
-но связывание выполняется только по явному действию пользователя и challenge-signature.
+но связывание выполняется только по явному действию пользователя, authenticated session и challenge/signature or platform proof. `internalUserId` remains the canonical identity; Telegram IDs, Base accounts, wallet addresses, and other external subjects are linked identities, never substitutes for the internal user record. Wallet linking is disabled in the Telegram MVP.
 
 ## Base App
 
@@ -278,7 +271,7 @@ wallet capabilities
 
 ## Общая экономика
 
-Игроки из Telegram, Base и MiniPay могут играть вместе, если:
+Игроки из Telegram, Base и MiniPay смогут играть вместе после отдельной platform/security review, если:
 
 ```text
 same API
@@ -297,17 +290,21 @@ chain
 asset_type
 ```
 
-## Оценка будущей архитектуры
+## Migration rule
 
-Если сейчас реализовать только интерфейсы и контракты:
+Новая платформа не получает отдельную базу, scoring engine, progression system, user table или копию Phaser client. Добавляются только:
 
 ```text
-Telegram MVP → Base: 80–90% клиента переиспользуется
-Telegram MVP → MiniPay: 75–85%
-Telegram MVP → Solana Mobile: 60–75%
+platform adapter
+identity proof adapter
+capability map
+share/deep-link adapter
+payment adapter when legally approved
+optional wallet proof adapter
+platform-specific deployment and policy checks
 ```
 
-Это не означает 80% готового продукта. Это означает, что большая часть game domain и rendering logic не переписывается.
+Переход принимается только после contract tests, identity-linking tests, privacy review, payment review where applicable, and a rollback plan. Процент переиспользования не используется как acceptance metric until a real adapter has passed integration tests.
 
 ## Главный вывод
 

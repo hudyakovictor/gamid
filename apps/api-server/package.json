@@ -5,6 +5,8 @@
   "type": "module",
   "dependencies": {
     "@signal-arena/content": "workspace:*",
+    "@signal-arena/contracts": "workspace:*",
+    "@signal-arena/db": "workspace:*",
     "@signal-arena/domain": "workspace:*",
     "fastify": "^5.2.1"
   }

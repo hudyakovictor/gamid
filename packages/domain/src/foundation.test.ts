@@ -8,6 +8,7 @@ import {
 } from "../../content/src/validate.js";
 import {
   assertActionAllowed,
+  assertDecisionTraceAllowed,
   assertLoadoutMode,
   calculateQualityScore,
   toPublicScenarioProjection,
@@ -48,6 +49,27 @@ test("rejects actions that are not allowed by the scenario", () => {
     () => assertActionAllowed(starterScenario, "close_position"),
     /not allowed/
   );
+});
+
+test("validates decision evidence against the ScenarioPackage", () => {
+  assert.doesNotThrow(() => assertDecisionTraceAllowed(starterScenario, {
+    action: "wait_for_confirmation",
+    evidenceSourceIds: ["source_ohlcv_demo", "source_volume_demo"],
+    invalidation: "Close below the breakout level.",
+    confidence: 72
+  }));
+  assert.throws(() => assertDecisionTraceAllowed(starterScenario, {
+    action: "wait_for_confirmation",
+    evidenceSourceIds: ["source_ohlcv_demo", "source_ohlcv_demo"],
+    invalidation: "Close below the breakout level.",
+    confidence: 72
+  }), /duplicate/);
+  assert.throws(() => assertDecisionTraceAllowed(starterScenario, {
+    action: "wait_for_confirmation",
+    evidenceSourceIds: ["source_missing"],
+    invalidation: "Close below the breakout level.",
+    confidence: 72
+  }), /unavailable/);
 });
 
 test("enforces mode-specific loadout semantics", () => {

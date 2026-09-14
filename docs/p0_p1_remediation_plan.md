@@ -1,7 +1,7 @@
 # Signal Arena — P0/P1 Remediation Plan
 
 Date: 2026-09-14
-Source: `github_150_gap_audit.md`
+Source: current repository status and active acceptance documents.
 
 ## P0-0 — Confirm implementation repository
 
@@ -10,8 +10,8 @@ Source: `github_150_gap_audit.md`
 Checklist:
 
 - [ ] Confirm `hudyakovictor/ssarena` is the authoritative runtime repository.
-- [ ] If not, update `docs/repository_migration_map.md` with the authoritative repository.
-- [ ] Add an implementation status to `developing_status.md`.
+- [ ] If not, update `docs/README.md` with the authoritative repository.
+- [ ] Add an implementation status to `docs/developing_status.md`.
 - [ ] Define the first implementation branch and local run command.
 
 Gate:

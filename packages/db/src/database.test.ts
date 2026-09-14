@@ -8,6 +8,9 @@ import {
   createDatabase,
   createScenarioRun,
   getScenarioPackage,
+  getScenarioRun,
+  revealScenarioRun,
+  sealScenarioRun,
   seedFoundation
 } from "./index.js";
 
@@ -113,11 +116,71 @@ test("scenario run creation is idempotent by idempotency key", () => {
 
   assert.equal(first.runId, "run-001");
   assert.deepEqual(retry, first);
+  assert.throws(() => createScenarioRun(handle, {
+    runId: "run-003",
+    userId: "other-user",
+    scenarioId: starterScenario.scenarioId,
+    scenarioVersion: starterScenario.version,
+    idempotencyKey: "decision-submit-001"
+  }), /bound to a different/);
 
   const count = handle.sqlite
     .prepare("SELECT COUNT(*) AS count FROM scenario_runs")
     .get() as { count: number };
   assert.equal(count.count, 1);
+
+  closeDatabase(handle);
+});
+
+test("scenario run seal and reveal transitions are immutable and repeatable", () => {
+  const handle = createDatabase();
+  seedFoundation({ ...handle, scenario: starterScenario });
+  const input = {
+    runId: "run-lifecycle-001",
+    userId: "seed-user-001",
+    scenarioId: starterScenario.scenarioId,
+    scenarioVersion: starterScenario.version,
+    idempotencyKey: "lifecycle-001"
+  };
+  createScenarioRun(handle, input);
+  const decision = {
+    action: "wait_for_confirmation" as const,
+    evidenceSourceIds: ["source_ohlcv_demo", "source_volume_demo"],
+    invalidation: "Close below the failed breakout level.",
+    confidence: 72
+  };
+
+  assert.throws(
+    () => revealScenarioRun(handle, input.runId, input.userId),
+    /must be sealed/
+  );
+
+  const sealed = sealScenarioRun(handle, input.runId, input.userId, decision);
+  assert.equal(sealed.state, "sealed");
+  assert.deepEqual(sealed.decision, decision);
+  assert.deepEqual(
+    sealScenarioRun(handle, input.runId, input.userId, decision),
+    sealed
+  );
+  assert.throws(
+    () => sealScenarioRun(handle, input.runId, input.userId, {
+      ...decision,
+      confidence: 73
+    }),
+    /already sealed/
+  );
+
+  const revealed = revealScenarioRun(handle, input.runId, input.userId);
+  assert.equal(revealed.state, "revealed");
+  assert.equal(revealed.revealedAt !== null, true);
+  assert.deepEqual(
+    revealScenarioRun(handle, input.runId, input.userId),
+    revealed
+  );
+  assert.deepEqual(
+    getScenarioRun(handle, input.runId, input.userId),
+    revealed
+  );
 
   closeDatabase(handle);
 });

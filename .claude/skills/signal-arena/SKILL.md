@@ -23,13 +23,15 @@ Read `AGENTS.md` before any task. Then read `docs/README.md` and only the releva
 
 ## Relevant documents
 
-- `full_game_spec.md`
-- `academy_plan_99.md`
+- `docs/full_game_spec.md`
+- `docs/academy_plan.md`
 - `docs/implementation_plan_iteration_prompts.md`
-- `docs/learning_science_evidence_and_curriculum_plan.md`
-- `docs/scenario_authoring_schema_99.md`
-- `docs/historical_data_api_integration_plan.md`
-- `docs/economy_monetization_referrals_v1.md`
+- `docs/system_architecture.md`
+- `docs/security_architecture.md`
+- `docs/deployment_and_environments.md`
+- `docs/performance_and_scaling.md`
+- `docs/observability_and_incident_response.md`
+- `docs/economy_monetization_referrals.md`
 - `docs/asset_provenance_and_workflow.md` for asset/source work
 - `docs/motion_interaction_system_spec.md` for motion/interaction work
 
