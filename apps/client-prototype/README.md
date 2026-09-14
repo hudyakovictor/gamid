@@ -1,16 +1,34 @@
-# Signal Arena client prototype
+# Signal Arena client interface shell
 
-Iteration 1 client vertical slice.
+This is a framework-neutral, interactive UI shell prototype up to the panel boundary.
 
-Flow: Preload -> Main Menu -> Academy -> Scenario Brief -> Decision Workspace -> Reveal -> Debrief -> Rematch.
+## Implemented shell
 
-The prototype is intentionally framework-neutral and uses typed ScenarioPackage fixtures so it can be migrated into Phaser scenes without changing the domain contract.
+- fixed `100dvh` viewport with no page scroll;
+- compact one-row top bar without logo;
+- XP and Profile left, Pips/Stars/utilities right;
+- responsive mobile menu;
+- contextual route screens;
+- Academy and Mission rails with Previous/Next and counters;
+- Skill Hand rail;
+- fixed Decision Workspace chart frame;
+- persistent Decision Dock;
+- modal desktop panels and mobile bottom sheets;
+- backdrop click, Escape and explicit close affordance;
+- internal panel scroll container;
+- reduced-motion media query;
+- typed panel/screen/rail model for Phaser handoff.
 
-## Scope
+## Explicit boundary
 
-- public/hidden/reveal scenario layers
-- source groups and skill cards
-- Long / Short / Wait / No Trade actions
-- deterministic process scoring
-- debrief and rematch state
-- keyboard-friendly screen model
+Panel internals are intentionally not implemented. The prototype does not contain:
+
+- database, auth or persistence;
+- real historical providers;
+- production candle renderer;
+- server scoring;
+- real Pips ledger;
+- purchases or entitlements;
+- Phaser runtime.
+
+The shell is ready to use as a visual and interaction reference for the next Phaser implementation stage.

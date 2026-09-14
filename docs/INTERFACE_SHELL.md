@@ -1,76 +1,34 @@
-# Signal Arena interface shell
+# Interface shell boundary
 
-## Purpose
-
-This is a detailed client interface prototype up to the panel boundary. It defines screen composition, navigation, panel affordances, states and responsive presentation without implementing the internal content of the panels.
+The client prototype is intentionally implemented up to, but not inside, the panel boundary.
 
 ## Screens
 
 ```text
-Preload
-Main Menu
-Academy
-Mission Select
-Scenario Brief
-Decision Workspace
-Historical Reveal
-Score / Debrief
-Profile
-Collection
-Store
+Preload → Home → Academy/Mission → Scenario Brief → Decision Workspace → Reveal → Debrief → Rematch
+Profile · Collection · Store
 ```
 
-## Panel boundary
+## Interaction shell
 
-Panels are shells only. Their implementation is intentionally deferred:
+- one-row compact top bar without logo;
+- fixed application viewport;
+- internal scroll only for screen content and panel body;
+- backdrop, Escape, mobile Back and explicit close are the intended dismiss routes;
+- desktop modal, tablet overlay and mobile bottom-sheet presentations;
+- Academy, Mission and Skill Hand rails have explicit previous/next controls and counters;
+- Decision Dock remains visible in the workspace;
+- `prefers-reduced-motion` is supported.
+
+## Panel interiors intentionally deferred
 
 ```text
-PRICE
-CONTEXT
-FLOW
-EVENT
-PROJECT
-Skill Hand
-Decision Sheet
-Market Fact
-Plan Consequence
-Decision Quality
-The Helper
-Pause Menu
+PRICE · CONTEXT · FLOW · EVENT · PROJECT
+Skill Hand · Decision Sheet
+Market Fact · Plan Consequence · Decision Quality
+Notifications · Settings · Attachments
 ```
 
-Each panel supports these states:
+## Out of scope
 
-```text
-closed
-opening
-open
-expanded
-collapsed
-loading
-empty
-locked
-error
-completed
-```
-
-## Responsive presentation
-
-- Desktop: side or modal panel.
-- Tablet: overlay panel.
-- Mobile: bottom sheet, with full-screen fallback for Pause Menu.
-- Safe-area padding and no required horizontal scrolling.
-- Keyboard focus-visible styles.
-- Reduced-motion media query.
-
-## Explicitly not implemented
-
-- Internal source analysis.
-- Real candle renderer.
-- Production scoring.
-- Historical providers.
-- Database, auth or persistence.
-- Real purchases or ledger.
-- Phaser runtime.
-
-The shell is a visual and interaction reference for the next Phaser implementation stage.
+Database, auth, persistence, historical providers, production scoring, real economy ledger, purchases and Phaser runtime are not part of this prototype.
