@@ -1124,6 +1124,14 @@ Protocols: одинаковые для всех участников.
 Scoring: Decision Quality → Protocol adherence → Evidence quality → Follow-up quality → Speed.
 ```
 
+Cards и Protocols являются частью ScenarioPackage и могут использоваться в Academy, Exam, Arena, Collection, Rematch, Series, Tournament и других historical scenarios. Loadout выдаётся по режиму:
+
+```text
+Academy → Guided Loadout
+Exam → Curated Loadout
+Arena → Base / Personal Loadout
+```
+
 ---
 
 # 5. Cross-skill главы

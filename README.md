@@ -4,7 +4,7 @@
 
 Signal Arena учит принимать решения до раскрытия будущего рынка. Игрок работает с evidence, строит гипотезу, задаёт инвалидацию, выбирает действие, получает process score и исправляет повторяющиеся ошибки.
 
-Проект запускается без собственного токена и без blockchain-зависимости в core gameplay. Первая монетизация — Telegram Stars, Founder Support Packs, позже rewarded ads и marketplace. Возможный токен и другие блокчейны — только условные будущие этапы.
+Проект запускается без собственного токена, wallet, marketplace и blockchain-зависимости в core gameplay. Первая монетизация — Telegram Stars и Founder Support Packs после получения gameplay value; rewarded ads и другие платформы не входят в первый core slice.
 
 ## Быстрый старт для AI-агента
 
@@ -32,7 +32,7 @@ acceptance criteria
 ## Текущий статус
 
 ```text
-Phase: Foundation / pre-vertical-slice
+Phase: Foundation / executable scaffold in progress
 Overall specification readiness: 81/100
 Primary platform: Telegram Mini App
 Primary payment: Telegram Stars/XTR
@@ -74,7 +74,7 @@ auth
 ### Монетизация и экономика
 
 - [Monetization](monetization.txt) — Stars, Founder Packs, subscriptions, rewarded ads, anti-pay-to-win и token readiness gates.
-- [150 Analysis / Risk Reduction](docs/top_30_risk_reductions.md) — 100 проверок и 30 доработок с максимальным снижением риска.
+- [Repository Gap Audit](docs/github_150_gap_audit.md) — inventory audit и P0/P1 implementation gaps.
 - [Readiness Score](docs/signal_arena_readiness_score.md) — оценка ТЗ по 15 факторам.
 
 ### Архитектура
@@ -83,7 +83,7 @@ auth
 - [CRM Stack](docs/crm_stack_spec.md) — отдельный стек CRM и Admin API.
 - [Multichain Readiness](docs/multichain_readiness_assessment.md) — Base, MiniPay, Solana Mobile, adapters и общий backend.
 - [Interactive Motion](docs/interactive_motion_spec.md) — интерактив, анимации, haptics, sound и reduced motion.
-- [Monorepo Scaffold](docs/monorepo_scaffold.md) — рекомендуемые директории и правила заглушек.
+
 - [Repository Migration Map](docs/repository_migration_map.md) — соответствие старых и новых документов.
 
 ## Архитектурная схема
@@ -199,12 +199,11 @@ CRM работает только через Admin API. Прямой досту�
 
 ```text
 Free Academy/Arena
-→ Stars digital goods
+→ gameplay value
+→ optional Stars digital goods
 → Founder Support Packs
-→ Premium/Season Pass
-→ rewarded ads
-→ off-chain marketplace
-→ optional future on-chain layer
+→ optional rewarded ads
+→ future platform research outside MVP
 ```
 
 Покупки не могут изменять:
@@ -216,6 +215,19 @@ mastery
 risk rules
 tournament ranking
 future visibility
+```
+
+## ScenarioPackage и контентный поток
+
+ScenarioPackage включает `scenarioId`, `version`, `scenarioLevel`, `mode`, `assetId`, `decisionPoint.t0`, Source Groups, available sources/cards/protocols, hidden Entities, allowed actions, future segment, evaluation rules, versions, hashes, debrief и rematch logic. До Seal клиент получает только public projection.
+
+```text
+Draft
+→ Research
+→ Point-in-time validation
+→ Review
+→ Validated
+→ Published
 ```
 
 ## Контентный поток

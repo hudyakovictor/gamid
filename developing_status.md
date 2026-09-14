@@ -4,18 +4,18 @@ Status date: 2026-09-14
 
 ## Current status
 
-The repository currently contains the product specification, curriculum, learning-science design, scenario authoring model, historical-data integration plan, economy rules, motion system, asset provenance workflow, agent contract, and iteration gates.
+The repository contains the product specification, curriculum, economy rules, motion system, asset provenance workflow, agent contract, iteration gates, and the first executable foundation.
 
-The project is **not yet accepted as an executable implementation**. The next phase is implementation foundation, not additional planning research.
+The project is **not yet accepted as a complete executable implementation**. Iteration 00/01 now provides versioned contracts, content validation, deterministic foundation scoring, a public scenario projection endpoint, tests, scripts, and CI configuration.
 
 ## Immediate next sequence
 
 1. Confirm whether `hudyakovictor/ssarena` is the authoritative runtime repository.
-2. Create or connect the executable application scaffold.
-3. Add package scripts and local run commands.
-4. Add CI for install, typecheck, lint, tests, E2E, build, security, accessibility, and performance checks.
-5. Add versioned API contracts.
-6. Add database migrations and repeatable seed fixtures.
+2. Complete the executable application scaffold and install dependencies.
+3. Add database migrations and repeatable seed fixtures.
+4. Implement server-side auth and decision-run persistence.
+5. Implement the first vertical slice and ScenarioPackage reveal pipeline.
+6. Add security, accessibility, performance and release checks.
 7. Implement the first vertical slice:
 
 ```text

@@ -7,16 +7,13 @@ Signal Arena — вертикальная Telegram Mini App для тренир�
 ```text
 Telegram Mini App
 → free learning loop
-→ Telegram Stars monetization
-→ Founder Support Packs
-→ rewarded ads
+→ Academy / Exam / Arena / Rematch
 → tournaments and public profiles
-→ off-chain marketplace
-→ optional future TON layer
+→ optional Telegram Stars digital goods after gameplay value
 → optional future platform adapters
 ```
 
-Игра работает без токена. Токен может быть только условным будущим этапом и не входит в текущий checkout, scoring или progression.
+Игра работает без токена, кошелька и marketplace. Токен, on-chain features и другие платформы не входят в MVP, checkout, scoring или progression.
 
 ## 1. Stack
 
@@ -98,6 +95,10 @@ CRM works only through Admin API.
 - bridges;
 - multi-chain economy;
 - creator payouts;
+- marketplace;
+- wallet or on-chain identity;
+- play-to-earn;
+- sale of correct answers;
 - AI autonomous financial actions.
 
 ## 3. Primary navigation
@@ -171,27 +172,44 @@ historical situation
 ## 5. Scenario system
 
 ```text
-scenario_id
-asset_class
-asset_id
-market_segment
+scenarioId
+version
+scenarioLevel
+mode
+assetClass
+assetId
+marketSegment
 timeframe
-decision_point_t0
-available_source_groups
-available_sources
-available_cards
-active_protocols
-hidden_entities
-allowed_actions
-historical_future_segment
-evaluation_rules
-content_version
-data_version
-future_hash
-rubric_version
+decisionPoint.t0
+availableSourceGroups
+availableSources
+availableCards
+activeProtocols
+hiddenEntities
+allowedActions
+historicalFutureSegment
+historicalOutcome
+evaluationRules
+contentVersion
+dataVersion
+futureHash
+debrief
+rematchLogic
 locale
-review_status
+reviewStatus
 ```
+
+Canonical Source Groups:
+
+```text
+PRICE
+CONTEXT
+FLOW
+EVENT
+PROJECT
+```
+
+Beginner scenarios use the minimum sufficient evidence and normally no more than three Source Groups. The complete ScenarioPackage is server-side; the client receives only a public projection before Seal.
 
 Before decision, do not reveal future, exact date, recognizable identifiers, entity name or unique searchable metadata.
 
@@ -217,6 +235,25 @@ Delayed transfer in another asset, regime or timeframe.
 
 Same scenario version, same data, same rubric and server-authoritative scoring.
 
+Cards and Protocols are part of ScenarioPackage and may be used in Academy, Exam, Arena, Collection, Rematch, Series, Tournament and other historical scenarios. Loadout policy is mode-specific:
+
+```text
+Academy → Guided Loadout
+Exam → Curated Loadout
+Arena → Base / Personal Loadout
+```
+
+Canonical decisions:
+
+```text
+Long
+Short
+Wait
+No Trade
+```
+
+Additional in-position actions may include `Hold Plan`, `Reduce Risk`, `Close Position`, `Move Protection`, `Wait for Confirmation`, `Do Not Average` and `Invalidate Idea`.
+
 ## 7. Cards and entities
 
 Cards reveal, structure or protect decisions. They do not reveal answers, change outcome or grant score for clicks.
@@ -225,21 +262,21 @@ Entities are hidden causes of bad decisions, not combat monsters.
 
 ## 8. Score
 
-Score dimensions:
+Disclosed score dimensions:
 
 ```text
-context interpretation
- evidence quality
-hypothesis logic
-entry/condition
-stop/invalidation
-target/RR
-risk management
-discipline
-entity resistance
-protocol adherence
-confidence calibration
+Decision Quality
+Protocol Adherence
+Evidence Quality
+Follow-up Decision Quality
+Risk Management
+Invalidation
+Discipline
+Entity Resistance
+Confidence Calibration
 ```
+
+Quality score is in the range `0–100`. The detailed rubric may use contextual sub-rules, but PnL and direction guessing are never sufficient scoring criteria.
 
 Invariants:
 
@@ -356,7 +393,7 @@ selected_achievements
 season_stats
 ```
 
-Private fields remain hidden: payment history, wallet, weaknesses, Decision Trace, personal AI insights and Telegram identity.
+Private fields remain hidden: payment history, weaknesses, Decision Trace, personal AI insights and Telegram identity. Wallets and on-chain identities are outside the MVP.
 
 ## 13. Tournament backend
 

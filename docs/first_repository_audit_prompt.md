@@ -7,10 +7,10 @@
 
 Сначала проведи аудит репозитория: определи runtime, package scripts, client/server, тесты, migrations, API contracts и CI. Не меняй код до отчёта.
 
-Соблюдай canonical rules: единая группа Entity с exact English names; никаких Enemy/Boss split; Cards и Protocols ограничиваются режимом Academy/Exam/Arena; beginner-сценарии не перегружены Source Groups. Различай scenario level 1–99 и player level 0–99. Scenario использует point-in-time t0, hidden entities и historical reveal. Score server-authoritative, disclosed, учитывает process quality, risk, evidence, discipline и calibration; Pips/Stars не влияют на score. No Trade допустим. Не добавляй NFT, wallet, real trading или P2E.
+Соблюдай canonical rules: единая группа Entity с exact English names; никаких Enemy/Boss split; Cards и Protocols являются частью ScenarioPackage и могут использоваться в Academy, Exam, Arena, Collection, Rematch, Series и Tournament; beginner-сценарии не перегружены Source Groups. Различай scenario level 1–99 и player level 0–99. Scenario использует point-in-time t0, hidden entities и historical reveal. Score server-authoritative, disclosed, учитывает process quality, risk, evidence, discipline и calibration; Pips/Stars не влияют на score. No Trade допустим. Не добавляй NFT, wallet, real trading или P2E.
 
 Проверь также:
-- максимум 5 Source Groups и минимум достаточных источников для beginner;
+- ровно пять canonical Source Groups: PRICE, CONTEXT, FLOW, EVENT, PROJECT; максимум 5 в сценарии и минимум достаточных источников для beginner;
 - Academy Guided Loadout, Exam Curated Loadout, Arena Base/Personal Loadout;
 - Long, Short, Wait, No Trade;
 - good process/bad outcome и bad process/lucky outcome;

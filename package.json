@@ -1,0 +1,24 @@
+{
+  "name": "@signal-arena/workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "node --import tsx --test packages/domain/src/*.test.ts",
+    "test:e2e": "node --import tsx --test tests/e2e/*.test.ts",
+    "validate:contracts": "node --import tsx scripts/validate-contracts.ts",
+    "validate:content": "node --import tsx scripts/validate-content.ts",
+    "validate:locales": "node --import tsx scripts/validate-locales.ts",
+    "dev:api": "node --import tsx apps/api-server/src/main.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.17.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
