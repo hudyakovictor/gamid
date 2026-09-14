@@ -31,7 +31,7 @@ AGENTS.md
 11. `economy_monetization_referrals.md` — Stars, Pips, sinks, monetization, referrals, ledger, and guardrails.
 12. `topbar_currency_ui_spec.md` — Stars and PipGem UI.
 13. `referral_and_growth_spec.md` — referral lifecycle and anti-abuse.
-14. `acceptance_matrix.md`, `security_architecture.md`, `deployment_and_environments.md`, `performance_and_scaling.md`, and `observability_and_incident_response.md` — acceptance, security, operations, and scaling.
+14. `acceptance_matrix.md`, `security_architecture.md`, `deployment_and_environments.md`, `performance_and_scaling.md`, and `observability_and_incident_response.md` — acceptance, security, operations, and scaling. Local API hardening is implemented; shared production controls remain gated.
 15. `vercel_alpha_and_platform_strategy.md` — alpha hosting, commercial transition, provider alternatives, portability, and migration triggers.
 16. `ai_agent_operations_architecture.md` — isolated agent roles, data boundaries, approvals, marketing analytics, and AI operations.
 17. `roadmap_and_release_control_plane.md` — machine-readable roadmap, gates, blockers, evidence, dependencies, releases, CI, and Admin CRM integration.

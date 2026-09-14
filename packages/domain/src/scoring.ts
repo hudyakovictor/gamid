@@ -1,4 +1,7 @@
-import type { ScoreDimension } from "../../contracts/src/scenario.js";
+import type {
+  ScoreDimension,
+  ScoreResult as ContractScoreResult
+} from "../../contracts/src/index.js";
 
 export const SCORE_DIMENSIONS = [
   "decision_quality",
@@ -14,11 +17,7 @@ export const SCORE_DIMENSIONS = [
 
 export type ScoreInput = Record<(typeof SCORE_DIMENSIONS)[number], number>;
 
-export type ScoreResult = {
-  score: number;
-  breakdown: ScoreInput;
-  rubricVersion: string;
-};
+export type ScoreResult = ContractScoreResult;
 
 const WEIGHTS: Record<(typeof SCORE_DIMENSIONS)[number], number> = {
   decision_quality: 0.2,

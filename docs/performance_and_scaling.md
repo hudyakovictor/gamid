@@ -6,7 +6,7 @@ Start with the smallest reliable system, but preserve boundaries that allow hori
 
 - stateless API instances behind a load balancer;
 - authoritative state in PostgreSQL, not process memory;
-- Redis for rate limits, short-lived coordination, and queue support;
+- Redis for shared rate limits, short-lived coordination, and queue support; the local in-memory limiter is development-only and cannot protect multiple API instances;
 - workers for provider ingestion, content jobs, analytics, payments, and notifications;
 - object storage and CDN for assets and large snapshots;
 - repositories and contracts that do not depend on a single process.
@@ -88,7 +88,7 @@ Use per-provider rate limits, concurrency caps, retry budgets, dead-letter handl
 
 ## Load test stages
 
-Before production scale claims:
+Before production scale claims, and before enabling more than one API instance:
 
 - baseline API latency and error rate;
 - concurrent public scenario reads;

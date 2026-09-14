@@ -7,6 +7,22 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      POSTGRES_TEST_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,3 +70,15 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Client prototype typecheck
+        run: pnpm client:typecheck
+
+      - name: Client prototype lint
+        run: pnpm client:lint
+
+      - name: Client prototype tests
+        run: pnpm client:test
+
+      - name: Client prototype build
+        run: pnpm client:build

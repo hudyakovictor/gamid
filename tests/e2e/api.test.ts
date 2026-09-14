@@ -14,6 +14,30 @@ test("health endpoint is available", async () => {
     service: "api-server"
   });
 
+  const readiness = await server.inject({ method: "GET", url: "/ready" });
+  assert.equal(readiness.statusCode, 200);
+  assert.deepEqual(readiness.json(), {
+    status: "ready",
+    service: "api-server"
+  });
+
+  await server.close();
+});
+
+test("readiness fails closed when an authoritative dependency is unavailable", async () => {
+  const server = buildServer({
+    readinessCheck: async () => {
+      throw new Error("database unavailable");
+    }
+  });
+  const response = await server.inject({ method: "GET", url: "/ready" });
+
+  assert.equal(response.statusCode, 503);
+  assert.deepEqual(response.json(), {
+    status: "not_ready",
+    service: "api-server"
+  });
+
   await server.close();
 });
 
@@ -100,9 +124,12 @@ test("scenario run API seals decisions and reveals server-only history after sea
       confidence: 72
     }
   });
-  const sealBody = sealResponse.json<{ data: { run: { state: string } } }>();
+  const sealBody = sealResponse.json<{
+    data: { run: { state: string; score?: unknown } }
+  }>();
   assert.equal(sealResponse.statusCode, 200);
   assert.equal(sealBody.data.run.state, "sealed");
+  assert.equal("score" in sealBody.data.run, false);
 
   const revealResponse = await server.inject({
     method: "GET",
@@ -110,12 +137,14 @@ test("scenario run API seals decisions and reveals server-only history after sea
   });
   const revealBody = revealResponse.json<{
     data: {
-      run: { state: string };
+      run: { state: string; score: { score: number; rubricVersion: string } };
       reveal: { hiddenEntities: string[]; historicalFutureSegment: unknown };
     };
   }>();
   assert.equal(revealResponse.statusCode, 200);
   assert.equal(revealBody.data.run.state, "revealed");
+  assert.equal(revealBody.data.run.score.score, 87);
+  assert.equal(revealBody.data.run.score.rubricVersion, "score-v1");
   assert.deepEqual(revealBody.data.reveal.hiddenEntities, ["fake_breakout_phantom"]);
   assert.equal(typeof revealBody.data.reveal.historicalFutureSegment, "object");
 

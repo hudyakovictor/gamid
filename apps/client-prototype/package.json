@@ -1,0 +1,17 @@
+{
+  "name": "@signal-arena/client-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint src",
+    "test": "node --import tsx --test src/*.test.ts",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.4.3"
+  }
+}

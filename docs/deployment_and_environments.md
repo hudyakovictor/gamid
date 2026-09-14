@@ -91,7 +91,8 @@ Configuration is read at startup and validated before the process accepts traffi
 
 - environment name;
 - public origins and CORS allowlist;
-- database URL and pool limits;
+- `DB_DRIVER=sqlite|postgres`, database URL, and pool limits;
+- `DB_AUTO_MIGRATE=true` only for explicit non-production local/staging startup checks;
 - Redis/queue endpoint;
 - provider allowlist and timeout policy;
 - Telegram and payment configuration;
@@ -108,7 +109,10 @@ The application fails closed on missing production configuration. It must not si
 - migration lock prevents concurrent runners;
 - seed is never run against production unless the command is explicitly production-safe;
 - restore drills are performed before accepting a release that changes persistence;
-- repositories remain PostgreSQL-ready even while local SQLite is used.
+- the API consumes a `PersistencePort`; `SqlitePersistenceAdapter` is the local implementation and `PostgresPersistenceAdapter` is the PostgreSQL runtime implementation;
+- PostgreSQL migrations run through the explicit `db:migrate:postgres` release step; API startup never auto-migrates production;
+- PostgreSQL pool readiness verifies the authoritative schema and graceful shutdown closes the pool;
+- migration rehearsal, backup/restore drill, staging evidence, and shared production rate limiting remain required before production.
 
 ## Release flow
 
@@ -144,10 +148,12 @@ Every service must be portable through a container or reproducible build, enviro
 
 Every service exposes:
 
-- liveness: process is running;
-- readiness: dependencies and migrations are usable;
+- liveness: `GET /health` confirms the process is running;
+- readiness: `GET /ready` verifies dependencies and the migrated authoritative schema;
 - version/build metadata without secrets;
 - graceful shutdown that stops intake, drains work, and closes DB/queue connections.
+
+The API process handles `SIGINT`/`SIGTERM`, drains Fastify, and closes the PostgreSQL pool or SQLite handle. A readiness failure returns HTTP 503 and must prevent traffic promotion.
 
 Readiness must fail when the service cannot safely serve authoritative requests.
 

@@ -1,6 +1,6 @@
 # Signal Arena client interface shell
 
-This is a framework-neutral, interactive UI shell prototype up to the panel boundary.
+This is a Vite-packaged, framework-neutral, interactive UI shell prototype up to the panel boundary. It is a typed workspace package, not the production Phaser client.
 
 ## Implemented shell
 
@@ -32,6 +32,21 @@ Panel internals are intentionally not implemented. The prototype does not contai
 - Phaser runtime.
 
 The shell is ready to use as a visual and interaction reference for the next Phaser implementation stage.
+
+## Package commands
+
+From the repository root:
+
+```text
+pnpm client:typecheck
+pnpm client:lint
+pnpm client:test
+pnpm client:build
+```
+
+`index.html` is the Vite preview entry and `vite.config.ts` defines the package build/server boundary. `interface-shell.html` remains a standalone visual reference fixture. The typed model in `src/` is imported by `src/main.ts` at preview bootstrap and supplies the screen, panel and Phaser handoff registries.
+
+Viewport and interaction acceptance inputs are listed in `viewport-qa.json`. Its status remains `planned` until browser screenshots, accessibility evidence and reduced-motion evidence are attached.
 
 ## Server-authoritative boundary
 

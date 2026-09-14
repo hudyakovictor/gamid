@@ -15,6 +15,7 @@ packages/
   db/
   content/
   adapters/
+  providers/
   analytics/
   config/
   ui-game/
@@ -156,8 +157,10 @@ CRM не использует Phaser и rexUI.
 - TypeScript.
 - Zod.
 - Drizzle ORM.
-- SQLite для раннего MVP.
-- PostgreSQL-ready repository interfaces.
+- SQLite для локальной разработки и раннего MVP.
+- `PersistencePort` repository boundary with `SqlitePersistenceAdapter` and `PostgresPersistenceAdapter` implementations.
+- Explicit `DB_DRIVER` selection; no silent SQLite fallback when PostgreSQL is configured.
+- `/health` liveness and `/ready` dependency/schema readiness endpoints; graceful pool/database shutdown.
 - WebSockets для presence/realtime.
 - Redis-ready abstraction для rate limits, queues and jobs.
 - Pino structured logging.

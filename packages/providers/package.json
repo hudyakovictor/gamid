@@ -1,0 +1,12 @@
+{
+  "name": "@signal-arena/providers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@signal-arena/contracts": "workspace:*"
+  }
+}

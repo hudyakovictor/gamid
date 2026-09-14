@@ -19,7 +19,12 @@ Start at `README.md`.
 Executable contracts and validation are canonical for implementation boundaries:
 
 - `../packages/contracts/src/scenario.ts`
+- `../packages/contracts/src/provider.ts`
 - `../packages/content/src/validate.ts`
+- `../packages/providers/src/binance.ts`
+- `../packages/db/src/ports.ts`
+- `../packages/db/src/sqlite-adapter.ts`
+- `../packages/db/src/postgres-migrations.ts`
 
 ## Development and QA
 
@@ -49,9 +54,13 @@ Executable contracts and validation are canonical for implementation boundaries:
 
 ## Prototype and interface evidence
 
+- `../apps/client-prototype/package.json`
+- `../apps/client-prototype/index.html`
 - `../apps/client-prototype/README.md`
 - `../apps/client-prototype/interface-shell.html`
 - `../apps/client-prototype/src/index.ts`
+- `../apps/client-prototype/src/main.ts`
+- `../apps/client-prototype/viewport-qa.json` — planned browser/responsive/accessibility evidence
 
 ## Status and navigation
 

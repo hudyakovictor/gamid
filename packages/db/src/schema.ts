@@ -6,7 +6,8 @@ import {
   integer,
   primaryKey,
   sqliteTable,
-  text
+  text,
+  uniqueIndex
 } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -14,6 +15,83 @@ export const users = sqliteTable("users", {
   externalId: text("external_id").notNull().unique(),
   createdAt: text("created_at").notNull()
 });
+
+export const userIdentities = sqliteTable(
+  "user_identities",
+  {
+    identityId: text("identity_id").primaryKey(),
+    userId: text("user_id").notNull(),
+    provider: text("provider").notNull(),
+    providerUserId: text("provider_user_id").notNull(),
+    createdAt: text("created_at").notNull()
+  },
+  (table) => ({
+    userReference: foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.userId],
+      name: "user_identities_user_fk"
+    }),
+    providerIdentityUnique: uniqueIndex("user_identities_provider_user_unique")
+      .on(table.provider, table.providerUserId)
+  })
+);
+
+export const authReplayKeys = sqliteTable(
+  "auth_replay_keys",
+  {
+    replayKey: text("replay_key").primaryKey(),
+    expiresAt: text("expires_at").notNull()
+  },
+  (table) => ({
+    expiryIndex: index("idx_auth_replay_keys_expiry").on(table.expiresAt)
+  })
+);
+
+export const authSessions = sqliteTable(
+  "auth_sessions",
+  {
+    sessionId: text("session_id").primaryKey(),
+    userId: text("user_id").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    createdAt: text("created_at").notNull(),
+    expiresAt: text("expires_at").notNull(),
+    revokedAt: text("revoked_at")
+  },
+  (table) => ({
+    userReference: foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.userId],
+      name: "auth_sessions_user_fk"
+    }),
+    userActiveIndex: index("idx_auth_sessions_user_active").on(
+      table.userId,
+      table.expiresAt,
+      table.revokedAt
+    )
+  })
+);
+
+export const historicalSnapshots = sqliteTable(
+  "historical_snapshots",
+  {
+    snapshotId: text("snapshot_id").primaryKey(),
+    provider: text("provider").notNull(),
+    symbol: text("symbol").notNull(),
+    interval: text("interval").notNull(),
+    asOf: text("as_of").notNull(),
+    contentHash: text("content_hash").notNull().unique(),
+    snapshotJson: text("snapshot_json").notNull(),
+    createdAt: text("created_at").notNull()
+  },
+  (table) => ({
+    lookupIndex: index("idx_historical_snapshots_lookup").on(
+      table.provider,
+      table.symbol,
+      table.interval,
+      table.asOf
+    )
+  })
+);
 
 export const scenarios = sqliteTable(
   "scenarios",

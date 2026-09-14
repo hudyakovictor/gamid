@@ -5,13 +5,20 @@ import { starterScenario } from "../../content/src/fixtures/starter-scenario.js"
 import {
   applyMigrations,
   closeDatabase,
+  consumeAuthReplayKey,
+  createAuthSession,
   createDatabase,
   createScenarioRun,
+  getActiveAuthSession,
+  getHistoricalSnapshot,
+  getOrCreateUserForIdentity,
   getScenarioPackage,
   getScenarioRun,
+  revokeAuthSession,
   revealScenarioRun,
   sealScenarioRun,
-  seedFoundation
+  seedFoundation,
+  upsertHistoricalSnapshot
 } from "./index.js";
 
 test("migrations are idempotent and create the foundation schema", () => {
@@ -30,14 +37,127 @@ test("migrations are idempotent and create the foundation schema", () => {
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
     .all() as Array<{ name: string }>;
 
-  assert.equal(before.count, 1);
-  assert.equal(after.count, 1);
+
+  assert.equal(before.count, 3);
+  assert.equal(after.count, 3);
   assert.deepEqual(tables.map((table) => table.name), [
     "_migrations",
+    "auth_replay_keys",
+    "auth_sessions",
+    "historical_snapshots",
     "scenario_runs",
     "scenarios",
+    "user_identities",
     "users"
   ]);
+
+  closeDatabase(handle);
+});
+
+test("historical snapshots persist by content hash and remain point-in-time", () => {
+  const handle = createDatabase();
+  const snapshot = {
+    provider: "binance" as const,
+    symbol: "BTCUSDT",
+    interval: "1h",
+    asOf: "2026-09-14T12:00:00.000Z",
+    candles: [{
+      openTime: "2026-09-14T11:00:00.000Z",
+      closeTime: "2026-09-14T11:59:59.999Z",
+      open: "100",
+      high: "102",
+      low: "99",
+      close: "101",
+      volume: "42.5"
+    }],
+    provenance: {
+      sourceReference: "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h",
+      observedAt: "2026-09-14T12:00:00.000Z",
+      availableAt: "2026-09-14T12:01:00.000Z",
+      timezone: "UTC",
+      reliability: "high" as const,
+      contentHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      revisionStatus: "original" as const
+    }
+  };
+
+  const first = upsertHistoricalSnapshot(handle, snapshot, "snapshot-001");
+  const retry = upsertHistoricalSnapshot(handle, snapshot, "snapshot-002");
+  assert.equal(first.snapshotId, "snapshot-001");
+  assert.equal(retry.snapshotId, "snapshot-001");
+  assert.deepEqual(getHistoricalSnapshot(handle, "snapshot-001")?.snapshot, snapshot);
+  assert.equal(getHistoricalSnapshot(handle, "snapshot-002"), undefined);
+
+  closeDatabase(handle);
+});
+
+test("platform identities map to one internal user and remain idempotent", () => {
+  const handle = createDatabase();
+
+  const first = getOrCreateUserForIdentity(handle, {
+    provider: "telegram",
+    providerUserId: "777001"
+  });
+  const retry = getOrCreateUserForIdentity(handle, {
+    provider: "telegram",
+    providerUserId: "777001"
+  });
+  const otherProvider = getOrCreateUserForIdentity(handle, {
+    provider: "base",
+    providerUserId: "777001"
+  });
+
+  assert.equal(first.created, true);
+  assert.equal(retry.created, false);
+  assert.equal(retry.userId, first.userId);
+  assert.notEqual(otherProvider.userId, first.userId);
+
+  closeDatabase(handle);
+});
+
+test("auth replay keys are atomic and expire without process memory", () => {
+  const handle = createDatabase();
+  const nowMs = Date.parse("2026-09-14T12:00:00.000Z");
+  const expiresAtMs = nowMs + 60_000;
+
+  assert.equal(consumeAuthReplayKey(handle, "hash-001", expiresAtMs, nowMs), true);
+  assert.equal(consumeAuthReplayKey(handle, "hash-001", expiresAtMs, nowMs), false);
+  assert.equal(
+    consumeAuthReplayKey(handle, "hash-001", nowMs + 120_000, nowMs + 120_000),
+    true
+  );
+
+  closeDatabase(handle);
+});
+
+test("auth sessions are lookupable, expiry-aware and revocable", () => {
+  const handle = createDatabase();
+  seedFoundation({ ...handle, scenario: starterScenario });
+  const createdAt = "2026-09-14T12:00:00.000Z";
+  const expiresAt = "2026-09-14T13:00:00.000Z";
+
+  createAuthSession(handle, {
+    sessionId: "session-001",
+    userId: "seed-user-001",
+    tokenHash: "sha256:session-token",
+    createdAt,
+    expiresAt
+  });
+
+  assert.equal(
+    getActiveAuthSession(handle, "sha256:session-token", "2026-09-14T12:30:00.000Z")?.userId,
+    "seed-user-001"
+  );
+  assert.equal(
+    getActiveAuthSession(handle, "sha256:session-token", "2026-09-14T13:00:00.000Z"),
+    undefined
+  );
+  assert.equal(revokeAuthSession(handle, "session-001", "2026-09-14T12:40:00.000Z"), true);
+  assert.equal(revokeAuthSession(handle, "session-001", "2026-09-14T12:41:00.000Z"), false);
+  assert.equal(
+    getActiveAuthSession(handle, "sha256:session-token", "2026-09-14T12:30:00.000Z"),
+    undefined
+  );
 
   closeDatabase(handle);
 });
@@ -155,18 +275,33 @@ test("scenario run seal and reveal transitions are immutable and repeatable", ()
     /must be sealed/
   );
 
-  const sealed = sealScenarioRun(handle, input.runId, input.userId, decision);
+  const score = {
+    score: 87,
+    breakdown: {
+      decision_quality: 88,
+      protocol_adherence: 90,
+      evidence_quality: 84,
+      follow_up_decision_quality: 80,
+      risk_management: 92,
+      invalidation: 86,
+      discipline: 95,
+      entity_resistance: 82,
+      confidence_calibration: 89
+    },
+    rubricVersion: "score-v1"
+  };
+  const sealed = sealScenarioRun(handle, input.runId, input.userId, decision, score);
   assert.equal(sealed.state, "sealed");
   assert.deepEqual(sealed.decision, decision);
   assert.deepEqual(
-    sealScenarioRun(handle, input.runId, input.userId, decision),
+    sealScenarioRun(handle, input.runId, input.userId, decision, score),
     sealed
   );
   assert.throws(
     () => sealScenarioRun(handle, input.runId, input.userId, {
       ...decision,
       confidence: 73
-    }),
+    }, score),
     /already sealed/
   );
 

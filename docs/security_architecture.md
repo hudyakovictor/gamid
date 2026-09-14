@@ -45,7 +45,9 @@ CSP violations should be reported to observability without collecting sensitive 
 
 ## Identity and sessions
 
-Planned production requirements:
+Foundation requirements now implemented locally: Telegram identity verification, replay rejection, hashed HttpOnly sessions, logout/revocation, cookie-mutation CSRF checks, bounded request body, exact CORS allowlist, baseline security headers, request IDs, and an in-memory rate-limit fallback for development only.
+
+Production requirements still open:
 
 - verify Telegram identity data server-side;
 - reject expired and replayed initialization data;
@@ -65,9 +67,10 @@ Every endpoint must have:
 - Zod request and response validation;
 - explicit authentication and authorization policy;
 - bounded body, query, pagination, and upload sizes;
-- rate limits by identity and IP with trusted proxy configuration;
+- shared Redis-compatible rate limits by identity and IP with trusted proxy configuration; the current in-memory fallback is not accepted for production or multi-instance traffic;
 - request timeout and downstream timeout;
-- exact CORS allowlist, never wildcard credentials;
+- CSRF protection for cookie-authenticated mutations;
+- exact CORS allowlist, never wildcard credentials; the API rejects undeclared Origins;
 - generic public error responses with internal error codes in logs;
 - parameterized database access through repositories;
 - idempotency for retryable mutations;
