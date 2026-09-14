@@ -7,14 +7,17 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
-    "test": "node --import tsx --test packages/contracts/src/*.test.ts packages/domain/src/*.test.ts",
+    "test": "node --import tsx --test packages/contracts/src/*.test.ts packages/domain/src/*.test.ts packages/db/src/*.test.ts",
     "test:e2e": "node --import tsx --test tests/e2e/*.test.ts",
     "validate:contracts": "node --import tsx scripts/validate-contracts.ts",
     "validate:content": "node --import tsx scripts/validate-content.ts",
     "validate:locales": "node --import tsx scripts/validate-locales.ts",
-    "dev:api": "node --import tsx apps/api-server/src/main.ts"
+    "dev:api": "node --import tsx apps/api-server/src/main.ts",
+    "db:migrate": "node --import tsx scripts/migrate-db.ts",
+    "db:seed": "node --import tsx scripts/seed-db.ts"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.10.2",
     "@typescript-eslint/parser": "^8.18.0",
     "eslint": "^9.17.0",

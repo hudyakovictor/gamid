@@ -8,6 +8,7 @@ import {
   LoadoutSchema,
   ScenarioPackageSchema,
   ScenarioPublicProjectionSchema,
+  ScenarioRevealProjectionSchema,
   SourceGroupSchema
 } from "./scenario.js";
 
@@ -62,6 +63,23 @@ test("public projection contract excludes server-only scenario fields", () => {
   assert.equal("historicalFutureSegment" in parsed, false);
   assert.equal("historicalOutcome" in parsed, false);
   assert.equal("evaluationRules" in parsed, false);
+});
+
+test("reveal projection contains server-only fields and no public-only evidence", () => {
+  const projection = ScenarioRevealProjectionSchema.parse({
+    scenarioId: starterScenario.scenarioId,
+    version: starterScenario.version,
+    hiddenEntities: starterScenario.hiddenEntities,
+    historicalFutureSegment: starterScenario.historicalFutureSegment,
+    historicalOutcome: starterScenario.historicalOutcome,
+    evaluationRules: starterScenario.evaluationRules,
+    debrief: starterScenario.debrief,
+    rematchLogic: starterScenario.rematchLogic
+  });
+
+  assert.deepEqual(projection.hiddenEntities, ["fake_breakout_phantom"]);
+  assert.equal("availableSources" in projection, false);
+  assert.equal("assetId" in projection, false);
 });
 
 test("shared enum contracts contain all canonical decision actions", () => {

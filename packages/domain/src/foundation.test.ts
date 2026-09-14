@@ -2,12 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { starterScenario } from "../../content/src/fixtures/starter-scenario.js";
-import { validateScenarioPackage } from "../../content/src/validate.js";
+import {
+  importScenarioPackage,
+  validateScenarioPackage
+} from "../../content/src/validate.js";
 import {
   assertActionAllowed,
   assertLoadoutMode,
   calculateQualityScore,
   toPublicScenarioProjection,
+  toScenarioRevealProjection,
   type ScoreInput
 } from "./index.js";
 
@@ -20,6 +24,22 @@ test("validates the starter ScenarioPackage and protects its public projection",
   assert.equal("historicalFutureSegment" in publicProjection, false);
   assert.equal("historicalOutcome" in publicProjection, false);
   assert.equal("evaluationRules" in publicProjection, false);
+});
+
+test("imports JSON ScenarioPackages and keeps reveal data out of public projection", () => {
+  const imported = importScenarioPackage(JSON.stringify(starterScenario));
+  const reveal = toScenarioRevealProjection(imported);
+
+  assert.deepEqual(reveal.hiddenEntities, ["fake_breakout_phantom"]);
+  assert.equal(reveal.historicalFutureSegment.contentHash, imported.futureHash);
+  assert.equal("historicalFutureSegment" in toPublicScenarioProjection(imported), false);
+});
+
+test("rejects a ScenarioPackage with a mismatched future hash", () => {
+  assert.throws(() => validateScenarioPackage({
+    ...starterScenario,
+    futureHash: "sha256:wrong-future-hash"
+  }), /future hash/);
 });
 
 test("rejects actions that are not allowed by the scenario", () => {

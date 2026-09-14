@@ -124,6 +124,17 @@ export const ScenarioPublicProjectionSchema = ScenarioPackageSchema.omit({
   rematchLogic: true
 }).strict();
 
+export const ScenarioRevealProjectionSchema = ScenarioPackageSchema.pick({
+  scenarioId: true,
+  version: true,
+  hiddenEntities: true,
+  historicalFutureSegment: true,
+  historicalOutcome: true,
+  evaluationRules: true,
+  debrief: true,
+  rematchLogic: true
+}).strict();
+
 export const LoadoutSchema = z.object({
   mode: ScenarioModeSchema,
   kind: z.enum(["guided", "curated", "base", "personal"]),
@@ -138,4 +149,5 @@ export type ScoreDimension = z.infer<typeof ScoreDimensionSchema>;
 export type ScenarioSource = z.infer<typeof ScenarioSourceSchema>;
 export type ScenarioPackage = z.infer<typeof ScenarioPackageSchema>;
 export type ScenarioPublicProjection = z.infer<typeof ScenarioPublicProjectionSchema>;
+export type ScenarioRevealProjection = z.infer<typeof ScenarioRevealProjectionSchema>;
 export type Loadout = z.infer<typeof LoadoutSchema>;

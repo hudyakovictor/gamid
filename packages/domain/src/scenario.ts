@@ -4,7 +4,8 @@ import {
   type Loadout,
   type ScenarioMode,
   type ScenarioPackage,
-  type ScenarioPublicProjection
+  type ScenarioPublicProjection,
+  type ScenarioRevealProjection
 } from "../../contracts/src/scenario.js";
 
 export function toPublicScenarioProjection(
@@ -22,6 +23,33 @@ export function toPublicScenarioProjection(
   } = parsed;
 
   return publicProjection;
+}
+
+export function toScenarioRevealProjection(
+  scenario: ScenarioPackage
+): ScenarioRevealProjection {
+  const parsed = ScenarioPackageSchema.parse(scenario);
+  const {
+    scenarioId,
+    version,
+    hiddenEntities,
+    historicalFutureSegment,
+    historicalOutcome,
+    evaluationRules,
+    debrief,
+    rematchLogic
+  } = parsed;
+
+  return {
+    scenarioId,
+    version,
+    hiddenEntities,
+    historicalFutureSegment,
+    historicalOutcome,
+    evaluationRules,
+    debrief,
+    rematchLogic
+  };
 }
 
 export function assertActionAllowed(

@@ -20,13 +20,43 @@ export function validateScenarioPackage(input: unknown): ScenarioPackage {
     throw new Error(`Beginner scenario ${scenario.scenarioId} exceeds three Source Groups`);
   }
 
-  if (scenario.availableSources.some((source) => source.availableAt > scenario.decisionPoint.t0)) {
-    throw new Error(`Scenario ${scenario.scenarioId} contains a source after t0`);
+  const decisionTime = Date.parse(scenario.decisionPoint.t0);
+
+  if (scenario.availableSources.some((source) => {
+    const observedTime = Date.parse(source.observedAt);
+    const availableTime = Date.parse(source.availableAt);
+    const publishedTime = source.publishedAt ? Date.parse(source.publishedAt) : undefined;
+
+    return availableTime < observedTime
+      || (publishedTime !== undefined && availableTime < publishedTime)
+      || availableTime > decisionTime;
+  })) {
+    throw new Error(`Scenario ${scenario.scenarioId} contains an unavailable or post-t0 source`);
   }
 
-  if (scenario.historicalFutureSegment.from <= scenario.decisionPoint.t0) {
-    throw new Error(`Scenario ${scenario.scenarioId} future starts before t0`);
+  const futureStart = Date.parse(scenario.historicalFutureSegment.from);
+  const futureEnd = Date.parse(scenario.historicalFutureSegment.to);
+  if (futureStart <= decisionTime || futureEnd <= futureStart) {
+    throw new Error(`Scenario ${scenario.scenarioId} has an invalid historical future range`);
+  }
+
+  if (scenario.futureHash !== scenario.historicalFutureSegment.contentHash) {
+    throw new Error(`Scenario ${scenario.scenarioId} future hash does not match its future segment`);
   }
 
   return scenario;
+}
+
+export function importScenarioPackage(input: unknown): ScenarioPackage {
+  let decoded: unknown = input;
+
+  if (typeof input === "string") {
+    try {
+      decoded = JSON.parse(input) as unknown;
+    } catch {
+      throw new Error("ScenarioPackage import received invalid JSON");
+    }
+  }
+
+  return validateScenarioPackage(decoded);
 }
