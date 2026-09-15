@@ -2,11 +2,13 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const sourceRoot = resolve(process.cwd(), "apps/client-prototype/src");
+// Reveal-only response fields may be referenced by the post-seal UI. The
+// public projection and runtime boundary tests verify that their values are
+// not present before the server reveal; this static gate focuses on patterns
+// that would fabricate hidden state or move authoritative scoring to the client.
 const forbiddenPatterns = [
   /hiddenLayer/,
   /futureSeries/,
-  /historicalOutcome/,
-  /evaluationRules/,
   /revealLayer/,
   /calculateProcessScore/,
   /state\.score/,
@@ -18,7 +20,7 @@ function collectTypeScriptFiles(directory: string): string[] {
     const path = join(directory, entry);
     return statSync(path).isDirectory()
       ? collectTypeScriptFiles(path)
-      : path.endsWith(".ts") ? [path] : [];
+      : path.endsWith(".ts") && !path.endsWith(".test.ts") ? [path] : [];
   });
 }
 

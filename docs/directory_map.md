@@ -25,6 +25,7 @@ Executable contracts and validation are canonical for implementation boundaries:
 - `../packages/db/src/ports.ts`
 - `../packages/db/src/sqlite-adapter.ts`
 - `../packages/db/src/postgres-migrations.ts`
+- `../packages/db/src/postgres-adapter.ts`
 
 ## Development and QA
 
@@ -58,8 +59,11 @@ Executable contracts and validation are canonical for implementation boundaries:
 - `../apps/client-prototype/index.html`
 - `../apps/client-prototype/README.md`
 - `../apps/client-prototype/interface-shell.html`
-- `../apps/client-prototype/src/index.ts`
 - `../apps/client-prototype/src/main.ts`
+- `../apps/client-prototype/src/api-client.ts`
+- `../apps/client-prototype/src/client-flow.ts`
+- `../apps/client-prototype/src/phaser-runtime.ts`
+- `../apps/client-prototype/src/scenes.ts`
 - `../apps/client-prototype/viewport-qa.json` — planned browser/responsive/accessibility evidence
 
 ## Status and navigation

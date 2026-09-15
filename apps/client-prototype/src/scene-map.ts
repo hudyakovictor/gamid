@@ -5,6 +5,16 @@ export interface PhaserSceneMapEntry {
   terminal: boolean;
 }
 
+export const runtimeSceneKeys = [
+  "BootScene",
+  "ScenarioBriefScene",
+  "DecisionWorkspaceScene",
+  "HistoricalRevealScene",
+  "DebriefScene",
+  "RematchScene",
+  "ErrorScene"
+] as const;
+
 export const phaserSceneMap: PhaserSceneMapEntry[] = [
   { scene: 'BootScene', prototypeScreen: 'preload', responsibility: 'Load config, fonts, audio and locale.', terminal: false },
   { scene: 'MainMenuScene', prototypeScreen: 'main-menu', responsibility: 'Route player to Academy, Profile or Mission.', terminal: false },
