@@ -15,13 +15,22 @@ import {
 
 export { runtimeSceneKeys };
 
+function getInitialViewport(parent: HTMLElement | string): { width: number; height: number } {
+  const element = typeof parent === "string" ? document.getElementById(parent) : parent;
+  return {
+    width: Math.max(1, element?.clientWidth ?? window.innerWidth),
+    height: Math.max(1, element?.clientHeight ?? window.innerHeight)
+  };
+}
+
 export function createSignalArenaGame(parent: HTMLElement | string = "game-root"): Phaser.Game {
   const flow = createScenarioFlow(createDefaultApiClient());
+  const viewport = getInitialViewport(parent);
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent,
-    width: "100%",
-    height: "100%",
+    width: viewport.width,
+    height: viewport.height,
     backgroundColor: "#07131c",
     callbacks: {
       preBoot: (bootedGame) => {
@@ -42,8 +51,8 @@ export function createSignalArenaGame(parent: HTMLElement | string = "game-root"
     },
     scale: {
       mode: Phaser.Scale.RESIZE,
-      width: "100%",
-      height: "100%"
+      width: viewport.width,
+      height: viewport.height
     },
     render: {
       antialias: true,
