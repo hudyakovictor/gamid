@@ -16,12 +16,18 @@ import {
 export { runtimeSceneKeys };
 
 export function createSignalArenaGame(parent: HTMLElement | string = "game-root"): Phaser.Game {
+  const flow = createScenarioFlow(createDefaultApiClient());
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent,
     width: "100%",
     height: "100%",
     backgroundColor: "#07131c",
+    callbacks: {
+      preBoot: (bootedGame) => {
+        bootedGame.registry.set("flow", flow);
+      }
+    },
     scene: [
       BootScene,
       ScenarioBriefScene,
@@ -47,7 +53,5 @@ export function createSignalArenaGame(parent: HTMLElement | string = "game-root"
     version: "client-prototype"
   });
 
-  const flow = createScenarioFlow(createDefaultApiClient());
-  game.registry.set("flow", flow);
   return game;
 }
