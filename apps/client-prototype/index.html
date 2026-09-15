@@ -14,8 +14,33 @@
 
       * { box-sizing: border-box; }
       html, body, #root, #game-root { width: 100%; height: 100%; margin: 0; }
-      body { overflow: hidden; background: #07131c; }
+      html { background: #02070b; }
+      body {
+        display: flex;
+        justify-content: center;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 50% -12%, #123b4c 0, #07131c 38%, #02070b 100%);
+      }
+      #root {
+        width: min(calc(100% - 24px), 1180px);
+        border-right: 1px solid #214354;
+        border-left: 1px solid #214354;
+        background: #07131c;
+        box-shadow: 0 0 0 1px #000, 0 0 64px rgba(0, 0, 0, 0.65);
+        overflow: hidden;
+      }
+      #game-root { position: relative; }
       canvas { display: block; width: 100%; height: 100%; }
+      @media (max-width: 600px) {
+        body { display: block; }
+        #root {
+          width: 100%;
+          border-right-color: #183746;
+          border-left-color: #183746;
+          box-shadow: none;
+        }
+      }
       .sr-only {
         position: absolute;
         width: 1px;
