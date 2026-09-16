@@ -1,5 +1,15 @@
 # Crypto Market Competitive Analysis — Consolidated
 
+Status: RESEARCH_NON_CANONICAL
+Scope: market research and positioning inputs
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: source/date verification before using a claim in product decisions
+Canonical dependencies: `full_game_spec.md`
+
+This document is research input, not a product or implementation specification.
+
 ## Overview
 This document consolidates all crypto market competitors identified across the project's research sources. The analysis focuses on competitors that directly relate to Signal Arena's domain: crypto trading education, simulation, and skill-building.
 

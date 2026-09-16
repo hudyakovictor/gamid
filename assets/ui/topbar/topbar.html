@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topbar — LVL 07</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height:100vh;
+    background:#0a1120;
+    background-image: radial-gradient(circle at 50% 20%, #16294d 0%, #0a1120 60%);
+    font-family: Nunito, "Baloo 2", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    padding:32px 16px;
+  }
+  .demo-wrap { width:1060px; max-width:100%; }
+  .demo-label { color:#5c7ba3; font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; padding-left:8px; }
+
+  /* ===== TOPBAR ===== */
+  .topbar {
+    display:flex; align-items:center;
+    width:100%; height:84px;
+    background: linear-gradient(180deg, #0e2546 0%, #0a1c38 50%, #0a1a33 100%);
+    border:1.5px solid #1d4a86;
+    border-radius:46px;
+    padding:0 26px 0 28px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(120,180,255,.18);
+    gap:18px;
+  }
+  /* LVL */
+  .lvl { text-align:center; line-height:1; min-width:64px; }
+  .lvl small { display:block; color:#fff; font-weight:800; font-size:19px; letter-spacing:1px; }
+  .lvl strong { display:block; color:#fff; font-weight:900; font-size:42px; letter-spacing:1px; margin-top:2px; }
+
+  /* XP */
+  .xp-block { margin-left:14px; }
+  .xp-text { color:#fff; font-weight:800; font-size:21px; margin-bottom:7px; letter-spacing:.3px; }
+  .xp-text .blue { color:#33b8ff; }
+  .xp-bar { width:270px; height:23px; background:#1a3a66; border-radius:12px; overflow:hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,.5); }
+  .xp-fill {
+    height:100%; width:70%;
+    background: linear-gradient(90deg, #1e9df0 0%, #2fc4ff 55%, #6ce9ff 100%);
+    border-radius:12px;
+    box-shadow: 0 0 12px rgba(47,196,255,.8);
+  }
+
+  .spacer { flex:1; }
+
+  /* stats */
+  .stat { display:flex; align-items:center; gap:7px; color:#fff; font-weight:800; font-size:27px; }
+  .stat svg { width:38px; height:38px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4)); flex-shrink:0; }
+
+  .divider { width:8px; }
+
+  /* icon buttons */
+  .icon-btn {
+    position:relative; width:48px; height:48px;
+    display:flex; align-items:center; justify-content:center;
+    background:transparent; border:none; cursor:pointer; border-radius:50%;
+    transition: transform .15s, background .15s;
+  }
+  .icon-btn:hover { transform:scale(1.08); background:rgba(120,180,255,.12); }
+  .icon-btn svg { width:38px; height:38px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4)); }
+  .badge {
+    position:absolute; top:-1px; right:-3px;
+    min-width:24px; height:24px; padding:0 5px;
+    background:#e8323c; color:#fff;
+    font-size:14px; font-weight:900;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    border:2px solid #0a1c38;
+    box-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+
+  @media (max-width:900px){
+    .topbar{ height:auto; flex-wrap:wrap; border-radius:28px; padding:16px 20px; gap:12px 20px; }
+    .xp-bar{ width:200px; }
+    .spacer{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="demo-wrap">
+  <div class="demo-label">Game Topbar / LVL 07</div>
+
+  <div class="topbar">
+    <!-- LVL -->
+    <div class="lvl"><small>LVL</small><strong>07</strong></div>
+
+    <!-- XP -->
+    <div class="xp-block">
+      <div class="xp-text">420 <span class="blue">/ 600 XP</span></div>
+      <div class="xp-bar"><div class="xp-fill"></div></div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- Lightning 5/5 -->
+    <div class="stat">
+      <svg viewBox="0 0 48 48"><defs><linearGradient id="boltGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFF59D"/><stop offset="35%" stop-color="#FFD54F"/><stop offset="70%" stop-color="#FFB300"/><stop offset="100%" stop-color="#FF8F00"/></linearGradient><linearGradient id="boltHi" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF" stop-opacity=".9"/><stop offset="100%" stop-color="#FFF" stop-opacity="0"/></linearGradient></defs><path d="M27 3 L7 28.2c-.7.9-.1 2.3 1.1 2.3h8.6L14.5 43.6c-.4 1.3 1.1 2.3 2.2 1.5L39 20.9c.7-.6.4-1.9-.6-1.9h-9.2L33.4 5.1c.3-1.4-1.1-2.4-2.3-1.6L27 3z" fill="#B45309" opacity=".25" transform="translate(0,1.5)"/><path d="M27 2.5 L7 27.7c-.7.9-.1 2.3 1.1 2.3h8.6L14.5 43.1c-.4 1.3 1.1 2.3 2.2 1.5L39 20.4c.7-.6.4-1.9-.6-1.9h-9.2L33.4 4.6c.3-1.4-1.1-2.4-2.3-1.6L27 2.5z" fill="url(#boltGrad)" stroke="#9C5A00" stroke-opacity=".35" stroke-width="1" stroke-linejoin="round"/><path d="M27.5 6 L13.5 26.5h6.8c.8 0 1.4.7 1.2 1.5L19.5 38 32 18.5h-6c-.7 0-1.3-.6-1.1-1.3L27.5 6z" fill="url(#boltHi)" opacity=".55"/></svg>
+      <span>5/5</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Star 48 -->
+    <div class="stat">
+      <svg viewBox="0 0 48 48"><defs><linearGradient id="starGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE082"/><stop offset="45%" stop-color="#FFC107"/><stop offset="100%" stop-color="#FF8F00"/></linearGradient><linearGradient id="starHi" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF" stop-opacity=".85"/><stop offset="100%" stop-color="#FFF" stop-opacity="0"/></linearGradient></defs><path d="M24 3.8l5.9 11.3 12.7 2.1c1.2.2 1.7 1.7.8 2.6l-9 9.1 2 12.8c.2 1.2-1.1 2.1-2.1 1.5L24 37.7l-10.3 5.5c-1 .6-2.3-.3-2.1-1.5l2-12.8-9-9.1c-.9-.9-.4-2.4.8-2.6l12.7-2.1L24 3.8z" fill="url(#starGrad)" stroke="#9C5A00" stroke-opacity=".35" stroke-width="1" stroke-linejoin="round"/><ellipse cx="24" cy="14" rx="8.5" ry="5" fill="url(#starHi)" opacity=".5"/><circle cx="18.5" cy="18.5" r="2.2" fill="#FFF" opacity=".65"/></svg>
+      <span>48</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Coin 320 -->
+    <div class="stat">
+      <svg viewBox="0 0 48 48"><defs><radialGradient id="coinFace" cx=".38" cy=".32" r=".9"><stop offset="0%" stop-color="#FFF8E1"/><stop offset="25%" stop-color="#FFECB3"/><stop offset="55%" stop-color="#FFC107"/><stop offset="85%" stop-color="#FF8F00"/><stop offset="100%" stop-color="#E65100"/></radialGradient><linearGradient id="coinRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE082"/><stop offset="50%" stop-color="#FFB300"/><stop offset="100%" stop-color="#E65100"/></linearGradient><linearGradient id="coinInner" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF8F00"/><stop offset="15%" stop-color="#FFCA28"/><stop offset="85%" stop-color="#FFB300"/><stop offset="100%" stop-color="#E65100"/></linearGradient></defs><circle cx="24" cy="24" r="21" fill="url(#coinRim)" stroke="#9C4A00" stroke-opacity=".45" stroke-width="1"/><circle cx="24" cy="24" r="18.2" fill="none" stroke="#FFF8E1" stroke-opacity=".7" stroke-width="1.6" stroke-dasharray="2.5 2.2"/><circle cx="24" cy="24" r="15.5" fill="url(#coinFace)" stroke="url(#coinInner)" stroke-width="1.2"/><ellipse cx="19.5" cy="17.5" rx="7" ry="4.8" fill="#FFF" opacity=".45"/><path d="M24 15.5l2.4 4.6 5.2.8-3.7 3.7.8 5.2-4.7-2.4-4.7 2.4.8-5.2-3.7-3.7 5.2-.8 2.4-4.6z" fill="#FF8F00" opacity=".85"/><path d="M24 16.8l1.8 3.5 3.9.6-2.8 2.8.6 3.9-3.5-1.8-3.5 1.8.6-3.9-2.8-2.8 3.9-.6 1.8-3.5z" fill="#FFECB3"/></svg>
+      <span>320</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Bell with badge -->
+    <button class="icon-btn" title="Уведомления">
+      <svg viewBox="0 0 48 48"><defs><linearGradient id="bellGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF"/><stop offset="45%" stop-color="#E6F0FF"/><stop offset="100%" stop-color="#A9C3E8"/></linearGradient><linearGradient id="bellSide" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7FA0CC" stop-opacity=".55"/><stop offset="18%" stop-color="#7FA0CC" stop-opacity="0"/><stop offset="82%" stop-color="#5B7BA8" stop-opacity="0"/><stop offset="100%" stop-color="#5B7BA8" stop-opacity=".5"/></linearGradient></defs><rect x="20.6" y="3" width="6.8" height="6" rx="3.4" fill="#A9C3E8" stroke="#6E8DB8" stroke-width="1"/><circle cx="24" cy="5.8" r="1.6" fill="#E6F0FF"/><path d="M24 8.5c-7.2 0-11.5 5.2-11.5 12.2 0 5.8-1.2 8.6-3.3 11.3-.5.7-.1 1.8.9 1.8h28.8c1 0 1.4-1.1.9-1.8-2.1-2.7-3.3-5.5-3.3-11.3 0-7-4.3-12.2-12.5-12.2z" fill="url(#bellGrad)" stroke="#6E8DB8" stroke-width="1.2" stroke-linejoin="round"/><path d="M24 8.5c-7.2 0-11.5 5.2-11.5 12.2 0 5.8-1.2 8.6-3.3 11.3-.5.7-.1 1.8.9 1.8h28.8c1 0 1.4-1.1.9-1.8-2.1-2.7-3.3-5.5-3.3-11.3 0-7-4.3-12.2-12.5-12.2z" fill="url(#bellSide)"/><path d="M16.5 17.5c-1 1.6-1.5 3.6-1.5 5.7 0 3.4-.5 5.7-1.4 7.6-.3.6.1 1.1.6.7 1.6-1.2 3.1-3.9 3.4-8.1.2-2.4-.1-4.4-1.1-5.9z" fill="#FFF" opacity=".9"/><path d="M9.4 33.8h29.2c1 0 1.6 1 1.1 1.9-.5.9-1.6 1.5-2.8 1.5H11.1c-1.2 0-2.3-.6-2.8-1.5-.5-.9.1-1.9 1.1-1.9z" fill="#C9DBF5" stroke="#6E8DB8" stroke-width="1" stroke-linejoin="round"/><ellipse cx="24" cy="40.2" rx="4.2" ry="3.8" fill="#A9C3E8" stroke="#6E8DB8" stroke-width="1"/><ellipse cx="22.8" cy="39.2" rx="1.5" ry="1.2" fill="#EAF2FF" opacity=".9"/></svg>
+      <span class="badge">3</span>
+    </button>
+
+    <!-- Gear -->
+    <button class="icon-btn" title="Настройки">
+      <svg viewBox="0 0 48 48"><defs><linearGradient id="gearGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F4F8FF"/><stop offset="50%" stop-color="#C9DBF5"/><stop offset="100%" stop-color="#9AB6DC"/></linearGradient><linearGradient id="gearHi2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF" stop-opacity=".9"/><stop offset="100%" stop-color="#FFF" stop-opacity="0"/></linearGradient></defs><path d="M 20.565 10.222 L 21.028 5.234 A 19 19 0 0 1 26.972 5.234 L 27.435 10.222 A 14.2 14.2 0 0 1 31.314 11.828 L 35.168 8.629 A 19 19 0 0 1 39.371 12.832 L 36.172 16.686 A 14.2 14.2 0 0 1 37.778 20.565 L 42.766 21.028 A 19 19 0 0 1 42.766 26.972 L 37.778 27.435 A 14.2 14.2 0 0 1 36.172 31.314 L 39.371 35.168 A 19 19 0 0 1 35.168 39.371 L 31.314 36.172 A 14.2 14.2 0 0 1 27.435 37.778 L 26.972 42.766 A 19 19 0 0 1 21.028 42.766 L 20.565 37.778 A 14.2 14.2 0 0 1 16.686 36.172 L 12.832 39.371 A 19 19 0 0 1 8.629 35.168 L 11.828 31.314 A 14.2 14.2 0 0 1 10.222 27.435 L 5.234 26.972 A 19 19 0 0 1 5.234 21.028 L 10.222 20.565 A 14.2 14.2 0 0 1 11.828 16.686 L 8.629 12.832 A 19 19 0 0 1 12.832 8.629 L 16.686 11.828 A 14.2 14.2 0 0 1 20.565 10.222 Z" fill="url(#gearGrad2)" stroke="#6E8DB8" stroke-width="1.4" stroke-linejoin="round"/><ellipse cx="24" cy="13.5" rx="9" ry="3.6" fill="url(#gearHi2)" opacity=".55"/><circle cx="24" cy="24" r="8.2" fill="#0A2540" stroke="#6E8DB8" stroke-width="1.4"/></svg>
+    </button>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,275 +1,48 @@
-# SIGNAL ARENA — Monetization
+# SIGNAL ARENA — Monetization (Deprecated)
 
-## 1. Цель
+Status: DEPRECATED
+Scope: historical monetization notes
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Superseded by:
+- `economy_monetization_referrals.md`
+- `game_balance_spec.md`
+- `catalog_sku_spec.md`
+Required evidence: none; use the superseding canonical documents for implementation
+Canonical dependencies: `economy_monetization_referrals.md`, `game_balance_spec.md`, `catalog_sku_spec.md`
 
-Signal Arena монетизируется как образовательная игра и платформа, а не как токен.
+This file is retained only as historical context. It is not an implementation source of truth.
 
-Приоритеты:
+## Current rule
 
-```text
-обучение
-→ честность
-→ игровой опыт
-→ удержание
-→ Stars-выручка
-→ реклама
-→ non-competitive digital goods
-```
-
-## 2. Платёжный рельс Telegram
-
-Для цифровых товаров внутри Telegram Mini App использовать Telegram Stars/XTR.
+The canonical payment model is:
 
 ```text
-create order
-→ sendInvoice(XTR)
-→ pre_checkout_query
-→ successful_payment
-→ idempotent fulfillment
-→ entitlement
-→ receipt
-→ refund/revoke
+Telegram Stars/XTR
+→ Coin Pack
+→ Coins
+→ Signal Arena goods and services
 ```
 
-Нельзя выдавать товар только по клиентскому событию. Источник истины — серверный Telegram payment event.
+Regular products are not directly purchased with Telegram Stars. Direct Stars entitlement is an exceptional, separately announced platform or promotion path with its own SKU, feature flag, reconciliation and approval gates.
 
-## 3. Каталог
+Use the following documents instead:
 
-### Free
+- `economy_monetization_referrals.md` for economy behavior, Coin ledger, referrals and anti-pay-to-win rules;
+- `game_balance_spec.md` for XP, Account Level, Mastery Stars, Energy and balance hypotheses;
+- `catalog_sku_spec.md` for Founder Packs, SKU composition, prices, entitlements, assets and refund/revoke rules;
+- `topbar_currency_ui_spec.md` for display only.
 
-- introductory Academy;
-- стартовые scenarios;
-- базовый score breakdown;
-- ограниченные daily fix missions;
-- базовая коллекция.
+## Historical migration notes
 
-### Paid for Stars
+The former direct-Stars catalog terminology (`Paid for Stars`, direct Stars product checkout, `rematch token` and `non-ranked attempt`) is deprecated. Do not copy those terms into new UI, contracts, analytics events or code.
 
-- scenario packs;
-- rematch packs;
-- premium subscription;
-- season pass;
-- cosmetics;
-- profile badges;
-- ad-free entitlement;
-- Founder Support Packs.
-
-### Запрещённые товары
-
-- score boost;
-- answer reveal до решения;
-- outcome manipulation;
-- risk boost;
-- mastery purchase;
-- ranked advantage;
-- обещание токенов;
-- выводимая ценность.
-
-## 4. Founder Support Packs
-
-Founder Pack — это ранний цифровой набор для поддержки разработки и инфраструктуры.
-
-### Supporter
-
-- Founder badge.
-- Профильная косметика.
-- Имя в публичном списке ранних участников только с opt-in.
-
-### Founder
-
-- Всё из Supporter.
-- Ограниченный scenario pack.
-- Premium access на фиксированный период.
-- Founder profile frame.
-
-### Founding Arena
-
-- Всё из Founder.
-- Сезонный доступ.
-- Расширенный cosmetic bundle.
-- Специальная animated dossier card.
-
-### Жёсткие правила
-
-- Supply каждого уровня заранее фиксируется.
-- Остаток отображается честно.
-- Резервирование атомарно.
-- При исчерпании покупка выключается.
-- Уже выданные entitlements сохраняются.
-- Пакет не даёт токен, allocation, доходность или ликвидность.
-- Пакет не меняет scoring и competitive ranking.
-
-### Checkout copy
-
-> Ты покупаешь цифровой набор Signal Arena. Он поддерживает разработку и даёт перечисленные внутриигровые преимущества. Это не инвестиция и не обещание будущей прибыли, токенов или ликвидности.
-
-## 5. Подписка
-
-Подписка может включать:
-
-- расширенные Academy modules;
-- дополнительные scenario packs;
-- rematch-программы;
-- глубокую персональную аналитику;
-- историю решений;
-- дополнительные non-ranked missions;
-- ad-free режим.
-
-Подписка не открывает правильный ответ заранее и не повышает score.
-
-## 6. Rewarded-реклама
-
-Первая реализация — через рекламный provider adapter, например AdsGram.
-
-### Разрешённые награды
-
-- энергия;
-- non-ranked attempt;
-- rematch token;
-- cosmetic fragment.
-
-### Flow
+Rewarded ads now support only:
 
 ```text
-client requests ad
-→ provider displays ad
-→ provider server callback
-→ server validates user/session/cap
-→ ledger reward
-→ client receives updated balance
+ENERGY_GRANT
+COSMETIC_FRAGMENT_GRANT
 ```
 
-### Ограничения
-
-- дневные и сессионные caps;
-- global kill switch;
-- Premium/Founder ad-free option;
-- interstitial только в безопасных переходах;
-- никаких объявлений во время решения.
-
-## 7. Sponsored tasks
-
-Позже добавить ежедневные задания от рекламной сети:
-
-```text
-offer received
-→ user opts in
-→ provider callback
-→ server validates completion
-→ non-competitive reward
-```
-
-Не строить собственный рекламный кабинет до подтверждённой аудитории.
-
-## 8. Цены и orders
-
-Хранить:
-
-```text
-sku
-price_usd_reference
-price_xtr
-pricing_version
-valid_from
-valid_until
-```
-
-Существующий order не изменяется при изменении каталога.
-
-## 9. Revenue allocation
-
-Внутренний бюджет выручки разделять на:
-
-```text
-infrastructure reserve
-refund reserve
-content production
-legal/security
-support
-growth experiments
-founder operations
-```
-
-Не тратить всю раннюю выручку сразу: Stars имеют settlement/withdrawal delay.
-
-## 10. Unit economics
-
-```text
-Net revenue = Stars net
-+ ads
-+ sponsorship
-+ B2B
-- refunds
-- payment/platform costs
-- creator payouts
-```
-
-Обязательные метрики:
-
-- payer conversion;
-- first purchase conversion;
-- repeat purchase;
-- subscription conversion;
-- churn;
-- ARPU/ARPPU;
-- Stars net per active user;
-- ad revenue per active user;
-- refund/chargeback rate;
-- infrastructure cost per active user;
-- content cost per completed scenario;
-- LTV/CAC after sufficient observation.
-
-## 11. Platform and economy boundary
-
-Signal Arena launches as a standalone educational game. Academy, Exam, Arena, progression, scoring, and Pips work without a token, wallet, NFT, P2E, DAO, real trading, or marketplace.
-
-These mechanisms are not part of the current product plan and must not appear in checkout copy, rewards, ranking, score, or gameplay logic. Optional future platform research cannot be treated as a promise or entitlement.
-
-### Forbidden communication
-
-- A token is guaranteed.
-- Play now to receive tokens.
-- A Founder Pack grants token rights.
-- A token will increase in value.
-- Early players will earn money.
-
-## 12. Release boundary
-
-Any future platform proposal would require a separately approved product decision, legal review, security review, economic stress test, and a new acceptance gate. It is not a dependency for the current game, client, API, economy, or release.
-
-## 13. Experiments
-
-Каждый эксперимент имеет:
-
-```text
-hypothesis
-primary metric
-guardrails
-minimum sample
-duration
-success criterion
-rollback criterion
-```
-
-Guardrails:
-
-- learning completion;
-- D7/D30 transfer;
-- refund rate;
-- complaints;
-- risk-rule violations;
-- compulsive-session signals.
-
-## 14. Anti-pay-to-win contract
-
-Любой SKU обязан иметь один тип:
-
-```ts
-type CatalogItemEffect =
-  | "COSMETIC"
-  | "CONTENT_ACCESS"
-  | "ANALYTICS_ACCESS"
-  | "CONVENIENCE_NON_COMPETITIVE";
-```
-
-Типы `SCORE_BOOST`, `OUTCOME_BOOST`, `RISK_BOOST`, `ANSWER_ACCESS` запрещены.
+One completed, server-verified rewarded ad grants `+1 Energy`, subject to daily/session caps. It grants no direct XP, Mastery Stars, rating, score modifier, tournament access or hidden information. Scheduled Rematch is free; immediate voluntary Rematch uses Energy.

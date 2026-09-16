@@ -1,5 +1,13 @@
 # SIGNAL ARENA — Full Game Design Specification
 
+Status: REQUIRED
+Scope: product and game design
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: product contract, ScenarioPackage contract, scoring fixtures, UX acceptance
+Canonical dependencies: `academy_plan.md`, `economy_monetization_referrals.md`, `game_balance_spec.md`, `catalog_sku_spec.md`, `../packages/contracts/src/scenario.ts`
+
 ## 0. Product contract
 
 Signal Arena — вертикальная Telegram Mini App для тренировки качества рыночных решений на исторических криптовалютных сценариях.
@@ -9,7 +17,7 @@ Telegram Mini App
 → free learning loop
 → Academy / Exam / Arena / Rematch
 → tournaments and public profiles
-→ optional Telegram Stars digital goods after gameplay value
+→ optional Telegram Stars Coin Packs after gameplay value
 → optional future platform adapters
 ```
 
@@ -75,7 +83,7 @@ CRM works only through Admin API.
 - public profiles;
 - cosmetics;
 - Shop;
-- Stars payments;
+- Telegram Stars Coin Pack payments;
 - Founder Support Packs;
 - tournament schema and staged tournaments;
 - localization;
@@ -111,7 +119,7 @@ CRM works only through Admin API.
 
 ```text
 Avatar → Profile drawer
-Verified Decision Level
+Account Level (player-facing label: Verified Decision Level)
 Energy/attempts
 Soft currency
 Inbox
@@ -285,6 +293,19 @@ Invariants:
 - No Trade can score high.
 - Purchases never change score, outcome, mastery or ranking.
 
+Tournament ordering is separate from Quality Score:
+
+```text
+Quality Score
+→ critical gates passed
+→ confidence calibration error
+→ Evidence Quality
+→ Speed, only when declared by the tournament
+→ deterministic server tie key
+```
+
+Speed never enters Quality Score.
+
 ## 9. Store and backend-first cosmetics
 
 Cosmetics have value because they are visible in public profiles and tournaments.
@@ -314,8 +335,9 @@ item_type
 rarity
 asset_manifest_id
 preview_asset_url
-price_xtr
+price_coins
 price_usd_reference
+optional_direct_stars_price
 supply_limit
 availability_start
 availability_end
@@ -331,46 +353,47 @@ status
 ```text
 catalog
 → preview
-→ Stars order
-→ Telegram payment confirmation
+→ Coins spend authorization
+→ idempotent ledger mutation
 → entitlement
 → inventory
 → equip
 → public profile/tournament rendering
-```
 
-The client never grants itself an item.
+Coins are the ordinary catalog payment currency. The client never grants itself an item.
 
 ## 10. Stars monetization
 
-Digital goods are purchased using Telegram Stars/XTR.
+Telegram Stars/XTR are the external payment rail for Coin Packs. The ordinary product flow is:
 
 ```text
-create order
+Telegram Stars/XTR
+→ Coin Pack
+→ Coins
+→ Signal Arena goods and services
+```
+
+Coin Pack checkout:
+
+```text
+create Coin Pack order
 → sendInvoice(XTR)
 → pre_checkout_query
 → successful_payment
-→ idempotent fulfillment
-→ entitlement
+→ idempotent Coins ledger credit
 → receipt
-→ refund/revoke
 ```
 
-Orders and entitlements are server-authoritative.
+Direct entitlement purchase with Stars is an exceptional, separately announced path for platform requirements or special promotions only. It requires a dedicated SKU, feature flag, payment reconciliation and human approval. Orders, Coins and entitlements are server-authoritative.
 
 ## 11. Founder Support Packs
 
-Founder packs are limited digital bundles that support infrastructure and development.
+Founder packs are limited digital bundles that support infrastructure and development. Canonical composition, prices, entitlements, supply, assets and refund/revoke rules are defined only in `catalog_sku_spec.md`:
 
 ```text
-Supporter
-  badge + profile cosmetic
-
-Founder
-  Supporter + scenario pack + fixed premium period
-
-Founding Arena
-  Founder + season access + premium cosmetic bundle
+founder_supporter_v1
+founder_v1
+founding_arena_v1
 ```
 
 They never promise tokens, allocation, income, liquidity or investment rights.
@@ -534,8 +557,8 @@ FEATURE_TOKEN_ROADMAP_BANNER
 - contracts package;
 - users/identities;
 - catalog/orders/entitlements;
-- Stars provider;
-- Founder Pack flag;
+- Telegram Stars Coin Pack provider;
+- Coin ledger and Founder Pack flag;
 - cosmetics model;
 - public profile model;
 - tournament schema;

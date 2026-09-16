@@ -1,12 +1,48 @@
 # Signal Arena Development Status
 
-Status date: 2026-09-15
+Status: ACCEPTED_LOCAL
+Scope: current implementation status and evidence snapshot
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: previous status snapshots
+Required evidence: gate/evidence records for every accepted local or production claim
+Canonical dependencies: `roadmap_and_release_control_plane.md`, `acceptance_matrix.md`, `system_architecture.md`
+
+Status date: 2026-09-16
+
+## Status vocabulary
+
+```text
+REQUIRED
+PLANNED
+IMPLEMENTED_LOCAL
+ACCEPTED_LOCAL
+PRODUCTION_READY
+BLOCKED
+DEPRECATED
+```
+
+`developing_status.md` and gate/evidence records are the only sources of actual implementation status. Target architecture and product specifications do not imply implementation.
+
+## Evidence record minimum
+
+Every accepted claim must reference:
+
+```text
+gate_id
+evidence_id
+commit_sha
+environment
+verified_at
+blocker_id
+notes
+```
 
 ## Current status
 
 The repository contains the product specification, curriculum, economy rules, motion system, asset provenance workflow, security/deployment/scaling/observability contracts, Vercel alpha and provider migration strategy, AI agent operations architecture, internal roadmap/release-control specification, agent contract, iteration gates, an executable SQLite foundation with ScenarioPackage import, DB-backed public projection, sealed scenario-run lifecycle, a Telegram authentication/session boundary, API security hardening for the local boundary, a `PersistencePort` consumed by the API with SQLite and PostgreSQL adapters, forward-only PostgreSQL migrations with an explicit migration command, a server-authoritative foundation scoring service, a bounded Binance provider adapter boundary, idempotent normalized snapshot persistence, and a Phaser 4.2.1 client foundation slice connected to the API contracts. The client prototype is a Vite workspace package with typed flow tests, lazy runtime loading, and a planned viewport QA matrix.
 
-The project is **not yet accepted as a complete executable implementation**. Iteration 00/01 now provides versioned contracts, content validation, deterministic foundation scoring, DB-backed scenario reads, start/seal/reveal run endpoints, Telegram identity verification, hashed sessions, logout/revocation, tests, scripts, and CI configuration. The repository cleanup and deployment architecture pass is complete at the documentation level; production controls remain planned until implemented and evidenced.
+The project is **not yet accepted as a complete executable implementation**. Foundation claims below are `ACCEPTED_LOCAL`, not `PRODUCTION_READY`. Iteration 00/01 now provides versioned contracts, content validation, deterministic foundation scoring, DB-backed scenario reads, start/seal/reveal run endpoints, Telegram identity verification, hashed sessions, logout/revocation, tests, scripts, and CI configuration. The repository cleanup and deployment architecture pass is complete at the documentation level; production controls remain planned until implemented and evidenced.
 
 ## Acceptance status
 
@@ -17,7 +53,7 @@ Production vertical slice: NOT YET ACCEPTED
 Overall product: BLOCKED
 ```
 
-The foundation, database/migration/seed gate, ScenarioPackage importer/projection boundary, foundation scenario-run lifecycle, Telegram authentication boundary, local API hardening, SQLite persistence adapter, PostgreSQL pool/repository lifecycle, PostgreSQL migration runner, foundation scoring service, Binance adapter boundary and normalized snapshot persistence are executable and locally evidenced. The product remains blocked until shared production rate limiting, ScenarioPackage ingestion/publication, production scoring governance, Pips ledger, structured logging/alerting, browser visual/responsive/accessibility QA, visual/release asset QA, backup/restore rehearsal and the production-complete vertical slice are implemented and evidenced. The Phaser runtime foundation slice is executable locally, but its browser and accessibility gates are still open. Entity portraits and Skill Card artwork are original project assets with provenance recorded in `assets/asset-manifest.json`; they remain draft until QA approval. Logging, metrics, tracing, audit events, alerts, and incident response are specified in `observability_and_incident_response.md`; they are not yet shipped by the current foundation.
+The foundation, database/migration/seed gate, ScenarioPackage importer/projection boundary, foundation scenario-run lifecycle, Telegram authentication boundary, local API hardening, SQLite persistence adapter, PostgreSQL pool/repository lifecycle, PostgreSQL migration runner, foundation scoring service, Binance adapter boundary and normalized snapshot persistence are executable and locally evidenced. The product remains blocked until shared production rate limiting, ScenarioPackage ingestion/publication, production scoring governance, Coins ledger (including promo-balance), structured logging/alerting, browser visual/responsive/accessibility QA, visual/release asset QA, backup/restore rehearsal and the production-complete vertical slice are implemented and evidenced. The Phaser runtime foundation slice is executable locally, but its browser and accessibility gates are still open. Entity portraits and Skill Card artwork are original project assets with provenance recorded in `assets/asset-manifest.json`; they remain draft until QA approval. Logging, metrics, tracing, audit events, alerts, and incident response are specified in `observability_and_incident_response.md`; they are not yet shipped by the current foundation.
 
 ## Immediate next sequence
 
@@ -46,7 +82,7 @@ bootstrap
 ```
 
 11. PostgreSQL pool/repository adapter, readiness/shutdown behavior and migration command. **PASS** locally with a real PostgreSQL integration test; restore drill, staging rehearsal and shared production rate limiting remain open.
-12. Server-authoritative Pips ledger.
+12. Server-authoritative Coins ledger (XP/Energy/Mastery/Coins economy v2).
 13. Visual lab, motion/accessibility QA and production asset release approval.
 14. Vercel alpha deployment and provider/payment smoke test.
 15. AI agent runtime contracts, isolated job runner, and CRM approvals.

@@ -1,5 +1,13 @@
 # Signal Arena Deployment and Environments
 
+Status: REQUIRED
+Scope: environments, deployment, migration, rollback and recovery
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: staging rehearsal, migration replay, backup/restore drill, readiness and rollback evidence
+Canonical dependencies: `system_architecture.md`, `security_architecture.md`, `vercel_alpha_and_platform_strategy.md`
+
 ## Environment model
 
 ```text

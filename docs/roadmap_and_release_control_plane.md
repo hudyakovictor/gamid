@@ -1,5 +1,13 @@
 # Signal Arena — Internal Roadmap and Release Control Plane
 
+Status: PLANNED
+Scope: roadmap, gates, blockers, evidence and release control
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: roadmap domain contract, gate/evidence ingestion, blocker calculation, Admin API and CRM evidence
+Canonical dependencies: `developing_status.md`, `acceptance_matrix.md`, `system_architecture.md`, `security_architecture.md`
+
 ## Purpose
 
 The internal roadmap is the operational source of truth for moving Signal Arena between development stages. It connects roadmap items, dependencies, acceptance gates, evidence, blockers, releases, CI, agents, and the Admin CRM.
@@ -19,6 +27,22 @@ ACCEPTED
 REJECTED
 DEFERRED
 ```
+
+Implementation status and roadmap workflow status are separate.
+
+Implementation/document status vocabulary:
+
+```text
+REQUIRED
+PLANNED
+IMPLEMENTED_LOCAL
+ACCEPTED_LOCAL
+PRODUCTION_READY
+BLOCKED
+DEPRECATED
+```
+
+Roadmap workflow statuses below (`PLANNED`, `IN_PROGRESS`, `READY_FOR_REVIEW`, `ACCEPTED`, `REJECTED`, `DEFERRED`) describe operational transitions and must not be interpreted as production acceptance. A roadmap item is `PRODUCTION_READY` only when all required gates and evidence pass and human approval is recorded.
 
 A status change records:
 

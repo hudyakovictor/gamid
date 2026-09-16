@@ -97,7 +97,7 @@ auth
 
 ```text
 apps/
-  game-client/       Phaser 4 + TypeScript + Vite + rexUI
+  game-client/       Phaser 4 + TypeScript + Vite + hybrid DOM UI
   api-server/        Fastify + TypeScript + Zod + Drizzle
   admin-crm/         Next.js + React + TypeScript + Tailwind + shadcn/ui
   landing/           Next.js + TypeScript + Tailwind
@@ -128,11 +128,11 @@ workers/
 Phaser 4
 TypeScript
 Vite
-rexUI
-Custom CandleChart на Phaser Graphics
+Hybrid DOM UI for accessibility-heavy screens
+Custom CandleChart or validated chart adapter
 ```
 
-Phaser отвечает за сцены, game loop, tweens, camera, particles и sound. rexUI отвечает за панели, вкладки, списки, слайдеры и чек-листы внутри игровых сцен.
+Phaser отвечает за Arena-сцены, chart interaction, reveal, game loop, tweens, camera, particles и sound. Длинный текст, формы, Shop, Profile, Notifications и Settings могут использовать DOM UI. rexUI является опциональным и требует отдельной проверки совместимости с закреплённой версией Phaser.
 
 Клиент не является источником истины для score, hidden future, payments, inventory, entitlements и tournament results.
 
@@ -182,6 +182,10 @@ Vitest
 ```
 
 CRM работает только через Admin API. Прямой доступ браузера к базе запрещён.
+
+## Граница продуктовых документов
+
+`docs/full_game_spec.md` описывает 100% законченную игру. Отдельное MVP-ТЗ выбирает первый срез, roadmap задаёт порядок, а `docs/developing_status.md` хранит подтверждённый текущий статус. Полная спецификация не должна сокращаться ради MVP.
 
 ## Основная навигация игры
 
@@ -330,6 +334,20 @@ pnpm build
 ```
 
 Агент не должен утверждать, что проверка пройдена, если команда не запускалась.
+
+## Состав репозитория
+
+Репозиторий содержит полные исходники. Умышленно не коммитятся (см. `.gitignore`):
+
+```text
+node_modules/ + .pnpm-store/  зависимости — восстанавливаются: pnpm install
+dist/                         сборка — восстанавливается: pnpm build
+var/                          локальные SQLite-базы и эксперименты — восстанавливаются: pnpm db:migrate + pnpm db:seed
+*.zip                         архивы поставок — не хранятся в git
+.DS_Store / .env              локальный мусор и секреты — .env собирается из .env.example
+```
+
+Лимит GitHub 100 МБ действует на отдельный файл, а не на репозиторий; исходников, вырезанных из-за лимитов, в проекте нет. Всё, что нужно для работы, восстанавливается командами выше с нуля.
 
 ## Definition of Done
 

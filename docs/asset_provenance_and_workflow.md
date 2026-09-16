@@ -1,5 +1,13 @@
 # Asset Provenance and Workflow
 
+Status: REQUIRED
+Scope: assets, provenance, licensing, stable IDs and release gates
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: asset manifest, provenance records, license review, visual/responsive/accessibility QA
+Canonical dependencies: `brand.md`, `motion_interaction_system_spec.md`, `full_game_spec.md`
+
 > Mandatory workflow for assets and external visual/audio/source materials. This document is linked from `AGENTS.md` and the Signal Arena project overlay.
 
 ## 1. Asset decision
@@ -17,7 +25,7 @@ Create an original or generated asset when:
 
 - the element is part of Signal Arena's core identity;
 - no suitable licensed asset exists;
-- the asset needs a unique Entity, Helper, PipGem, or motion identity;
+- the asset needs a unique Entity, Helper, Coin, or motion identity;
 - an external asset would create licensing or continuity risk.
 
 Use placeholders only in local development. Placeholder use must be visible in the asset registry and blocked from release builds.
@@ -108,7 +116,7 @@ brief
 
 Prefer original/generated assets for:
 
-- PipGem;
+- Coin icon;
 - Stars treatment when not using a platform-provided icon;
 - Entity portraits;
 - The Helper;

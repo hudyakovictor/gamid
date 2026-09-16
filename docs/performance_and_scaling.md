@@ -1,5 +1,13 @@
 # Signal Arena Performance and Scaling
 
+Status: REQUIRED
+Scope: performance budgets, scaling and load validation
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: stage-specific p95/p99 budgets, load tests, saturation and recovery evidence
+Canonical dependencies: `system_architecture.md`, `deployment_and_environments.md`, `observability_and_incident_response.md`
+
 ## Scaling principles
 
 Start with the smallest reliable system, but preserve boundaries that allow horizontal scaling:

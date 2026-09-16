@@ -1,7 +1,35 @@
 # Signal Arena — P0/P1 Remediation Plan
 
-Date: 2026-09-14
+Status: REQUIRED
+Scope: remediation decomposition and gate crosswalk
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: unchecked remediation snapshot from 2026-09-14
+Required evidence: gate/evidence records, implementation status, blocker records and verification timestamps
+Canonical dependencies: `developing_status.md`, `acceptance_matrix.md`, `roadmap_and_release_control_plane.md`
+
+Date: 2026-09-16
 Source: current repository status and active acceptance documents.
+
+This document is a remediation plan, not a mutable status database. The current status is read from `developing_status.md` and gate/evidence records. The checklist below is implementation decomposition; it must not be interpreted as proof of acceptance.
+
+## Gate status crosswalk
+
+| Area | Status | Gate/evidence requirement | Current note |
+|---|---|---|---|
+| Repository and executable foundation | ACCEPTED_LOCAL | gate/evidence record required | Local foundation is evidenced; production readiness is not implied. |
+| Contracts and validation | ACCEPTED_LOCAL | contract and validation evidence | Executable ScenarioPackage and content validation are locally evidenced. |
+| SQLite migration and seed foundation | ACCEPTED_LOCAL | migration/seed replay evidence | PostgreSQL staging rehearsal remains open. |
+| Public/hidden projection and scenario-run lifecycle | ACCEPTED_LOCAL | future-leak and deterministic replay evidence | Publication and scheduling remain open. |
+| Telegram auth and local API hardening | ACCEPTED_LOCAL | auth/security evidence | Shared production rate limiting remains open. |
+| Foundation scoring | ACCEPTED_LOCAL | golden fixture/replay evidence | Production rubric governance remains open. |
+| PostgreSQL staging rehearsal | OPEN | migration, readiness, rollback evidence | Not production-ready. |
+| Backup/restore drill | OPEN | restore evidence | Required before commercial alpha. |
+| Production observability | OPEN | logs, metrics, traces, alerts and incident evidence | Not shipped by current foundation. |
+| Coins ledger and economy runtime | OPEN | ledger reconciliation and duplicate reward evidence | Required before economy acceptance. |
+| Browser visual/responsive/accessibility QA | OPEN | browser evidence and screenshots | Phaser foundation is locally executable only. |
+
+Each row must eventually record `status`, `gate_id`, `evidence_id`, `commit_sha`, `environment`, `verified_at`, `blocker_id` and `notes` in the roadmap/evidence system.
 
 ## P0-0 — Confirm implementation repository
 
@@ -55,7 +83,7 @@ A clean checkout can install, run tests, and build in CI.
 - [ ] Add repository interfaces.
 - [ ] Add demo seed for all UI states.
 - [ ] Add rollback and repeat-seed tests.
-- [ ] Add Pip ledger constraints.
+- [ ] Add Coins ledger constraints.
 
 ## P1-3 — Vertical slice
 
@@ -71,7 +99,7 @@ bootstrap
 → score
 → explanation
 → progression
-→ Pips
+→ economy
 → rematch
 ```
 
@@ -99,7 +127,7 @@ Required evidence:
 
 - [ ] Implement fixture-driven visual lab.
 - [ ] Add asset registry and provenance validator.
-- [ ] Add PipGem/Entity stable asset IDs.
+- [ ] Add Coin/Entity stable asset IDs.
 - [ ] Add motion tokens and interaction states.
 - [ ] Add visual regression.
 - [ ] Add reduced-motion and accessibility tests.
@@ -114,7 +142,7 @@ Required evidence:
 
 ## P1-7 — Economy runtime
 
-- [ ] Implement server-authoritative Pip ledger.
+- [ ] Implement server-authoritative Coins ledger.
 - [ ] Implement earning, caps, sinks, idempotency, reconciliation.
 - [ ] Implement first-session and recovery Rematch rules.
 - [ ] Add economy integration tests.

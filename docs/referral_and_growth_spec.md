@@ -1,5 +1,13 @@
 # Referral and Growth Specification
 
+Status: REQUIRED
+Scope: referral lifecycle, rewards and anti-abuse
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: attribution, idempotency, cap and anti-abuse tests
+Canonical dependencies: `economy_monetization_referrals.md`, `game_balance_spec.md`
+
 ## Goal
 
 Turn a satisfied player into a source of qualified new players without spam, multi-level incentives, or pay-to-win pressure.
@@ -12,14 +20,14 @@ The inviter sees a progress card:
 
 ```text
 Alex: 2/3 scenarios completed
-Activation reward: +10 ◆
+Activation reward: +25 Coins
 ```
 
 The invitee sees their own reward before sharing any data:
 
 ```text
 Complete 3 scenarios
-Get 10 Pips + 1 Rematch token
+Get 25 Coins
 ```
 
 ## Reward table
@@ -27,14 +35,17 @@ Get 10 Pips + 1 Rematch token
 | Milestone | Inviter | Invitee |
 |---|---:|---:|
 | Valid attribution | 0 | 0 |
-| Onboarding + 3 scenarios | 10 Pips | 10 Pips + 1 Rematch token |
-| First non-refunded premium purchase | 20 Pips | standard purchase entitlement |
+| Onboarding + 3 valid solo scenarios | 25 promo Coins | 25 promo Coins |
+| First confirmed, non-refunded purchase | 50 promo Coins (after refund-risk window) | standard purchase entitlement |
+| First paid tournament | — | promo ticket fragment per event rules |
+
+Promo Coins share the single Coins balance with a server-side `promo` flag: spendable like purchased Coins, never withdrawable or transferable.
 
 ## Limits
 
 - One-level referrals only.
 - Seven-day attribution window.
-- 100 referral Pips per inviter per calendar month.
+- 250 promo Coins per inviter per calendar month.
 - Five purchase bonuses per month.
 - No rewards for self-referrals, duplicate devices, payment reuse, or scripted completion.
 - Rewards are held while risk review is pending.

@@ -1,6 +1,14 @@
 # SIGNAL ARENA — Академия решений
 ## План теоретического раздела
 
+Status: REQUIRED
+Scope: curriculum, Academy content and learning progression
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: content registry validation, chapter links, Academy/Exam/Rematch fixtures, untranslated Entity-name checks
+Canonical dependencies: `full_game_spec.md`, `game_balance_spec.md`, `../packages/contracts/src/scenario.ts`, `../packages/content/src/validate.ts`
+
 > Рынок не обязан объяснять, почему ты ошибся.  
 > Он просто принимает твоё решение и отправляет квитанцию.
 
@@ -335,7 +343,7 @@ Source Groups: PRICE.
 
 ---
 
-# Модуль 0. Decision Foundations / Фундамент решения
+# Модуль 1. Decision Foundations / Фундамент решения
 
 > ПРИБЫЛЬ НЕ АЛИБИ.  
 > Иногда рынок просто не успел тебя наказать.
@@ -360,15 +368,15 @@ Source Groups: PRICE.
 ## Главы
 
 ```text
-0.1. Хорошее решение ≠ хороший исход
-0.2. Long, Short, Wait, No Trade: четыре законных действия
-0.3. Факт, интерпретация, гипотеза, мнение: отделение костей от супа
-0.4. Evidence Only: доказательство должно наблюдаться, а не нравиться
-0.5. Иерархия evidence: цена, структура, объём, контекст, источник
-0.6. Инвалидация до входа: где идея умирает
-0.7. Risk-First Mode: сначала риск, потом желание
-0.8. Confidence Check: индекс веры в график
-0.9. Decision Sheet на 99 баллов
+1.1. Хорошее решение ≠ хороший исход
+1.2. Long, Short, Wait, No Trade: четыре законных действия
+1.3. Факт, интерпретация, гипотеза, мнение: отделение костей от супа
+1.4. Evidence Only: доказательство должно наблюдаться, а не нравиться
+1.5. Иерархия evidence: цена, структура, объём, контекст, источник
+1.6. Инвалидация до входа: где идея умирает
+1.7. Risk-First Mode: сначала риск, потом желание
+1.8. Confidence Check: индекс веры в график
+1.9. Decision Sheet на 99 баллов
 ```
 
 ## Игровая реализация
@@ -405,7 +413,7 @@ Discipline
 
 ---
 
-# Модуль 1. Price Structure / Рыночная структура
+# Модуль 2. Price Structure / Рыночная структура
 
 > СВЕЧА НЕ ГОВОРИТ.  
 > Она оставляет улики.  
@@ -428,15 +436,15 @@ Discipline
 ## Главы
 
 ```text
-1.1. Свеча — не сигнал, а след сделки
-1.2. Тренд, диапазон, переход: три режима, три набора рисков
-1.3. HH/HL и LH/LL: кто контролирует цену
-1.4. Слом структуры или шум: как не принять фитиль за революцию
-1.5. Уровни как зоны: рынок не обязан уважать твою линию
-1.6. Принятие и отвержение цены
-1.7. Entry Zone: вход зоной, а не молитвой на одну цену
-1.8. Когда структура говорит “Wait”
-1.9. Что структура не может доказать без контекста
+2.1. Свеча — не сигнал, а след сделки
+2.2. Тренд, диапазон, переход: три режима, три набора рисков
+2.3. HH/HL и LH/LL: кто контролирует цену
+2.4. Слом структуры или шум: как не принять фитиль за революцию
+2.5. Уровни как зоны: рынок не обязан уважать твою линию
+2.6. Принятие и отвержение цены
+2.7. Entry Zone: вход зоной, а не молитвой на одну цену
+2.8. Когда структура говорит “Wait”
+2.9. Что структура не может доказать без контекста
 ```
 
 ## Игровая реализация
@@ -473,7 +481,7 @@ Target/RR quality
 
 ---
 
-# Модуль 2. Breakout Validation / Проверка пробоя
+# Модуль 3. Breakout Validation / Проверка пробоя
 
 > ПРОБОЙ СЛУЧИЛСЯ.  
 > Поздравления преждевременны.  
@@ -496,14 +504,14 @@ Target/RR quality
 ## Главы
 
 ```text
-2.1. Пробой — это факт, не разрешение на Long
-2.2. Анатомия пробоя: уровень, импульс, объём, закрепление, ретест
-2.3. Volume Confirmation: когда объём подтверждает, а когда выдаёт ловушку
-2.4. Wait for Retest: рынок должен доказать, что уровень теперь работает
-2.5. Ложный пробой: рынок открыл дверь, чтобы проверить, кто побежит
-2.6. Stop-Hunt: очевидная ликвидность как публичный буфет
-2.7. Enter Now: когда агрессивный вход допустим
-2.8. No Confirmation, No Trade: отсутствие сделки как фильтр выживания
+3.1. Пробой — это факт, не разрешение на Long
+3.2. Анатомия пробоя: уровень, импульс, объём, закрепление, ретест
+3.3. Volume Confirmation: когда объём подтверждает, а когда выдаёт ловушку
+3.4. Wait for Retest: рынок должен доказать, что уровень теперь работает
+3.5. Ложный пробой: рынок открыл дверь, чтобы проверить, кто побежит
+3.6. Stop-Hunt: очевидная ликвидность как публичный буфет
+3.7. Enter Now: когда агрессивный вход допустим
+3.8. No Confirmation, No Trade: отсутствие сделки как фильтр выживания
 ```
 
 ## Игровая реализация
@@ -542,7 +550,7 @@ Confidence: не выше силы доказательств.
 
 ---
 
-# Модуль 3. Higher Timeframe / Старший таймфрейм
+# Модуль 4. Higher Timeframe / Старший таймфрейм
 
 > ЛОКАЛЬНЫЙ СИГНАЛ КРАСИВЫЙ.  
 > Старший таймфрейм подал жалобу.
@@ -564,14 +572,14 @@ Confidence: не выше силы доказательств.
 ## Главы
 
 ```text
-3.1. Почему локальный сигнал может быть шумом
-3.2. Старший ТФ как карта территории
-3.3. Старший тренд против младшего входа
-3.4. Диапазон на HTF: красивые сетапы внутри клетки
-3.5. Согласование таймфреймов
-3.6. HTF и место для target
-3.7. HTF и structural stop
-3.8. Как не утонуть в бесконечном анализе
+4.1. Почему локальный сигнал может быть шумом
+4.2. Старший ТФ как карта территории
+4.3. Старший тренд против младшего входа
+4.4. Диапазон на HTF: красивые сетапы внутри клетки
+4.5. Согласование таймфреймов
+4.6. HTF и место для target
+4.7. HTF и structural stop
+4.8. Как не утонуть в бесконечном анализе
 ```
 
 ## Игровая реализация
@@ -596,7 +604,7 @@ Protocol adherence
 
 ---
 
-# Модуль 4. Risk & Invalidation / Риск и инвалидация
+# Модуль 5. Risk & Invalidation / Риск и инвалидация
 
 > МАЛЕНЬКИЙ СТОП НЕ ЗНАЧИТ МАЛЕНЬКИЙ РИСК.  
 > Иногда это просто быстрая доставка денег рынку.
@@ -618,14 +626,14 @@ Protocol adherence
 ## Главы
 
 ```text
-4.1. Риск — это не расстояние до стопа
-4.2. Инвалидация: точка смерти идеи
-4.3. Structural Stop: защита за причиной, а не за надеждой
-4.4. Volatility Context: одинаковый паттерн, разная цена ошибки
-4.5. Risk Cap: предел, после которого начинается ритуал самообмана
-4.6. Risk Profile: aggressive, conservative, conditional, no trade
-4.7. Risk/Reward: правильная идея может быть плохой сделкой
-4.8. Когда лучший риск — отсутствие позиции
+5.1. Риск — это не расстояние до стопа
+5.2. Инвалидация: точка смерти идеи
+5.3. Structural Stop: защита за причиной, а не за надеждой
+5.4. Volatility Context: одинаковый паттерн, разная цена ошибки
+5.5. Risk Cap: предел, после которого начинается ритуал самообмана
+5.6. Risk Profile: aggressive, conservative, conditional, no trade
+5.7. Risk/Reward: правильная идея может быть плохой сделкой
+5.8. Когда лучший риск — отсутствие позиции
 ```
 
 ## Игровая реализация
@@ -650,7 +658,7 @@ Protocol adherence
 
 ---
 
-# Модуль 5. Liquidity & Targets / Ликвидность и цели
+# Модуль 6. Liquidity & Targets / Ликвидность и цели
 
 > ЛИКВИДНОСТЬ — ЭТО НЕ МАГИЯ.  
 > Это место, где чужие планы становятся топливом.
@@ -672,14 +680,14 @@ Protocol adherence
 ## Главы
 
 ```text
-5.1. Что такое ликвидность в игровом анализе
-5.2. Где стоят очевидные стопы
-5.3. Liquidity Map: карта чужих обязательств
-5.4. Target Liquidity: цель там, где есть причина для движения
-5.5. Minimum R-Multiple: рынок может быть прав, а сделка — нет
-5.6. Близкая цель и дорогой риск
-5.7. Scale Out: частичный выход до эмоций
-5.8. Liquidity Hydra: когда целей много, а ясности мало
+6.1. Что такое ликвидность в игровом анализе
+6.2. Где стоят очевидные стопы
+6.3. Liquidity Map: карта чужих обязательств
+6.4. Target Liquidity: цель там, где есть причина для движения
+6.5. Minimum R-Multiple: рынок может быть прав, а сделка — нет
+6.6. Близкая цель и дорогой риск
+6.7. Scale Out: частичный выход до эмоций
+6.8. Liquidity Hydra: когда целей много, а ясности мало
 ```
 
 ## Игровая реализация
@@ -703,7 +711,7 @@ Entity resistance
 
 ---
 
-# Модуль 6. Position Management / Управление позицией
+# Модуль 7. Position Management / Управление позицией
 
 > ВХОД — НЕ ФИНАЛ.  
 > Это момент, когда рынок начинает проверять, читал ли ты собственный план.
@@ -725,15 +733,15 @@ Entity resistance
 ## Главы
 
 ```text
-6.1. План не заканчивается на входе
-6.2. Hold Plan: ничего не делать тоже действие
-6.3. Reduce Risk: снижение риска без паники
-6.4. Close Position: выход как признание факта
-6.5. Move Protection: защита двигается за структурой, не за страхом
-6.6. Do Not Average: усреднение без плана — культ спасения утопающего
-6.7. Paper Hands: ранний выход из хорошей идеи
-6.8. Loss Aversion: отказ признать смерть плана
-6.9. In-Position Decision Sheet на 99 баллов
+7.1. План не заканчивается на входе
+7.2. Hold Plan: ничего не делать тоже действие
+7.3. Reduce Risk: снижение риска без паники
+7.4. Close Position: выход как признание факта
+7.5. Move Protection: защита двигается за структурой, не за страхом
+7.6. Do Not Average: усреднение без плана — культ спасения утопающего
+7.7. Paper Hands: ранний выход из хорошей идеи
+7.8. Loss Aversion: отказ признать смерть плана
+7.9. In-Position Decision Sheet на 99 баллов
 ```
 
 ## Игровая реализация
@@ -758,7 +766,7 @@ Entity resistance
 
 ---
 
-# Модуль 7. Discipline / Дисциплина под давлением
+# Модуль 8. Discipline / Дисциплина под давлением
 
 > ТЫ ПРИШЁЛ ЗА СВОБОДОЙ.  
 > Теперь свободен от плана.
@@ -780,15 +788,15 @@ Entity resistance
 ## Главы
 
 ```text
-7.1. FOMO: страх не успеть к чужой прибыли
-7.2. Do Not Chase: если точка риска ушла, ушла и сделка
-7.3. Revenge Trading: рынок не обязан возвращать самооценку
-7.4. Overtrading: тяга к действию как налог на скуку
-7.5. Hubris после серии успехов
-7.6. Drawdown Leviathan: просадка как проверка системы
-7.7. Out of Market Is Normal: вне рынка — не поражение
-7.8. Routine Rot: старый шаблон в новом режиме
-7.9. System Breaker: сознательное нарушение протокола
+8.1. FOMO: страх не успеть к чужой прибыли
+8.2. Do Not Chase: если точка риска ушла, ушла и сделка
+8.3. Revenge Trading: рынок не обязан возвращать самооценку
+8.4. Overtrading: тяга к действию как налог на скуку
+8.5. Hubris после серии успехов
+8.6. Drawdown Leviathan: просадка как проверка системы
+8.7. Out of Market Is Normal: вне рынка — не поражение
+8.8. Routine Rot: старый шаблон в новом режиме
+8.9. System Breaker: сознательное нарушение протокола
 ```
 
 ## Игровая реализация
@@ -813,7 +821,7 @@ Risk management
 
 ---
 
-# Модуль 8. Information Quality / Качество информации
+# Модуль 9. Information Quality / Качество информации
 
 > ЗАГОЛОВОК НЕ СИГНАЛ.  
 > Это приманка с хорошим шрифтом.
@@ -835,14 +843,14 @@ Risk management
 ## Главы
 
 ```text
-8.1. Источник, пересказ, слух: три стадии разложения факта
-8.2. Source Quality: кто сказал, что именно, и можно ли это проверить
-8.3. News Context: событие против реакции рынка
-8.4. News Is Not a Signal: департамент громких заголовков закрыт
-8.5. Social Sentiment: стадо шумит, но не подписывает твой риск
-8.6. Narrative Siren: красивая история как дорогая ловушка
-8.7. Confirmation Bias: когда ты нанимаешь факты защищать твоё мнение
-8.8. Noise Quarantine: мусор в карантин, план — в Decision Sheet
+9.1. Источник, пересказ, слух: три стадии разложения факта
+9.2. Source Quality: кто сказал, что именно, и можно ли это проверить
+9.3. News Context: событие против реакции рынка
+9.4. News Is Not a Signal: департамент громких заголовков закрыт
+9.5. Social Sentiment: стадо шумит, но не подписывает твой риск
+9.6. Narrative Siren: красивая история как дорогая ловушка
+9.7. Confirmation Bias: когда ты нанимаешь факты защищать твоё мнение
+9.8. Noise Quarantine: мусор в карантин, план — в Decision Sheet
 ```
 
 ## Игровая реализация
@@ -867,7 +875,7 @@ Entity resistance
 
 ---
 
-# Модуль 9. Flow, Derivatives & Regime / Поток, деривативы и режим
+# Модуль 10. Flow, Derivatives & Regime / Поток, деривативы и режим
 
 > FUNDING НЕ ГОВОРИТ “ПОКУПАЙ”.  
 > Он говорит: кто уже заплатил за уверенность.
@@ -889,14 +897,14 @@ Entity resistance
 ## Главы
 
 ```text
-9.1. Correlation Check: связанный актив подал сигнал тревоги
-9.2. Relative Strength: кто сильнее рынка, а кто просто громче
-9.3. Derivatives Pulse: OI, funding, ликвидации и переполненная сторона
-9.4. Funding: стоимость веры в позицию
-9.5. Liquidations: принудительный выход как топливо движения
-9.6. Volume vs Price: когда движение не получает поддержки
-9.7. Regime Shifter: рынок сменил сезон, а ты пришёл в прошлогодней форме
-9.8. Когда flow противоречит гипотезе
+10.1. Correlation Check: связанный актив подал сигнал тревоги
+10.2. Relative Strength: кто сильнее рынка, а кто просто громче
+10.3. Derivatives Pulse: OI, funding, ликвидации и переполненная сторона
+10.4. Funding: стоимость веры в позицию
+10.5. Liquidations: принудительный выход как топливо движения
+10.6. Volume vs Price: когда движение не получает поддержки
+10.7. Regime Shifter: рынок сменил сезон, а ты пришёл в прошлогодней форме
+10.8. Когда flow противоречит гипотезе
 ```
 
 ## Игровая реализация
@@ -921,7 +929,7 @@ Entity resistance
 
 ---
 
-# Модуль 10. Token & Web3 Risk / Токен, ончейн и инфраструктура
+# Модуль 11. Token & Web3 Risk / Токен, ончейн и инфраструктура
 
 > ТОКЕН — ЭТО НЕ ТОЛЬКО ГРАФИК.  
 > Иногда график просто последним узнаёт, что выхода нет.
@@ -943,15 +951,15 @@ Entity resistance
 ## Главы
 
 ```text
-10.1. Токен — не свеча, а договор о будущей боли
-10.2. Tokenomics Review: эмиссия, float, распределение, utility
-10.3. Unlock Calendar: будущая продажа ещё не случилась, но риск уже здесь
-10.4. On-Chain Flow: крупный перевод — факт, намерение — нет
-10.5. Whale Syndicate: кит двинулся, толпа написала легенду
-10.6. Infrastructure Risk: контракт, мост, ликвидность, выход
-10.7. Honeypot и Approval Risk: купить можно, выйти — это DLC
-10.8. Governance и Insider Asymmetry
-10.9. Yield Chimera: высокий APY как рекламный плакат над ямой
+11.1. Токен — не свеча, а договор о будущей боли
+11.2. Tokenomics Review: эмиссия, float, распределение, utility
+11.3. Unlock Calendar: будущая продажа ещё не случилась, но риск уже здесь
+11.4. On-Chain Flow: крупный перевод — факт, намерение — нет
+11.5. Whale Syndicate: кит двинулся, толпа написала легенду
+11.6. Infrastructure Risk: контракт, мост, ликвидность, выход
+11.7. Honeypot и Approval Risk: купить можно, выйти — это DLC
+11.8. Governance и Insider Asymmetry
+11.9. Yield Chimera: высокий APY как рекламный плакат над ямой
 ```
 
 ## Игровая реализация
@@ -976,7 +984,7 @@ No Trade quality
 
 ---
 
-# Модуль 11. Macro & Uncertainty / Макро и неопределённость
+# Модуль 12. Macro & Uncertainty / Макро и неопределённость
 
 > МАКРО НЕ НАЖИМАЕТ BUY.  
 > Оно просто делает цену нервной, а тебя — уверенным без причины.
@@ -998,13 +1006,13 @@ No Trade quality
 ## Главы
 
 ```text
-11.1. Macro Context: фон вероятностей, не кнопка направления
-11.2. Event Risk: рынок ждёт новость, а игрок уже празднует
-11.3. Risk-on / Risk-off: аппетит к риску как коллективное настроение
-11.4. Сценарное мышление: если A, если B, если ничего
-11.5. Confidence Calibration при неполных данных
-11.6. Wait перед событием: скучное решение, которое спасает систему
-11.7. Macro conflict: когда график и внешний фон спорят
+12.1. Macro Context: фон вероятностей, не кнопка направления
+12.2. Event Risk: рынок ждёт новость, а игрок уже празднует
+12.3. Risk-on / Risk-off: аппетит к риску как коллективное настроение
+12.4. Сценарное мышление: если A, если B, если ничего
+12.5. Confidence Calibration при неполных данных
+12.6. Wait перед событием: скучное решение, которое спасает систему
+12.7. Macro conflict: когда график и внешний фон спорят
 ```
 
 ## Игровая реализация
@@ -1029,7 +1037,7 @@ Discipline
 
 ---
 
-# Модуль 12. Mastery & Personal System / Мастерство и личная система
+# Модуль 13. Mastery & Personal System / Мастерство и личная система
 
 > УРОВЕНЬ ИГРОКА — НЕ ВРЕМЯ В ПРИЛОЖЕНИИ.  
 > Время в приложении есть и у ошибки.
@@ -1051,15 +1059,15 @@ Discipline
 ## Главы
 
 ```text
-12.1. Player Level ≠ PnL, часы, клики или коллекция карт
-12.2. Decision Trace: рынок забыл, система записала
-12.3. Personal Baseline: сравнение с собой, а не с легендой из чата
-12.4. Blind Spot: повторяющаяся слепая зона
-12.5. Weak Pattern: ошибка, которая умеет менять костюм
-12.6. Strong Edge: что ты действительно делаешь стабильно хорошо
-12.7. 7-day Edge Plan: неделя без героизма, только ремонт системы
-12.8. Rematch: не тот же сценарий, а та же угроза в новой маске
-12.9. Transfer Across Contexts: актив, режим, таймфрейм, позиция, серия
+13.1. Account Level ≠ PnL, часы, клики или коллекция карт
+13.2. Decision Trace: рынок забыл, система записала
+13.3. Personal Baseline: сравнение с собой, а не с легендой из чата
+13.4. Blind Spot: повторяющаяся слепая зона
+13.5. Weak Pattern: ошибка, которая умеет менять костюм
+13.6. Strong Edge: что ты действительно делаешь стабильно хорошо
+13.7. 7-day Edge Plan: неделя без героизма, только ремонт системы
+13.8. Rematch: не тот же сценарий, а та же угроза в новой маске
+13.9. Transfer Across Contexts: актив, режим, таймфрейм, позиция, серия
 ```
 
 ## Игровая реализация
@@ -1084,7 +1092,7 @@ process discipline
 
 ---
 
-# Модуль 13. Tournament Preparation / Турнирное мышление
+# Модуль 14. Tournament Preparation / Турнирное мышление
 
 > СКОРОСТЬ ВАЖНА.  
 > Но только после того, как решение перестало быть мусором.
@@ -1106,13 +1114,13 @@ process discipline
 ## Главы
 
 ```text
-13.1. Турнир — не гонка кликов
-13.2. Equal Scenario: одинаковая ситуация, разные головы
-13.3. Минимально достаточный анализ
-13.4. Protocol under pressure
-13.5. Evidence quality как главный турнирный фильтр
-13.6. Follow-up decision: второй ход часто выдаёт первый самообман
-13.7. Speed tie-breaker: быстро ошибиться можно и без турнира
+14.1. Турнир — не гонка кликов
+14.2. Equal Scenario: одинаковая ситуация, разные головы
+14.3. Минимально достаточный анализ
+14.4. Protocol under pressure
+14.5. Evidence quality как главный турнирный фильтр
+14.6. Follow-up decision: второй ход часто выдаёт первый самообман
+14.7. Speed tie-breaker: быстро ошибиться можно и без турнира
 ```
 
 ## Игровая реализация
@@ -1121,7 +1129,7 @@ process discipline
 Source Groups: до 5, одинаковые для всех.
 Cards: заданный loadout или tournament loadout.
 Protocols: одинаковые для всех участников.
-Scoring: Decision Quality → Protocol adherence → Evidence quality → Follow-up quality → Speed.
+Scoring: Quality Score → critical gates → confidence calibration error → Evidence Quality → declared tournament tie-breakers → deterministic server tie key. Speed is never part of Quality Score.
 ```
 
 Cards и Protocols являются частью ScenarioPackage и могут использоваться в Academy, Exam, Arena, Collection, Rematch, Series, Tournament и других historical scenarios. Loadout выдаётся по режиму:
@@ -1374,19 +1382,47 @@ rematch_logic: другой актив, другой таймфрейм, пох�
 
 # 8. Связь модулей со scoring engine
 
-| Scoring dimension | Главные модули | Что теория должна научить делать |
+Top-level Quality Score dimensions are canonical and executable:
+
+```text
+decision_quality
+protocol_adherence
+evidence_quality
+follow_up_decision_quality
+risk_management
+invalidation
+discipline
+entity_resistance
+confidence_calibration
+```
+
+Academy labels map to submetrics or telemetry; they are not additional per-run top-level score fields:
+
+| Academy label | Canonical destination | Главные модули |
 |---|---|---|
-| Context interpretation | 1, 3, 9, 11 | Определять режим, старший контекст, flow, macro фон |
-| Evidence quality | 0, 2, 8, 10 | Отличать факт от шума, проверять подтверждение и источники |
-| Hypothesis logic | 0, 1, 3, 11 | Строить условную гипотезу, а не пророчество |
-| Entry/condition quality | 1, 2, 5 | Входить по условию, зоне, ретесту, подтверждению |
-| Stop/invalidation logic | 0, 4, 6 | Знать, где идея отменяется |
-| Target/RR quality | 4, 5 | Выбирать цель по структуре и ликвидности |
-| Risk management | 4, 5, 6, 10 | Ограничивать риск до входа и внутри позиции |
-| Discipline | 6, 7, 12, 13 | Не разрушать систему эмоцией, серией или турниром |
-| Entity resistance | все | Распознавать скрытые повторяющиеся угрозы |
-| Protocol adherence | 0, 4, 7, 13 | Соблюдать обязательные правила миссии |
-| Confidence calibration | 0, 8, 9, 11, 12 | Подгонять уверенность под evidence, а не под желание |
+| Context interpretation | submetric of `evidence_quality` | 2, 4, 10, 12 |
+| Hypothesis logic | submetric of `decision_quality` | 1, 2, 4, 12 |
+| Entry/condition quality | submetric of `decision_quality` | 2, 3, 6 |
+| Target/RR quality | submetric of `risk_management` | 5, 6 |
+| Stop/invalidation logic | `invalidation`, partly `risk_management` | 1, 5, 7 |
+| No Trade quality | `decision_quality` and `discipline` | 1, 3, 8 |
+| Process discipline | submetric of `discipline` | 7, 8, 13, 14 |
+| Verified stability | progression/telemetry, not per-run score | 13 |
+| Transfer across contexts | progression/telemetry, not per-run score | 13 |
+| Entity resistance | `entity_resistance` | all |
+| Protocol adherence | `protocol_adherence` | 1, 5, 8, 14 |
+| Confidence calibration | `confidence_calibration` | 1, 9, 10, 12, 13 |
+
+Tournament ordering is separate from Quality Score:
+
+```text
+Quality Score
+→ critical gates passed
+→ confidence calibration error
+→ Evidence Quality
+→ Speed, only when declared by the tournament
+→ deterministic server tie key
+```
 
 ---
 
@@ -1493,6 +1529,28 @@ Confidence 55%, потому что evidence смешанный.
 16. Entity Field Guide / Полевой справочник сущностей
 17. Scenario Debrief Library / Библиотека разборов
 18. Personal Insight / Персональная аналитика
+
+Stable technical IDs are independent from display numbers:
+
+```text
+academy_intro
+decision_foundations
+price_structure
+breakout_validation
+higher_timeframe
+risk_invalidation
+liquidity_targets
+position_management
+discipline
+information_quality
+flow_derivatives_regime
+token_web3_risk
+macro_uncertainty
+mastery_personal_system
+tournament_preparation
+```
+
+CMS, analytics, progression and rematch use these IDs. Display numbers are presentation order only.
 
 Cross-skills:
 19. Confirmed Entry

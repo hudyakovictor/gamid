@@ -1,5 +1,13 @@
 # Signal Arena Observability and Incident Response
 
+Status: REQUIRED
+Scope: logs, metrics, traces, audit, alerts and incidents
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: instrumentation, alert delivery, incident drill, retention and redaction checks
+Canonical dependencies: `system_architecture.md`, `security_architecture.md`, `deployment_and_environments.md`
+
 ## Status
 
 The current foundation does not yet ship production logging. This document defines the contract so logging and alerting can be added without changing API semantics later.

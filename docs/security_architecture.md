@@ -1,5 +1,13 @@
 # Signal Arena Security Architecture
 
+Status: REQUIRED
+Scope: security, privacy, trust boundaries and release controls
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: security scan, auth/replay tests, CSP/CORS/CSRF checks, SSRF fixtures, audit and restore evidence
+Canonical dependencies: `system_architecture.md`, `deployment_and_environments.md`, `observability_and_incident_response.md`
+
 ## Purpose
 
 This document defines the security baseline for the public web surface, game API, admin control plane, data stores, workers, and release process. It is an implementation contract, not a claim that every control is already deployed.
@@ -14,7 +22,7 @@ Player browser / Telegram WebView
   → external providers through allowlisted backend adapters
 ```
 
-The client never connects directly to a database, Redis, queue, or external provider. The client is not authoritative for score, hidden future, outcome, Pips, Stars, inventory, entitlements, ranking, or admin permissions.
+The client never connects directly to a database, Redis, queue, or external provider. The client is not authoritative for score, hidden future, outcome, Coins, XP, Energy, Mastery Stars, inventory, entitlements, ranking, or admin permissions.
 
 ## Deployment boundary
 

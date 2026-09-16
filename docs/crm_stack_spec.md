@@ -1,5 +1,13 @@
 # SIGNAL ARENA — CRM Stack Specification
 
+Status: PLANNED
+Scope: Admin CRM, Admin API and operational control plane
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: RBAC, audit, step-up confirmation, Admin API contract and CRM E2E evidence
+Canonical dependencies: `ai_agent_operations_architecture.md`, `roadmap_and_release_control_plane.md`, `security_architecture.md`
+
 ## 1. Назначение
 
 CRM — отдельное административное приложение для управления backend, контентом, платежами, пользователями, турнирами, локализацией, AI-задачами и операционными процессами.
@@ -24,7 +32,7 @@ CRM не является частью Phaser-клиента и не импор�
 
 ### Backend access
 
-CRM работает только через отдельный Admin API.
+CRM работает только через отдельный Admin API. The API contract may be defined before the CRM UI is implemented; actual availability is tracked in `developing_status.md` and gate/evidence records.
 
 ```text
 CRM Browser
@@ -258,7 +266,7 @@ CRM использует общие Zod schemas из `packages/contracts`.
 
 ```text
 admin.example.com → CRM frontend
-api.example.com/admin → Admin API
+api.example.com → Admin API at /api/v1/admin/*
 ```
 
 Frontend CRM может быть развернут на Vercel/Cloudflare Pages, API — отдельно на VPS/container platform.
@@ -283,7 +291,7 @@ Frontend CRM может быть развернут на Vercel/Cloudflare Pages
 
 - full tournament moderation;
 - creator marketplace;
-- AI operations center;
+- AI operations center UI (the approval API contract remains required before any agent can apply a high-risk action);
 - economy simulator;
 - advanced cohort analytics;
 - multi-platform operations.

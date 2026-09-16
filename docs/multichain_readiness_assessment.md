@@ -1,5 +1,13 @@
 # SIGNAL ARENA — Multichain Readiness Assessment
 
+Status: PLANNED
+Scope: future platform adapters and portability assessment
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: adapter compatibility, entitlement migration, security and platform acceptance before activation
+Canonical dependencies: `full_game_spec.md`, `system_architecture.md`, `economy_monetization_referrals.md`
+
 ## Verdict
 
 Архитектура должна поддерживать будущий выход за Telegram без копирования игры и backend. Сейчас это подготовка контрактов и границ, а не готовность к немедленному запуску всех платформ.

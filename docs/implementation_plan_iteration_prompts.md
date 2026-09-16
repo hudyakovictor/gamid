@@ -1,5 +1,13 @@
 # Signal Arena — Implementation Plan, Iteration Gates & Prompt Library
 
+Status: PLANNED
+Scope: implementation sequence, task gates and prompt routing
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: selected task context, gate results, evidence and explicit status
+Canonical dependencies: `../AGENTS.md`, `README.md`, `developing_status.md`, `roadmap_and_release_control_plane.md`
+
 > **DOCUMENT ROLE: HUMAN-ONLY CONTROL DOCUMENT**
 >
 > This file is not an automatic instruction set for coding agents. Agents must not use this document wholesale at startup. The owner selects one task prompt, provides only the relevant context, and runs the required verification prompt separately.
@@ -59,8 +67,8 @@ ITERATION 00 Contract and state machine
   → ITERATION 03 Main visual client and visual lab
   → ITERATION 04 Scenario engine and scoring
   → ITERATION 05 Real API and persistence
-  → ITERATION 06 Progression and Pips
-  → ITERATION 07 Pip Shop and cosmetics
+  → ITERATION 06 Progression and economy
+  → ITERATION 07 Coin Shop and cosmetics
   → ITERATION 08 Stars and monetization
   → ITERATION 09 Referral
   → ITERATION 10 Tournaments
@@ -137,7 +145,7 @@ Check:
 - exact English Entity names;
 - Level 1–99 rules;
 - deterministic scoring;
-- Pip ledger and entitlement integrity;
+- Coins ledger and entitlement integrity;
 - referral and tournament constraints;
 - asset IDs, provenance, licenses, fallbacks, and release safety;
 - loading/error/locked/sealed/result states;

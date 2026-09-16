@@ -1,5 +1,13 @@
 # Signal Arena Documentation Map
 
+Status: REQUIRED
+Scope: documentation navigation
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: link audit and status audit
+Canonical dependencies: `README.md`, `../AGENTS.md`
+
 Start at `README.md`.
 
 ## Mandatory project context
@@ -12,9 +20,9 @@ Start at `README.md`.
 
 - `full_game_spec.md`
 - `academy_plan.md`
-- `style-tone.txt`
-- `brand.md`
-- `competitors.md`
+- `style-tone.txt` — text voice only
+- `brand.md` — visual direction only
+- `competitors.md` — `RESEARCH_NON_CANONICAL`
 
 Executable contracts and validation are canonical for implementation boundaries:
 
@@ -48,8 +56,10 @@ Executable contracts and validation are canonical for implementation boundaries:
 ## Economy and growth
 
 - `economy_monetization_referrals.md`
-- `monetization.txt`
+- `game_balance_spec.md`
+- `catalog_sku_spec.md`
 - `topbar_currency_ui_spec.md`
+- `monetization.txt` — `DEPRECATED`
 - `referral_and_growth_spec.md`
 - `multichain_readiness_assessment.md`
 
@@ -65,6 +75,8 @@ Executable contracts and validation are canonical for implementation boundaries:
 - `../apps/client-prototype/src/phaser-runtime.ts`
 - `../apps/client-prototype/src/scenes.ts`
 - `../apps/client-prototype/viewport-qa.json` — planned browser/responsive/accessibility evidence
+
+The canonical root screen is `arena_hub`; `Home` and `Lobby` are deprecated aliases. Mission names are destinations, and Skill Hand is a Decision Workspace component.
 
 ## Status and navigation
 

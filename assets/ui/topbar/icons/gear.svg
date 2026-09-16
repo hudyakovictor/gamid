@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="gearGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4F8FF"/>
+      <stop offset="50%" stop-color="#C9DBF5"/>
+      <stop offset="100%" stop-color="#9AB6DC"/>
+    </linearGradient>
+    <linearGradient id="gearHi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- perfectly symmetric 8-tooth gear -->
+  <path d="M 20.565 10.222 L 21.028 5.234 A 19 19 0 0 1 26.972 5.234 L 27.435 10.222 A 14.2 14.2 0 0 1 31.314 11.828 L 35.168 8.629 A 19 19 0 0 1 39.371 12.832 L 36.172 16.686 A 14.2 14.2 0 0 1 37.778 20.565 L 42.766 21.028 A 19 19 0 0 1 42.766 26.972 L 37.778 27.435 A 14.2 14.2 0 0 1 36.172 31.314 L 39.371 35.168 A 19 19 0 0 1 35.168 39.371 L 31.314 36.172 A 14.2 14.2 0 0 1 27.435 37.778 L 26.972 42.766 A 19 19 0 0 1 21.028 42.766 L 20.565 37.778 A 14.2 14.2 0 0 1 16.686 36.172 L 12.832 39.371 A 19 19 0 0 1 8.629 35.168 L 11.828 31.314 A 14.2 14.2 0 0 1 10.222 27.435 L 5.234 26.972 A 19 19 0 0 1 5.234 21.028 L 10.222 20.565 A 14.2 14.2 0 0 1 11.828 16.686 L 8.629 12.832 A 19 19 0 0 1 12.832 8.629 L 16.686 11.828 A 14.2 14.2 0 0 1 20.565 10.222 Z"
+    fill="url(#gearGrad)" stroke="#6E8DB8" stroke-width="1.4" stroke-linejoin="round"/>
+  <!-- top gloss -->
+  <ellipse cx="24" cy="13.5" rx="9" ry="3.6" fill="url(#gearHi)" opacity="0.55"/>
+  <!-- center hole -->
+  <circle cx="24" cy="24" r="8.2" fill="#0A2540" stroke="#6E8DB8" stroke-width="1.4"/>
+  <circle cx="24" cy="24" r="8.2" fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="0.8" stroke-dasharray="0 0"/>
+</svg>

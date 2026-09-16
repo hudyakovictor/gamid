@@ -1,5 +1,13 @@
 # SIGNAL ARENA — Acceptance Matrix
 
+Status: REQUIRED
+Scope: product and release acceptance gates
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: valid gate/evidence records for the relevant commit, environment, contract version and fixture version
+Canonical dependencies: `developing_status.md`, `roadmap_and_release_control_plane.md`, `security_architecture.md`, `deployment_and_environments.md`
+
 | Area | Minimum acceptance |
 |---|---|
 | Contracts | Zod schemas shared by client, API and CRM; contract tests pass |
@@ -18,5 +26,7 @@
 | AI | Jobs versioned, schema-validated and approval-controlled |
 | Observability | Request ID, structured errors, audit events and alerts exist |
 | Recovery | Backup and restore drill passed; rollback path documented |
-| Client | Loading/error/empty/reduced-motion states; no authoritative logic in client |
-| Release | typecheck, lint, tests, smoke, secret scan and build pass |
+| Client | Loading/error/empty/reduced-motion states; no authoritative logic in client; browser visual/responsive/accessibility evidence |
+| Scenario pipeline | provider adapter, point-in-time snapshot, scheduling, ScenarioPackage ingestion/publication, immutable hash and recorded replay evidence |
+| Release | typecheck, lint, tests, smoke, secret scan and build pass; evidence and explicit status exist |
+| Commercial Alpha | Telegram production auth, PostgreSQL, migrations, backup/restore drill, future-leak tests, deterministic scoring replay, CSP, CORS, timeouts, shared Redis-compatible rate limiting, request IDs, structured logs, alerts, rollback, audited Admin operations, spend limits, asset provenance and payment reconciliation |

@@ -1,5 +1,15 @@
 # SIGNAL ARENA — System Architecture
 
+Status: REQUIRED
+Scope: target technical architecture and deployment boundaries
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: architecture review, security review, deployment rehearsal, observability and recovery evidence
+Canonical dependencies: `security_architecture.md`, `deployment_and_environments.md`, `observability_and_incident_response.md`, `../packages/contracts/src/scenario.ts`
+
+This document defines the required target architecture. It does not confirm that every control is implemented. Actual status is recorded only in `developing_status.md` and gate/evidence records.
+
 ## 1. Monorepo structure
 
 ```text
@@ -76,7 +86,7 @@ The API is stateless between requests. Scenario truth, run state, score, balance
 
 ## 4. Security and observability boundaries
 
-The API validates every request and response through shared contracts, enforces authentication and authorization, applies timeouts and rate limits, and emits structured logs with request/trace IDs. The client never calls databases or external providers. Admin mutations require separate access control and append-only audit events. See `security_architecture.md`, `deployment_and_environments.md`, `performance_and_scaling.md`, and `observability_and_incident_response.md`.
+Production system must validate every request and response through shared contracts, enforce authentication and authorization, apply timeouts and shared rate limits, and emit structured logs with request/trace IDs. The client never calls databases or external providers. Admin mutations require separate access control and append-only audit events. Current implementation status is recorded in `developing_status.md`. See `security_architecture.md`, `deployment_and_environments.md`, `performance_and_scaling.md`, and `observability_and_incident_response.md`.
 
 ## 5. Game client stack
 
@@ -214,7 +224,7 @@ blockers
 evidence
 ```
 
-Each module contains domain types, commands, queries, schemas, repositories, services, handlers and tests. Roadmap, gate, blocker, evidence, dependency, and release-control records are authoritative operational data exposed to Admin CRM through Admin API. See `roadmap_and_release_control_plane.md`.
+Each module contains domain types, commands, queries, schemas, repositories, services, handlers and tests. The target architecture requires roadmap, gate, blocker, evidence, dependency and release-control records to become authoritative operational data exposed to Admin CRM through Admin API. Current implementation status is recorded separately in `developing_status.md` and gate/evidence records. See `roadmap_and_release_control_plane.md`.
 
 ## 10. Public profiles and cosmetics
 
@@ -245,8 +255,9 @@ item_type
 rarity
 asset_manifest_id
 preview_asset_url
-price_xtr
+price_coins
 price_usd_reference
+optional_direct_stars_price
 supply_limit
 availability_start
 availability_end
@@ -284,12 +295,14 @@ Backend-first flow:
 ```text
 catalog
 → preview
-→ order
-→ Telegram Stars confirmation
+→ Coins spend authorization
+→ ledger mutation
 → entitlement
 → inventory
 → equip
 → public profile/tournament render
+
+Coin Pack acquisition uses the Telegram Stars confirmation flow. Direct Stars entitlement is an exceptional, separately approved path only.
 ```
 
 Endpoints:
@@ -464,7 +477,7 @@ FEATURE_TOKEN_ROADMAP_BANNER
 - Fastify API;
 - Drizzle schema;
 - Telegram auth;
-- Stars orders and entitlements;
+- Telegram Stars Coin Pack orders and server-authoritative entitlements;
 - store shell;
 - Founder Pack feature flag;
 - cosmetics item model;
@@ -472,7 +485,7 @@ FEATURE_TOKEN_ROADMAP_BANNER
 - tournament database schema;
 - typed contracts;
 - localization keys;
-- structured logs and audit.
+- production structured logs and audit controls (required; current status is tracked separately).
 
 ### Document now, implement later
 

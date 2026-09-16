@@ -1,5 +1,13 @@
 # Signal Arena — AI Agent Operations Architecture
 
+Status: PLANNED
+Scope: isolated agent roles, data boundaries, approvals and AI operations
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: agent manifest, policy checks, approval, audit, idempotency and rollback evidence
+Canonical dependencies: `system_architecture.md`, `security_architecture.md`, `crm_stack_spec.md`, `roadmap_and_release_control_plane.md`
+
 ## Status
 
 This document defines the planned AI-assisted operating model for a solo founder or a very small team. It does not authorize autonomous production changes. Agents are bounded workers that produce drafts, evidence, tests, analyses, and proposals; humans remain accountable for high-impact decisions.
@@ -22,7 +30,7 @@ No agent may autonomously:
 
 - publish a scenario or reveal hidden future data;
 - change scoring dimensions, rubrics, ranking, or risk rules;
-- grant Pips, Stars, entitlements, refunds, or payment status;
+- grant Coins, entitlements, refunds, or payment status;
 - change authentication, authorization, secrets, or security policy;
 - ban users or delete personal data;
 - deploy directly to production;
@@ -54,7 +62,7 @@ Agents never receive unrestricted database credentials. They work from immutable
 | Content Agent | Theory Modules, Worked Examples, Cards, Protocol copy | canonical docs, approved source snapshots, fixtures | draft content and links | content editor publishes |
 | Scenario Research Agent | historical sources and provenance | provider snapshots and source registry | normalized source proposal | researcher validates point-in-time truth |
 | Scenario QA Agent | schema, t0, future-leak, hidden Entity checks | ScenarioPackage fixtures | validation report and failing cases | content editor resolves failures |
-| Balance Agent | scoring, progression, Pips and difficulty simulations | synthetic fixtures and anonymized aggregates | simulation report and change proposal | game designer approves |
+| Balance Agent | scoring, progression, economy and difficulty simulations | synthetic fixtures and anonymized aggregates | simulation report and change proposal | game designer approves |
 | Analytics Agent | funnels, retention, transfer, calibration, errors | aggregated metrics | dashboard notes and hypotheses | founder approves experiments |
 | Marketing Agent | acquisition, activation, conversion and experiment design | aggregate campaign/funnel data | copy drafts, experiment proposals, budget hypotheses | founder approves claims and spend |
 | Localization Agent | translations and terminology consistency | locale files and glossary | draft translations | human reviewer publishes |
@@ -184,7 +192,7 @@ hypothesis
 → monitored rollback window
 ```
 
-The Balance Agent cannot optimize for lucky PnL, compulsive sessions, pay-to-win, or score manipulation. Pips and Stars remain non-authoritative for score, outcome, ranking, risk, and matchmaking.
+The Balance Agent cannot optimize for lucky PnL, compulsive sessions, pay-to-win, or score manipulation. Coins, XP, Energy, and Mastery Stars remain non-authoritative for score, outcome, ranking, risk, and matchmaking.
 
 ### Marketing workflow
 
@@ -338,4 +346,4 @@ Required alerts:
 - [ ] agent budget and rate limits are enforced;
 - [ ] prompt injection and data-exfiltration tests pass;
 - [ ] rollback exists for every enabled mutation;
-- [ ] no agent can change score, outcome, ranking, risk, or Pips/Stars advantage.
+- [ ] no agent can change score, outcome, ranking, risk, or Coins/XP/Energy/Mastery advantage.

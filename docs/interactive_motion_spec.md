@@ -1,5 +1,13 @@
 # SIGNAL ARENA — Interactive & Motion Specification
 
+Status: REQUIRED
+Scope: client interaction and motion behavior
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: conflicting local motion contracts and legacy Home/Lobby terminology
+Required evidence: visual QA, responsive QA, accessibility QA, reduced-motion QA, state-transition tests
+Canonical dependencies: `motion_interaction_system_spec.md`, `full_game_spec.md`, `../packages/contracts/src/scenario.ts`
+
 ## 1. Цель
 
 Интерактив и анимация должны объяснять состояние решения, усиливать обучение и удерживать внимание без casino-like reward loops.
@@ -13,14 +21,22 @@
 
 ## 2. Motion principles
 
-- 200–500 ms для критических переходов.
-- 700–1200 ms для полноценных reveal-сцен.
-- Reduced-motion mode обязателен.
-- Анимация не должна скрывать данные.
-- Анимация не должна задерживать доступ к действию.
-- Никаких coin showers, slot-machine flashes и случайных loot-box эффектов.
+Canonical duration tokens are defined in `motion_interaction_system_spec.md`:
 
-## 3. Home / boot
+```text
+instant = 0–80 ms
+fast = 120 ms
+standard = 180 ms
+emphasis = 240 ms
+reveal = 400 ms
+celebration = 600 ms maximum
+```
+
+Reduced-motion mode is mandatory. It removes camera travel, parallax, shake and decorative particles while preserving state order, text confirmation, focus and meaning. Required transitions should remain approximately within 100–150 ms in reduced-motion mode.
+
+Animation must not hide data or delay access to an action. No coin showers, slot-machine flashes or loot-box presentation.
+
+## 3. Arena Hub / boot
 
 ### Логотип
 
@@ -28,7 +44,7 @@
 
 ### Idle
 
-Фоновая сетка едва заметно дышит. Один акцентный pulse раз в 4–8 секунд.
+The Arena Hub remains visually stable at idle. Decorative motion is not used as a state signal; any pulse must be tied to a real status or interaction change.
 
 ### Доступность
 
@@ -65,7 +81,7 @@
 ## 7. Cards
 
 - Карта вынимается из hand в центр workspace.
-- Применение запускает 300–500 ms evidence animation.
+- Применение запускает `reveal` evidence animation (400 ms maximum, interruptible).
 - Использованный слот становится stamp `APPLIED`.
 - Лимит внимания показывается слотами, а не красной шкалой.
 
@@ -78,16 +94,40 @@
 
 Long и Short не должны иметь «победный» и «проигрышный» цвет. Цвет показывает действие, не качество.
 
-## 9. Decision lock
+## 9. Decision Seal
+
+Canonical state flow:
 
 ```text
-pause 250 ms
-→ seal Decision Recorded
-→ freeze input
-→ reveal future
+valid local decision
+→ local validation feedback
+→ controls enter pending/frozen state
+→ POST Seal
+→ server accepts immutable decision
+→ Decision Recorded
+→ resolving
+→ server returns authorized reveal
+→ historical future
+→ outcome
+→ Quality Score
+→ debrief
 ```
 
-До server confirmation нельзя показывать окончательный результат.
+Before server confirmation the client may show only:
+
+```text
+Sealing decision…
+Проверяем и фиксируем решение…
+```
+
+Before confirmation it must not show `Decision Recorded`, historical future, outcome, score, Entity reveal or debrief conclusion. On an ambiguous network result, the client must query run state before unlocking controls:
+
+```text
+GET run state
+→ sealed: continue Reveal
+→ started: allow safe retry
+→ unknown: show recovery state
+```
 
 ## 10. Future reveal
 
@@ -151,20 +191,20 @@ Founder Pack открывается как архивный dossier:
 - trust copy рядом с CTA;
 - animated badge reveal после подтверждённого платежа.
 
-## 15. Ads
+## 15. Rewarded Ads
 
-Rewarded ad — добровольный контракт:
+Rewarded ad — добровольный contract with only canonical rewards:
 
 ```text
-reward preview
-→ ad duration
+reward preview: +1 Energy or cosmetic fragment
 → user confirmation
 → ad
 → server callback
+→ server-side cap and session validation
 → reward stamp
 ```
 
-Награда появляется только после подтверждения сервера.
+One completed rewarded ad grants `+1 Energy` by default. It grants no direct XP, direct Mastery Stars, Rating, tournament use, score modifier or hidden information. No automatic ad follows a failed decision.
 
 ## 16. Social sharing
 
@@ -197,23 +237,34 @@ Payment: «Платёж не подтверждён. Entitlement не выдан
 Refund: «Доступ возвращён в состояние до покупки».
 ```
 
-## 19. Implementation contracts
+## 19. Canonical MotionContract
 
-Каждая важная анимация должна иметь:
+Every important animation uses the same contract:
 
 ```text
 motion_id
 trigger
-precondition
-visual_state_change
-duration_ms
-sound_id
-haptic_id
-reduced_motion_variant
+source_state
+target_state
+duration_token
+easing_token
+interruptible
+blocking
+reduced_motion_behavior
+sound_cue
+haptic_cue
 analytics_event
 ```
 
 ## 20. Acceptance checklist
+
+```text
+[ ] Arena Hub is the only canonical root-screen name.
+[ ] Decision Recorded is shown only after server-confirmed immutable Seal.
+[ ] Ambiguous Seal requests recover through GET run state.
+[ ] Rewarded ads grant only canonical rewards after server verification.
+[ ] Motion uses the shared MotionContract and duration tokens.
+```
 
 ```text
 [ ] Анимация не выдаёт будущий outcome.

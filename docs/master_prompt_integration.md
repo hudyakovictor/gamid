@@ -1,5 +1,13 @@
 # SIGNAL ARENA — Master Prompt Integration
 
+Status: REQUIRED
+Scope: agent routing, precedence and evidence reporting
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: prompt routing audit, report schema validation and acceptance status
+Canonical dependencies: `../AGENTS.md`, `README.md`, `developing_status.md`, `../packages/contracts/src/scenario.ts`
+
 ## Назначение
 
 Большой master prompt пользователя не должен оставаться только внешним текстом в Arena.ai. Его правила разделяются по уровням, чтобы не было противоречий и чтобы любой агент мог начать работу по ссылке на репозиторий.
@@ -41,13 +49,14 @@ docs/security_architecture.md
 При конфликте использовать такой порядок:
 
 ```text
-1. Security, privacy and data integrity.
-2. README and current developing_status phase.
-3. docs/full_game_spec.md and docs/academy_plan.md.
-4. docs/system_architecture.md and docs/acceptance_matrix.md.
-5. docs/security_architecture.md, deployment and observability controls.
-6. docs/monetization.txt rules and deferred-platform decisions.
+1. Security, privacy, legal and data integrity invariants.
+2. Executable contracts and validation boundaries.
+3. `docs/developing_status.md` plus gate/evidence records for actual implementation status.
+4. `docs/full_game_spec.md` and `docs/academy_plan.md` for product and learning rules.
+5. Specialized canonical documents: economy, balance, catalog SKU, Top Bar, motion and assets.
+6. Roadmap and implementation plans for sequence, not current acceptance.
 7. Current implementation, only where it does not contradict the documents above.
+8. Research, audits and deprecated documents are non-canonical inputs.
 ```
 
 ## Как использовать в Arena.ai
@@ -139,6 +148,7 @@ not implemented list
 ```text
 Role:
 Phase:
+Status: ACCEPTED | BLOCKED | REJECTED
 Task:
 Scope:
 Files changed:
@@ -149,7 +159,10 @@ Feature flags:
 Analytics events:
 Commands run:
 Tests:
+Acceptance checklist:
+Failed gates:
 Screenshots/evidence:
+Gate IDs / evidence IDs:
 Risks:
 Not implemented:
 Rollback plan:

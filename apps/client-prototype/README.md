@@ -6,7 +6,7 @@ This is a Vite-packaged Phaser 4.2.1 client prototype with an executable histori
 
 - fixed `100dvh` viewport with no page scroll;
 - compact one-row top bar without logo;
-- XP and Profile left, Pips/Stars/utilities right;
+- XP and Profile left, Energy/Mastery/Coins/utilities right;
 - responsive mobile menu;
 - contextual route screens;
 - Academy and Mission rails with Previous/Next and counters;
@@ -32,7 +32,7 @@ This is an executable foundation slice, not a production release. It does not ye
 - real historical provider ingestion in the client flow;
 - production candle renderer and chart semantics;
 - browser E2E, visual viewport evidence or full accessibility behavior;
-- real Pips ledger;
+- real Coins ledger;
 - purchases or entitlements;
 - production asset/audio approval;
 - complete scoring governance beyond the server foundation service.

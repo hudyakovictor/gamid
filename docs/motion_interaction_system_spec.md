@@ -1,5 +1,13 @@
 # Signal Arena — Motion and Interaction System Specification
 
+Status: REQUIRED
+Scope: motion tokens, interaction state transitions and motion QA
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: conflicting motion duration and interaction contracts
+Required evidence: visual regression, responsive QA, accessibility QA, reduced-motion QA, state-transition tests
+Canonical dependencies: `interactive_motion_spec.md`, `full_game_spec.md`, `asset_provenance_and_workflow.md`
+
 > Human planning document. This specification defines motion behavior, interaction rhythm, animation tokens, and implementation routing. It is not an automatic startup prompt for agents.
 
 ## 1. Purpose
@@ -24,19 +32,19 @@ Motion communicates state, hierarchy, causality, progress, and reward. It must n
 
 Use for input acknowledgement: button press, Card selection, source opening, evidence selection, confidence change, and invalidation acceptance.
 
-Target duration: 100–180 ms.
+Target token: `fast` (120 ms), with `instant` for non-essential acknowledgement.
 
 ### Layer B — State transition
 
 Use for stage changes, source trays, Decision Sheet expansion, result reveal, progress updates, and screen navigation.
 
-Target duration: 200–400 ms.
+Target token: `standard` (180 ms), `emphasis` (240 ms) or `reveal` (400 ms) according to the state transition.
 
 ### Layer C — Rare celebration
 
 Use for scenario completion, Entity identification, mastery milestone, tournament result, seasonal reward, and level-up.
 
-Target duration: 500–900 ms, skippable. The celebration must not block the next meaningful action unnecessarily.
+Target token: `celebration` (600 ms maximum), skippable. The celebration must not block the next meaningful action unnecessarily.
 
 ## 3. Easing vocabulary
 
@@ -82,13 +90,12 @@ Use only for rare reveal, completion, mastery, or major reward moments.
 
 ```ts
 type MotionTokens = {
-  instant: 100;
-  micro: 160;
-  responsive: 220;
-  standard: 300;
-  transition: 380;
-  celebration: 650;
-  maximumBlocking: 900;
+  instant: 0-80;
+  fast: 120;
+  standard: 180;
+  emphasis: 240;
+  reveal: 400;
+  celebration: 600;
 };
 
 type Easings = {
@@ -100,27 +107,28 @@ type Easings = {
 };
 ```
 
-These are starting tokens. Tune them through playtests and visual QA. Frequent interactions should be shorter; rare transitions can be more expressive.
+These are canonical tokens. A transition must use one of these tokens rather than inventing a separate duration range in another document. Celebration is skippable and never exceeds 600 ms. Reduced-motion behavior removes travel, parallax, shake and decorative particles, preserves state order and text/focus confirmation, and keeps mandatory transitions approximately within 100–150 ms.
 
-## 5. Animation naming
+## 5. Canonical MotionContract
 
-Every animation declares:
+Every animation uses the same contract:
 
 ```text
-purpose
+motion_id
 trigger
-from state
-through state
-end state
-direction
-easing
-duration
-interruptibility
-reduced-motion fallback
-sound, if any
+source_state
+target_state
+duration_token
+easing_token
+interruptible
+blocking
+reduced_motion_behavior
+sound_cue
+haptic_cue
+analytics_event
 ```
 
-Canonical names:
+`purpose`, causal intent and visual state change are documented by the motion definition; they are not a second schema. Canonical names:
 
 ```text
 screen_enter_fade
@@ -135,7 +143,7 @@ decision_seal_lock
 outcome_reveal
 score_count_up
 progress_fill
-pip_reward_fly
+coin_reward_fly
 entity_identify
 scenario_complete
 rematch_ready
@@ -170,14 +178,14 @@ Rules:
 Use `shared_axis_forward` when going deeper and `shared_axis_back` when returning:
 
 ```text
-Lobby → Academy
-Academy → Scenario Brief
+Arena Hub → Academy
+Arena Hub → Scenario Brief
 Scenario Brief → Decision Workspace
 Decision Workspace → Debrief
 Debrief → Rematch
 ```
 
-Use 250–380 ms. Do not combine full-screen fade, large slide, scale, blur, and particles in one ordinary transition.
+Use the `standard`, `emphasis` or `reveal` token according to the state change. Do not combine full-screen fade, large slide, scale, blur and particles in one ordinary transition.
 
 ### Within one screen
 
@@ -199,9 +207,9 @@ When a task has four sequential decisions, do not require a redundant bottom `Ne
 
 ```text
 Player selects answer
-→ selection feedback 100–160 ms
-→ comprehension pause 350–700 ms
-→ automatic transition 220–300 ms
+→ selection feedback `fast`
+→ comprehension pause 350–700 ms (a comprehension pause, not a transition token)
+→ automatic transition `standard`
 ```
 
 Rules:
@@ -223,8 +231,8 @@ The pause is a comprehension window, not dead time.
 
 ```text
 press scale: 0.97
-highlight: 120–160 ms
-settle: 120 ms
+highlight: `fast`
+settle: `fast`
 ```
 
 Use sound only for meaningful confirmation, not every navigation click.
@@ -252,32 +260,36 @@ Use local shake or edge pulse, not a full-screen red flash:
 
 ```text
 invalid input
-→ 120–180 ms local feedback
+→ `fast` local feedback
 → concise explanation
 → focus remains on failing field
 ```
 
-## 9. Decision seal
+## 9. Decision Seal
 
-Decision seal is a critical irreversible state:
+Decision Seal is a critical irreversible state:
 
 ```text
-final action
-→ brief anticipation
-→ seal lock
-→ controls freeze
-→ resolving state
+valid local decision
+→ local validation feedback
+→ controls enter pending/frozen state
+→ POST Seal
+→ server accepts immutable decision
+→ Decision Recorded
+→ resolving
+→ server returns authorized reveal
 ```
 
-Recommended sequence:
+Before server confirmation, show only a pending/sealing state. Do not show `Decision Recorded`, historical future, outcome, score, Entity reveal or debrief conclusion. If the request is ambiguous, query run state before unlocking controls:
 
-1. Decision button receives press feedback.
-2. Decision Sheet compresses slightly and shows the chosen action.
-3. Seal icon closes in 220–300 ms.
-4. Editable controls become visibly locked.
-5. Resolver begins.
+```text
+GET run state
+→ sealed: continue Reveal
+→ started: allow safe retry
+→ unknown: show recovery state
+```
 
-Do not use a long cinematic animation before seal.
+Do not use a long cinematic animation before the server-confirmed Seal.
 
 ## 10. Reveal choreography
 
@@ -292,11 +304,11 @@ resolver complete
 
 Suggested timing:
 
-- future chart segment: 350–500 ms;
-- key marker: 180–250 ms;
-- outcome label: 220–300 ms;
-- score count-up: 500–700 ms and skippable;
-- debrief rows: 80–120 ms stagger, maximum four rows at once.
+- future chart segment: `reveal`;
+- key marker: `emphasis`;
+- outcome label: `standard`;
+- score count-up: `celebration` maximum and skippable;
+- debrief rows: `instant`/`fast` stagger, maximum four rows at once.
 
 Do not animate every candle or paragraph independently. Stage the causal event first, then explain it.
 
@@ -310,7 +322,7 @@ The completion moment should feel satisfying while remaining specific to learnin
 3. Decision Quality stamp appears.
 4. Entity state updates if applicable.
 5. Skill progress fills.
-6. PipGem reward travels to Top Bar.
+6. Coin reward travels to Top Bar.
 7. Rematch action becomes available.
 ```
 
@@ -328,32 +340,32 @@ Improved rematch
 
 Do not celebrate lucky outcome as excellent process.
 
-## 12. Progress and Pip animation
+## 12. Progress and reward animation
 
 ### Counter
 
 ```text
 start value
 → count/interpolate
-→ settle with 100–160 ms pulse
+→ settle with a `fast` pulse
 ```
 
-Keep count-up under 700 ms. If the number is not central, update immediately with a short highlight.
+Keep count-up within the `celebration` token. If the number is not central, update immediately with a short highlight.
 
 ### Progress
 
 Use `ease-out` for bar/ring fill. Keep the endpoint visible.
 
-### PipGem
+### Coin reward
 
 ```text
 reward source
-→ shard travels along short arc
-→ Top Bar PipGem pulses
+→ coin travels along short arc
+→ Top Bar coin counter pulses
 → counter increments
 ```
 
-Duration: 450–650 ms, with instant reduced-motion fallback.
+Duration: `celebration` (600 ms maximum), with `instant` reduced-motion fallback.
 
 ## 13. Motion hierarchy rules
 
@@ -384,23 +396,23 @@ If everything moves, nothing has priority.
 
 ## 14. Interaction contract
 
-```ts
-type InteractionSpec = {
-  id: string;
-  trigger: "tap" | "click" | "selection" | "drag" | "timer" | "api_success";
-  stateBefore: string;
-  stateAfter: string;
-  feedbackAnimation: string;
-  autoAdvance?: {
-    enabled: boolean;
-    delayMs: number;
-    cancellable: boolean;
-  };
-  nextAction: string;
-  canUndo: boolean;
-  interruptionPolicy: "queue" | "cancel" | "pause" | "ignore";
-  reducedMotionBehavior: string;
-};
+Motion and interaction behavior use the canonical `MotionContract` from §5. Auto-advance, undo, focus and interruption behavior are documented as behavior of the source and target states; they do not introduce a second incompatible contract schema.
+
+Every interaction definition must reference:
+
+```text
+motion_id
+trigger
+source_state
+target_state
+duration_token
+easing_token
+interruptible
+blocking
+reduced_motion_behavior
+sound_cue
+haptic_cue
+analytics_event
 ```
 
 ## 15. Motion state machine
@@ -409,14 +421,17 @@ type InteractionSpec = {
 idle
 → hovered/focused
 → pressed
-→ selected
-→ confirmed
-→ advancing
+→ locally_validated
+→ pending_seal
+→ frozen
+→ server_confirmed_seal
 → resolving
 → revealed
 → rewarded
 → ready_for_next
 ```
+
+`server_confirmed_seal` is the only state that may transition to authorized future, outcome, score, Entity reveal or debrief conclusion. Ambiguous network results enter recovery and query run state before returning to `frozen` or `ready_for_next`.
 
 Test invalid transitions.
 
@@ -455,7 +470,7 @@ When `prefers-reduced-motion` is enabled:
 - [ ] Auto-advance interruption is tested.
 - [ ] Seal is visibly irreversible.
 - [ ] Reveal emphasizes cause before decoration.
-- [ ] Progress and Pip rewards are understandable.
+- [ ] Progress and coin rewards are understandable.
 - [ ] Completion celebration rewards process quality.
 - [ ] No casino-like reward presentation.
 - [ ] Reduced motion works.

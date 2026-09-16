@@ -295,7 +295,7 @@ export class DebriefScene extends Phaser.Scene {
     const width = Math.min(widthFor(this) - 40, 900);
     addSectionCard(this, left, 105, width, 150);
     addText(this, left + 24, 130, `Decision Quality · ${score.score} / 100`, 25, "#53f2b2");
-    addText(this, left + 24, 180, "The score is server-authoritative and does not use Pips, Stars or a lucky outcome.", 14, COLORS.muted);
+    addText(this, left + 24, 180, "The score is server-authoritative and does not use Coins, purchases or a lucky outcome.", 14, COLORS.muted);
 
     const entries = Object.entries(score.breakdown);
     entries.forEach(([dimension, value], index) => {

@@ -2,6 +2,14 @@
 
 Start here for project documentation. This hub is a human navigation layer; agents should receive only relevant linked documents.
 
+Status: REQUIRED
+Scope: documentation governance
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: link audit, contradiction audit, status/evidence cross-check
+Canonical dependencies: `../AGENTS.md`, executable contracts, current `developing_status.md`
+
 ## Documentation policy
 
 Audit outputs and simulation outputs are internal decision inputs. They are not canonical product specifications. Only resulting product decisions belong in active documents.
@@ -20,22 +28,26 @@ AGENTS.md
 
 1. `full_game_spec.md` — product, game loop, Cards, unified Entities, Academy/Exam/Arena, scoring, Decision Trace, and core UX.
 2. `academy_plan.md` — curriculum, learning outcomes, Source Groups, Cards, Protocols, Entities, progression, and mastery.
-3. `style-tone.txt` and `brand.md` — voice and visual identity.
-4. `system_architecture.md` — technical architecture and deployment boundaries.
-5. `master_prompt_integration.md` — implementation principles.
+3. `style-tone.txt` — player-facing text voice only; `brand.md` — visual direction only.
+4. `system_architecture.md` — required target architecture and deployment boundaries.
+5. `master_prompt_integration.md` — implementation principles and agent routing.
 6. `implementation_plan_iteration_prompts.md` — human-controlled iteration plan, Definition of Done, focused prompts, and periodic audit.
-7. `../packages/contracts/src/scenario.ts` — executable ScenarioPackage contract and public projection boundary.
+7. `../packages/contracts/src/scenario.ts` — executable ScenarioPackage and scoring contract.
 8. `../packages/content/src/validate.ts` — executable Source Group, t0, and future validation.
-9. `motion_interaction_system_spec.md` — motion, easing, preloader, screen transitions, auto-advance, celebrations, accessibility, and motion QA.
+9. `motion_interaction_system_spec.md` and `interactive_motion_spec.md` — unified motion and interaction requirements.
 10. `asset_provenance_and_workflow.md` — asset selection, provenance, stable IDs, licensing, and release gates.
-11. `economy_monetization_referrals.md` — Stars, Pips, sinks, monetization, referrals, ledger, and guardrails.
-12. `topbar_currency_ui_spec.md` — Stars and PipGem UI.
-13. `referral_and_growth_spec.md` — referral lifecycle and anti-abuse.
-14. `acceptance_matrix.md`, `security_architecture.md`, `deployment_and_environments.md`, `performance_and_scaling.md`, and `observability_and_incident_response.md` — acceptance, security, operations, and scaling. Local API hardening is implemented; shared production controls remain gated.
-15. `vercel_alpha_and_platform_strategy.md` — alpha hosting, commercial transition, provider alternatives, portability, and migration triggers.
-16. `ai_agent_operations_architecture.md` — isolated agent roles, data boundaries, approvals, marketing analytics, and AI operations.
-17. `roadmap_and_release_control_plane.md` — machine-readable roadmap, gates, blockers, evidence, dependencies, releases, CI, and Admin CRM integration.
-18. `../game-development-skill/SKILL.md` and `../.claude/skills/signal-arena/SKILL.md` — archive orchestrator and Signal Arena project overlay.
+11. `economy_monetization_referrals.md` — canonical economy, Coin-first payments, referrals, ledger, and guardrails.
+12. `game_balance_spec.md` — progression numbers, formulas, caps and balance hypotheses.
+13. `catalog_sku_spec.md` — canonical SKU and entitlement composition.
+14. `topbar_currency_ui_spec.md` — Top Bar layout and currency display only.
+15. `referral_and_growth_spec.md` — referral lifecycle and anti-abuse details.
+16. `acceptance_matrix.md`, `security_architecture.md`, `deployment_and_environments.md`, `performance_and_scaling.md`, and `observability_and_incident_response.md` — acceptance, security, operations, and scaling. Local API hardening is implemented; shared production controls remain gated.
+17. `vercel_alpha_and_platform_strategy.md` — alpha hosting, commercial transition, provider alternatives, portability, and migration triggers.
+18. `ai_agent_operations_architecture.md` — isolated agent roles, data boundaries, approvals, marketing analytics, and AI operations.
+19. `roadmap_and_release_control_plane.md` — roadmap, gates, blockers, evidence, dependencies, releases, CI, and Admin CRM integration.
+20. `competitors.md` — `RESEARCH_NON_CANONICAL`; market research only.
+21. `monetization.txt` — `DEPRECATED`; superseded by `economy_monetization_referrals.md`, `game_balance_spec.md`, and `catalog_sku_spec.md`.
+22. `../game-development-skill/SKILL.md` and `../.claude/skills/signal-arena/SKILL.md` — archive orchestrator and Signal Arena project overlay.
 
 ## Skill routing
 
@@ -50,6 +62,10 @@ game-development
 ```
 
 The Signal Arena overlay routes tasks to archive skills and adds project invariants. It does not replace or duplicate them.
+
+## Status and precedence
+
+Security, privacy, legal and data-integrity invariants take precedence over all other documents. Executable contracts define implementation boundaries. `developing_status.md` plus gate/evidence records define actual implementation status. Product and learning rules come from `full_game_spec.md` and `academy_plan.md`; specialized canonical rules come from the economy, balance, SKU, UI, motion and asset documents. Roadmap and implementation plans define sequence, not current acceptance. Research, audits and deprecated documents are non-canonical inputs.
 
 ## Recommended paths
 
@@ -94,6 +110,8 @@ full_game_spec.md
 
 ```text
 economy_monetization_referrals.md
+→ game_balance_spec.md
+→ catalog_sku_spec.md
 → topbar_currency_ui_spec.md
 → referral_and_growth_spec.md
 ```
@@ -108,11 +126,15 @@ economy_monetization_referrals.md
 - Source Groups are exactly PRICE, CONTEXT, FLOW, EVENT and PROJECT; beginner scenarios stay minimal.
 - Scenario data is point-in-time and future-safe.
 - Public and hidden projections are separate.
-- Level 1–99 is scenario difficulty/progression, not a 99-point authoring score.
+- `Scenario Level` is an integer 1–99 for scenario difficulty/progression; `Account Level` is separate player progression, not a 99-point authoring score.
 - Essential theory is introduced by approximately Level 40 and returns through interleaving, specialization, transfer, and reliability.
 - Theory Module → Worked Example → Skill Card → Card Header → Recall → Decision → Debrief → Rematch.
-- Pips and Stars never change score, outcome, ranking, or risk advantage.
+- Telegram Stars/XTR → Coin Pack → Coins → Signal Arena goods and services; direct Stars entitlements are exceptional only.
+- Coins, XP, Energy, and Mastery Stars never change score, outcome, ranking, or risk advantage.
+- Top-level scoring dimensions are defined by `packages/contracts/src/scenario.ts`; Academy labels are mapped submetrics or telemetry.
+- Academy display numbers are 00–14; stable IDs, not display numbers, are used by CMS, analytics, progression and rematch.
+- Arena Hub is the canonical name for the root screen; Home and Lobby are deprecated aliases.
 - Every non-trivial asset has provenance and a stable assetId.
 - Unknown-license assets never enter production.
-- Motion communicates purpose, state, hierarchy, and causality; reduced motion preserves meaning.
+- Motion uses one MotionContract and canonical duration tokens; reduced motion preserves meaning.
 - No iteration is accepted without tests, manual QA, evidence, and explicit status.

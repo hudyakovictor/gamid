@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <radialGradient id="coinFace" cx="0.38" cy="0.32" r="0.9">
+      <stop offset="0%" stop-color="#FFF8E1"/>
+      <stop offset="25%" stop-color="#FFECB3"/>
+      <stop offset="55%" stop-color="#FFC107"/>
+      <stop offset="85%" stop-color="#FF8F00"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </radialGradient>
+    <linearGradient id="coinRim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="50%" stop-color="#FFB300"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+    <linearGradient id="coinInner" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF8F00"/>
+      <stop offset="15%" stop-color="#FFCA28"/>
+      <stop offset="85%" stop-color="#FFB300"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+  </defs>
+  <!-- outer rim -->
+  <circle cx="24" cy="24" r="21" fill="url(#coinRim)" stroke="#9C4A00" stroke-opacity="0.45" stroke-width="1"/>
+  <!-- dashed edge -->
+  <circle cx="24" cy="24" r="18.2" fill="none" stroke="#FFF8E1" stroke-opacity="0.7" stroke-width="1.6" stroke-dasharray="2.5 2.2"/>
+  <!-- face -->
+  <circle cx="24" cy="24" r="15.5" fill="url(#coinFace)" stroke="url(#coinInner)" stroke-width="1.2"/>
+  <!-- inner shine -->
+  <ellipse cx="19.5" cy="17.5" rx="7" ry="4.8" fill="#FFF" opacity="0.45"/>
+  <!-- star / $ mark -->
+  <path d="M24 15.5l2.4 4.6 5.2.8-3.7 3.7.8 5.2-4.7-2.4-4.7 2.4.8-5.2-3.7-3.7 5.2-.8 2.4-4.6z" fill="#FF8F00" opacity="0.85"/>
+  <path d="M24 16.8l1.8 3.5 3.9.6-2.8 2.8.6 3.9-3.5-1.8-3.5 1.8.6-3.9-2.8-2.8 3.9-.6 1.8-3.5z" fill="#FFECB3"/>
+</svg>

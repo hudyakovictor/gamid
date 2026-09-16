@@ -41,7 +41,7 @@ Project overlay: `.claude/skills/signal-arena/SKILL.md`.
 - Content ladder: Theory Module → Worked Example → Skill Card → Card Header → Recall → Decision → Debrief → Delayed Rematch.
 - Scenario data is point-in-time; future data and hidden Entity data remain server-side before seal.
 - Client never connects directly to database or external providers.
-- Pips and Stars never change score, outcome, ranking, or risk advantage.
+- Coins, XP, Energy, and Mastery Stars never change score, outcome, ranking, or risk advantage. Telegram Stars are a payment rail only.
 - No feature is accepted without tests, checklist, evidence, and explicit status.
 
 ## Document dependency blocks
@@ -77,7 +77,7 @@ Approved origins:
 - `public_domain` — verified public-domain asset;
 - `placeholder` — temporary development-only asset.
 
-Unknown-license assets are prohibited in production. Core brand assets, PipGem, Entity portraits, unique UI effects, and canonical icons should normally be original or generated for Signal Arena.
+Unknown-license assets are prohibited in production. Core brand assets, Coin icon, Entity portraits, unique UI effects, and canonical icons should normally be original or generated for Signal Arena.
 
 Use stable `assetId` references, not fragile filenames. Do not put gameplay logic behind an unregistered asset.
 

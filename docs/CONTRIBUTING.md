@@ -1,5 +1,13 @@
 # SIGNAL ARENA — Contribution Rules
 
+Status: REQUIRED
+Scope: contribution, review and merge policy
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: review checklist, command results, acceptance status and rollback notes
+Canonical dependencies: `../AGENTS.md`, `README.md`, `developing_status.md`, `acceptance_matrix.md`
+
 ## 1. Общий принцип
 
 Любая работа в Agent Mode выполняется через небольшие проверяемые изменения. Агент не должен смешивать несколько независимых задач в одном Pull Request.
@@ -161,6 +169,16 @@ contracts + API + migration + CRM list + client shop card + tests
 ## Not implemented
 
 ## Rollback plan
+
+## Status
+
+`ACCEPTED | BLOCKED | REJECTED`
+
+## Acceptance checklist
+
+## Failed gates
+
+## Evidence
 ```
 
 ## 7. PR labels
@@ -189,7 +207,14 @@ status:draft
 status:ready
 status:blocked
 status:needs-review
+
+status:accepted
+status:partial
+status:open
+status:rejected
 ```
+
+A status label never replaces gate evidence. Required operational status is recorded in `developing_status.md` and the roadmap/evidence system.
 
 ## 8. Draft PR policy
 

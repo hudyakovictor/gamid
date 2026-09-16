@@ -1,5 +1,13 @@
 # Signal Arena — Vercel Alpha and Platform Strategy
 
+Status: REQUIRED
+Scope: alpha hosting, commercial transition and provider portability
+Owner: Signal Arena project owner
+Last reviewed: 2026-09-16
+Supersedes: none
+Required evidence: deployment rehearsal, security gates, payment reconciliation, rollback and restore evidence
+Canonical dependencies: `deployment_and_environments.md`, `security_architecture.md`, `observability_and_incident_response.md`, `catalog_sku_spec.md`
+
 ## Status
 
 This is the deployment decision for the first Telegram Mini App alpha and the migration plan toward paid production. It is an architecture contract, not a claim that every environment is already provisioned.
@@ -88,6 +96,9 @@ Render paid, Cloud Run, or small VPS
 Managed PostgreSQL
   → authoritative state
 
+Redis-compatible distributed rate-limit store
+  → shared production rate limits and coordination
+
 Object storage
   → assets and exports
 
@@ -95,7 +106,7 @@ External error monitoring
   → errors and deployment alerts
 ```
 
-This profile is acceptable for a small user group only after authentication, backups, security headers, server-authoritative scoring, and restore testing pass.
+This profile is acceptable only after the complete Commercial Alpha acceptance gate set in this document passes. The shorter topology description is not a reduced acceptance threshold. It requires production Telegram auth, PostgreSQL, migrations, backup and restore drill, future-leak tests, deterministic scoring replay, CSP, CORS, timeouts, a Redis-compatible distributed rate-limit store, request IDs, structured logs, alerts, rollback, audited Admin operations, provider/payment spend limits, asset provenance and payment reconciliation.
 
 ### Profile C — first stable production
 
@@ -227,4 +238,6 @@ Before commercial alpha:
 - [ ] error codes, request IDs, logs, and alerts are available;
 - [ ] rollback and restore are tested;
 - [ ] usage alerts and spend limits are enabled;
-- [ ] assets pass provenance gates.
+- [ ] payment reconciliation passes;
+- [ ] assets pass provenance gates;
+- [ ] Founder/SKU entitlement and refund/revoke checks pass.
