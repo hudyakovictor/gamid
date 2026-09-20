@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title desc" color="#ffffff" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+  <title id="title">Preserve the System</title>
+  <desc id="desc">Monochrome Signal Arena skill icon: preserve the system.</desc>
+  <path fill="#ffffff" stroke="none" d="M6 35h36v7H6zM11 25h7v10h-7zM21 20h7v15h-7zM31 25h7v10h-7zM9 18h30v5H9z"/>
+  <path d="M7 15a17 17 0 0 1 34 0M7 15h5M36 15h5" stroke-width="2.75"/>
+  <path d="M17 29h2M27 24h2M37 29h2" stroke="#ffffff" stroke-width="2"/>
+</svg>

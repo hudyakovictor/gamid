@@ -112,7 +112,7 @@ CRM works only through Admin API.
 ## 3. Primary navigation
 
 ```text
-Арена | Академия | Магазин | Турниры
+Хаб | Академия | Арена | Магазин | Турниры
 ```
 
 ### Top Bar
@@ -127,9 +127,9 @@ Inbox
 
 Profile, collection, insights and settings are accessed through avatar and result cards rather than occupying a permanent bottom tab.
 
-### Arena as hub
+### Hub as the first section
 
-Arena contains:
+Hub is the default root section and contains:
 
 - Continue;
 - Daily Fix Mission;

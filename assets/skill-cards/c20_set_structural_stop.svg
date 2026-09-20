@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title desc" color="#ffffff" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+  <title id="title">Set Structural Stop</title>
+  <desc id="desc">Monochrome Signal Arena skill icon: set structural stop.</desc>
+  <rect x="5" y="34" width="30" height="6" rx="2" fill="#ffffff" stroke="none"/>
+<path d="M9 34V25h8v9M21 34V18h8v16" stroke-width="2"/>
+<path fill="#ffffff" stroke="none" fill-rule="evenodd" d="M36 25h7l3 3v6l-3 3h-7l-3-3v-6zM36 31h7v2h-7z"/>
+</svg>

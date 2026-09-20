@@ -133,7 +133,7 @@ economy_monetization_referrals.md
 - Coins, XP, Energy, and Mastery Stars never change score, outcome, ranking, or risk advantage.
 - Top-level scoring dimensions are defined by `packages/contracts/src/scenario.ts`; Academy labels are mapped submetrics or telemetry.
 - Academy display numbers are 00–14; stable IDs, not display numbers, are used by CMS, analytics, progression and rematch.
-- Arena Hub is the canonical name for the root screen; Home and Lobby are deprecated aliases.
+- Hub is the canonical name and first primary section; `arena_hub` remains the stable screen ID for compatibility. Home and Lobby are deprecated aliases.
 - Every non-trivial asset has provenance and a stable assetId.
 - Unknown-license assets never enter production.
 - Motion uses one MotionContract and canonical duration tokens; reduced motion preserves meaning.

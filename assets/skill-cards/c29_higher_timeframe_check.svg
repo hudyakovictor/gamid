@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title desc" color="#ffffff" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+  <title id="title">Higher Timeframe Check</title>
+  <desc id="desc">Monochrome Signal Arena skill icon: higher timeframe check.</desc>
+  <rect x="5" y="7" width="30" height="31" rx="2"/>
+  <path d="M10 13h20" stroke-width="2"/>
+  <rect x="10" y="28" width="5" height="6" rx="1" fill="#ffffff" stroke="none"/>
+  <rect x="18" y="23" width="5" height="11" rx="1" fill="#ffffff" stroke="none"/>
+  <rect x="26" y="17" width="5" height="17" rx="1" fill="#ffffff" stroke="none"/>
+  <path fill="#ffffff" stroke="none" d="M31 37h5l4-5 2 2-6 8-7-7z"/>
+</svg>

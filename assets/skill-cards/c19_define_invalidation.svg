@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title desc" color="#ffffff" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+  <title id="title">Define Invalidation</title>
+  <desc id="desc">Monochrome Signal Arena skill icon: define invalidation.</desc>
+  <path d="M5 37 15 27l8 6 8-11" stroke-width="2"/>
+<circle cx="31" cy="22" r="4" fill="#ffffff" stroke="none"/>
+<path fill="#ffffff" stroke="none" d="M36 29h6l4-4 2 2-4 4 4 4-2 2-4-4-4 4-2-2 4-4z"/>
+</svg>

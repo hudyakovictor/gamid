@@ -13,7 +13,7 @@ The client prototype is intentionally implemented up to, but not inside, the pan
 ## Screens
 
 ```text
-Preload → Arena Hub → Academy / Mission target → Scenario Brief → Decision Workspace → Historical Reveal → Score → Debrief → Rematch
+Preload → Hub → Academy / Arena / Mission target → Scenario Brief → Decision Workspace → Historical Reveal → Score → Debrief → Rematch
 Profile · Collection · Shop · Tournaments
 
 Stable screen IDs:
@@ -21,6 +21,7 @@ Stable screen IDs:
 ```text
 arena_hub
 academy
+arena
 shop
 tournaments
 profile
@@ -35,7 +36,7 @@ notifications
 settings
 ```
 
-`Mission` is a destination (`daily_fix`, `post_loss_protocol`, `academy_mission`, or `season_mission`), not a root screen. `Skill Hand` is a Decision Workspace component.
+`Hub` is the first primary section; `arena_hub` remains its stable screen ID for compatibility. `Mission` is a destination (`daily_fix`, `post_loss_protocol`, `academy_mission`, or `season_mission`), not a root screen. `Skill Hand` is a Decision Workspace component.
 ```
 
 ## Interaction shell

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title desc" color="#ffffff" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+  <title id="title">Minimum R Multiple</title>
+  <desc id="desc">Monochrome Signal Arena skill icon: minimum r multiple.</desc>
+  <rect x="8" y="27" width="10" height="15" rx="2" fill="#ffffff" stroke="none"/>
+<rect x="30" y="17" width="10" height="25" rx="2" fill="#ffffff" stroke="none"/>
+<path d="M5 44h38M5 12h38M13 12v7M35 12v7" stroke-width="2"/>
+<text x="21" y="38" fill="#ffffff" stroke="none" font-family="sans-serif" font-size="12" font-weight="700">R</text>
+</svg>

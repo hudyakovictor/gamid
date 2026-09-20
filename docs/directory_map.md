@@ -76,7 +76,7 @@ Executable contracts and validation are canonical for implementation boundaries:
 - `../apps/client-prototype/src/scenes.ts`
 - `../apps/client-prototype/viewport-qa.json` — planned browser/responsive/accessibility evidence
 
-The canonical root screen is `arena_hub`; `Home` and `Lobby` are deprecated aliases. Mission names are destinations, and Skill Hand is a Decision Workspace component.
+The canonical root section is Hub and it comes first in primary navigation; `arena_hub` remains its stable screen ID. `Home` and `Lobby` are deprecated aliases. Mission names are destinations, and Skill Hand is a Decision Workspace component.
 
 ## Status and navigation
 

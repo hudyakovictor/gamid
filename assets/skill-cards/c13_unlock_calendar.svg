@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="title desc" color="#ffffff" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round">
+  <title id="title">Unlock Calendar</title>
+  <desc id="desc">Monochrome Signal Arena skill icon: unlock calendar.</desc>
+  <path fill="#ffffff" stroke="none" fill-rule="evenodd" d="M6 11h36v33H6zM6 20h36v3H6zM14 7h3v8h-3zM31 7h3v8h-3zM18 35v-4a6 6 0 0 1 12 0v4h-3v-4a3 3 0 0 0-6 0v4z"/>
+<rect x="16" y="35" width="16" height="9" rx="2" fill="#ffffff" stroke="none"/>
+</svg>
