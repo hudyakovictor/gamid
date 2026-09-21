@@ -181,7 +181,7 @@ test("ingested validated scenario is playable through the full lifecycle", async
   assert.equal(seal.statusCode, 200);
 
   const reveal = await server.inject({
-    method: "GET",
+    method: "POST",
     url: `/api/v1/scenario-runs/${runId}/reveal`
   });
   assert.equal(reveal.statusCode, 200);

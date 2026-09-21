@@ -293,13 +293,13 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
     return session.userId;
   }
 
-  // Central protection: new authenticated mutation routes inherit CSRF validation.
+  // Central protection: authenticated mutations inherit CSRF validation.
+  // Mutating operations must not use GET (invariant). Reveal is POST.
   server.addHook("preHandler", async (request, reply) => {
     const path = request.url.split("?")[0] ?? "";
     if (!path.startsWith("/api/v1/") || path === "/api/v1/auth/telegram") return;
     const isAdmin = path.startsWith("/api/v1/admin/");
-    const mutates = !["GET", "HEAD", "OPTIONS"].includes(request.method)
-      || /^\/api\/v1\/scenario-runs\/[^/]+\/reveal$/.test(path);
+    const mutates = !["GET", "HEAD", "OPTIONS"].includes(request.method);
     if (!isAdmin && !mutates) return;
     const authenticatedUserId = await getAuthenticatedUserId(request, reply);
     if (!authenticatedUserId) return;
@@ -630,11 +630,11 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
     }
   });
 
-  server.get<{
+  server.post<{
     Params: { runId: string };
   }>("/api/v1/scenario-runs/:runId/reveal", async (request, reply) => {
     const authenticatedUserId = await getAuthenticatedUserId(request, reply);
-    if (!authenticatedUserId) {
+    if (!authenticatedUserId || !requireCsrf(request, reply)) {
       return;
     }
 

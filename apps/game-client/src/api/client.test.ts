@@ -117,6 +117,30 @@ describe("ApiClient", () => {
       idempotencyKey: "k"
     });
     expect(requests[0]?.headers["x-sa-csrf"]).toBe("csrf-token-1");
+    expect(requests[0]?.method).toBe("POST");
+
+    const revealFetch = makeFetch(() => ({
+      body: {
+        data: {
+          run: { ...run, state: "revealed", score: { score: 87, rubricVersion: "score-v1", breakdown: { decision_quality: 88, protocol_adherence: 90, evidence_quality: 100, follow_up_decision_quality: 86, risk_management: 90, invalidation: 76, discipline: 94, entity_resistance: 90, confidence_calibration: 80 } } },
+          reveal: {
+            scenarioId: starterScenarioFixture.scenarioId,
+            version: starterScenarioFixture.version,
+            hiddenEntities: starterScenarioFixture.hiddenEntities,
+            historicalFutureSegment: starterScenarioFixture.historicalFutureSegment,
+            historicalOutcome: starterScenarioFixture.historicalOutcome,
+            evaluationRules: starterScenarioFixture.evaluationRules,
+            debrief: starterScenarioFixture.debrief,
+            rematchLogic: starterScenarioFixture.rematchLogic
+          }
+        }
+      }
+    }));
+    const revealClient = new ApiClient({ fetchImpl: revealFetch.fetchImpl, csrfCookie: () => "csrf-token-1" });
+    await revealClient.revealRun("run-1");
+    expect(revealFetch.requests[0]?.headers["x-sa-csrf"]).toBe("csrf-token-1");
+    expect(revealFetch.requests[0]?.method).toBe("POST");
+    expect(revealFetch.requests[0]?.url).toContain("/reveal");
 
     const me = makeFetch(() => ({ body: { data: { userId: "u1" } } }));
     const meClient = new ApiClient({ fetchImpl: me.fetchImpl, csrfCookie: () => "csrf-token-1" });

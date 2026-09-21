@@ -72,7 +72,7 @@ test("reveal grants XP and Mastery Stars exactly once (no double rewards)", asyn
   const runId = await startSealedRun(server, "economy-test-001");
 
   const reveal1 = await server.inject({
-    method: "GET",
+    method: "POST",
     url: `/api/v1/scenario-runs/${runId}/reveal`
   });
   assert.equal(reveal1.statusCode, 200);
@@ -91,7 +91,7 @@ test("reveal grants XP and Mastery Stars exactly once (no double rewards)", asyn
 
   // Replayed reveal must not double-grant.
   const reveal2 = await server.inject({
-    method: "GET",
+    method: "POST",
     url: `/api/v1/scenario-runs/${runId}/reveal`
   });
   assert.equal(reveal2.statusCode, 200);
@@ -127,11 +127,11 @@ test("a second run grants rewards under its own idempotency keys", async () => {
   const userId = meResponse.json<{ data: { userId: string } }>().data.userId;
 
   const runA = await startSealedRun(server, "economy-test-101");
-  await server.inject({ method: "GET", url: `/api/v1/scenario-runs/${runA}/reveal` });
+  await server.inject({ method: "POST", url: `/api/v1/scenario-runs/${runA}/reveal` });
 
   const runB = await startSealedRun(server, "economy-test-102");
   const revealB = await server.inject({
-    method: "GET",
+    method: "POST",
     url: `/api/v1/scenario-runs/${runB}/reveal`
   });
   assert.equal(revealB.statusCode, 200);

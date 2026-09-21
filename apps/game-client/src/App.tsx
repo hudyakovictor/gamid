@@ -197,8 +197,8 @@ export function App() {
           return;
         }
 
-        // sealed/revealed: ask the server for the authoritative state again
-        const revealed = await api.getReveal(plan.runId);
+        // sealed/revealed: ask the server for the authoritative state again (POST reveal)
+        const revealed = await api.revealRun(plan.runId);
         if (cancelled) {
           return;
         }
@@ -344,7 +344,7 @@ export function App() {
           // Duplicate submit: the first seal already won. Recover the sealed
           // state from the server instead of failing the player.
           try {
-            const current = await api.getReveal(state.run.runId);
+            const current = await api.revealRun(state.run.runId);
             dispatch({ type: "SEAL_OK", run: current.run });
             dispatch({ type: "REVEAL_START" });
             dispatch({
@@ -382,7 +382,7 @@ export function App() {
     }
     dispatch({ type: "REVEAL_START" });
     try {
-      const revealed = await api.getReveal(state.run.runId);
+      const revealed = await api.revealRun(state.run.runId);
       dispatch({
         type: "REVEAL_OK",
         run: revealed.run,

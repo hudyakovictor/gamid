@@ -71,14 +71,14 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Client prototype typecheck
+      - name: Client typecheck
         run: pnpm client:typecheck
 
-      - name: Client prototype lint
+      - name: Client lint
         run: pnpm client:lint
 
-      - name: Client prototype tests
+      - name: Client tests
         run: pnpm client:test
 
-      - name: Client prototype build
+      - name: Client build
         run: pnpm client:build

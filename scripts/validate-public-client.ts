@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-const sourceRoot = resolve(process.cwd(), "apps/client-prototype/src");
+const sourceRoot = resolve(process.cwd(), "apps/game-client/src");
 // Reveal-only response fields may be referenced by the post-seal UI. The
 // public projection and runtime boundary tests verify that their values are
 // not present before the server reveal; this static gate focuses on patterns

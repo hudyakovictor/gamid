@@ -1,6 +1,7 @@
 export * from "./database.js";
 export * from "./migrations.js";
 export * from "./postgres-migrations.js";
+export * from "./migration-registry.js";
 export * from "./ledger.js";
 export * from "./store.js";
 export * from "./repository.js";
