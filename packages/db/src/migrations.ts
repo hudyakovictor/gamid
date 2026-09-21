@@ -102,6 +102,96 @@ CREATE TABLE IF NOT EXISTS historical_snapshots (
 CREATE INDEX IF NOT EXISTS idx_historical_snapshots_lookup
   ON historical_snapshots(provider, symbol, interval, as_of);
 `
+  },
+  {
+    id: "0004_economy_ledger",
+    sql: `
+CREATE TABLE IF NOT EXISTS ledger_events (
+  event_id TEXT PRIMARY KEY NOT NULL,
+  user_id TEXT NOT NULL REFERENCES users(user_id),
+  asset TEXT NOT NULL CHECK (asset IN ('coins', 'xp', 'mastery_stars', 'energy')),
+  amount INTEGER NOT NULL CHECK (amount <> 0),
+  reason TEXT NOT NULL,
+  source_id TEXT,
+  scenario_id TEXT,
+  idempotency_key TEXT NOT NULL UNIQUE,
+  promo INTEGER NOT NULL DEFAULT 0 CHECK (promo IN (0, 1)),
+  risk_state TEXT NOT NULL DEFAULT 'cleared' CHECK (risk_state IN ('cleared', 'hold')),
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ledger_events_user_created
+  ON ledger_events(user_id, created_at);
+
+CREATE TABLE IF NOT EXISTS user_economy_state (
+  user_id TEXT PRIMARY KEY NOT NULL REFERENCES users(user_id),
+  xp_total INTEGER NOT NULL DEFAULT 0,
+  account_level INTEGER NOT NULL DEFAULT 1 CHECK (account_level BETWEEN 1 AND 99),
+  xp_day_utc TEXT NOT NULL DEFAULT '',
+  xp_day_amount INTEGER NOT NULL DEFAULT 0,
+  mastery_stars INTEGER NOT NULL DEFAULT 0,
+  energy INTEGER NOT NULL DEFAULT 5,
+  energy_cap INTEGER NOT NULL DEFAULT 5,
+  energy_regen_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+`
+  },
+  {
+    id: "0005_catalog_purchases_referrals",
+    sql: `
+CREATE TABLE IF NOT EXISTS purchases (
+  purchase_id TEXT PRIMARY KEY NOT NULL,
+  user_id TEXT NOT NULL REFERENCES users(user_id),
+  kind TEXT NOT NULL CHECK (kind IN ('coin_pack', 'service', 'sku')),
+  item_id TEXT NOT NULL,
+  price_coins INTEGER NOT NULL DEFAULT 0 CHECK (price_coins >= 0),
+  invoice_id TEXT,
+  idempotency_key TEXT NOT NULL UNIQUE,
+  state TEXT NOT NULL DEFAULT 'completed' CHECK (state IN ('completed', 'refunded')),
+  created_at TEXT NOT NULL,
+  refunded_at TEXT
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_purchases_invoice
+  ON purchases(invoice_id) WHERE invoice_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_purchases_user_created
+  ON purchases(user_id, created_at);
+
+CREATE TABLE IF NOT EXISTS supply_counters (
+  item_id TEXT PRIMARY KEY NOT NULL,
+  supply_limit INTEGER NOT NULL CHECK (supply_limit > 0),
+  reserved INTEGER NOT NULL DEFAULT 0 CHECK (reserved >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS user_entitlements (
+  entitlement_id TEXT PRIMARY KEY NOT NULL,
+  user_id TEXT NOT NULL REFERENCES users(user_id),
+  entitlement_key TEXT NOT NULL UNIQUE,
+  source_purchase_id TEXT NOT NULL REFERENCES purchases(purchase_id),
+  created_at TEXT NOT NULL,
+  revoked_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_entitlements_user
+  ON user_entitlements(user_id, revoked_at);
+
+CREATE TABLE IF NOT EXISTS referrals (
+  code TEXT PRIMARY KEY NOT NULL,
+  inviter_id TEXT NOT NULL REFERENCES users(user_id),
+  invitee_id TEXT,
+  created_at TEXT NOT NULL,
+  attributed_at TEXT,
+  window_expires_at TEXT,
+  activated_at TEXT,
+  invitee_valid_scenarios INTEGER NOT NULL DEFAULT 0,
+  purchase_bonus_at TEXT,
+  state TEXT NOT NULL DEFAULT 'invited' CHECK (state IN ('invited', 'attributed', 'activated', 'expired', 'rejected'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_referrals_invitee
+  ON referrals(invitee_id, state);
+`
   }
 ] as const;
 

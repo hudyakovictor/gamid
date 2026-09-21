@@ -7,7 +7,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
-    "test": "node --import tsx --test packages/contracts/src/*.test.ts packages/domain/src/*.test.ts packages/db/src/*.test.ts packages/providers/src/*.test.ts",
+    "test": "node --import tsx --test packages/contracts/src/*.test.ts packages/content/src/*.test.ts packages/domain/src/*.test.ts packages/db/src/*.test.ts packages/providers/src/*.test.ts",
     "test:e2e": "node --import tsx --test tests/e2e/*.test.ts",
     "validate:contracts": "node --import tsx scripts/validate-contracts.ts",
     "validate:content": "node --import tsx scripts/validate-content.ts",

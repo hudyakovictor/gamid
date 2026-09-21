@@ -33,7 +33,13 @@ test("PostgreSQL migrations are ordered, locked and transactional", async () => 
 
   assert.deepEqual(
     POSTGRES_MIGRATIONS.map((migration) => migration.id),
-    ["0001_foundation", "0002_auth_boundary", "0003_historical_snapshots"]
+    [
+      "0001_foundation",
+      "0002_auth_boundary",
+      "0003_historical_snapshots",
+      "0004_economy_ledger",
+      "0005_catalog_purchases_referrals"
+    ]
   );
   assert.equal(executor.calls[0]?.sql, "BEGIN;");
   assert.ok(executor.calls.some((call) => call.sql.includes("pg_advisory_xact_lock")));
