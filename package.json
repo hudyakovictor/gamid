@@ -21,7 +21,10 @@
     "client:typecheck": "pnpm --filter @signal-arena/client-prototype typecheck",
     "client:lint": "pnpm --filter @signal-arena/client-prototype lint",
     "client:test": "pnpm --filter @signal-arena/client-prototype test",
-    "client:build": "pnpm --filter @signal-arena/client-prototype build"
+    "client:build": "pnpm --filter @signal-arena/client-prototype build",
+    "design-system:dev": "pnpm --filter @signal-arena/design-system-lab dev",
+    "design-system:typecheck": "pnpm --filter @signal-arena/design-system-lab typecheck",
+    "design-system:build": "pnpm --filter @signal-arena/design-system-lab build"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
