@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import type {
   HistoricalMarketSnapshot,
   ScenarioPackage,
@@ -63,8 +64,48 @@ import {
 } from "./repository.js";
 import type { PersistencePort } from "./ports.js";
 
+type ConnectionQueue = { context: AsyncLocalStorage<boolean>; tail: Promise<unknown> };
+const connectionQueues = new WeakMap<DatabaseHandle["sqlite"], ConnectionQueue>();
+
 export class SqlitePersistenceAdapter implements PersistencePort {
-  public constructor(private readonly handle: DatabaseHandle) {}
+  private readonly queue: ConnectionQueue;
+
+  public constructor(private readonly handle: DatabaseHandle) {
+    const queue = connectionQueues.get(handle.sqlite) ?? {
+      context: new AsyncLocalStorage<boolean>(), tail: Promise.resolve()
+    };
+    connectionQueues.set(handle.sqlite, queue);
+    this.queue = queue;
+    // Every adapter call uses the same queue, including reads, so unrelated
+    // requests cannot observe or join a transaction while its callback awaits.
+    return new Proxy(this, {
+      get: (target, key) => {
+        const value: unknown = Reflect.get(target, key);
+        if (typeof value !== "function" || key === "constructor") return value;
+        return (...args: unknown[]) => target.serial(() => value.apply(target, args));
+      }
+    });
+  }
+
+  private async serial<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.queue.context.getStore()) return operation();
+    const result = this.queue.tail.then(() => this.queue.context.run(true, operation));
+    this.queue.tail = result.catch(() => undefined);
+    return result;
+  }
+
+  public async atomic<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.handle.sqlite.inTransaction) return operation();
+    this.handle.sqlite.exec("BEGIN IMMEDIATE");
+    try {
+      const result = await operation();
+      this.handle.sqlite.exec("COMMIT");
+      return result;
+    } catch (error) {
+      this.handle.sqlite.exec("ROLLBACK");
+      throw error;
+    }
+  }
 
   public async getOrCreateUserForIdentity(
     input: PlatformIdentityInput

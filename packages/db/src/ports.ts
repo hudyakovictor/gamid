@@ -23,6 +23,8 @@ import type {
 } from "./store.js";
 
 export type PersistencePort = {
+  /** Serialized economic unit of work; nested calls share the transaction. */
+  atomic<T>(operation: () => Promise<T>): Promise<T>;
   getOrCreateUserForIdentity(
     input: PlatformIdentityInput
   ): Promise<{ userId: string; created: boolean }>;

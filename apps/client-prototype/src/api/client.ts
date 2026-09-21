@@ -151,7 +151,7 @@ export class ApiClient {
 
   public constructor(options: ApiClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? "";
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    this.fetchImpl = options.fetchImpl ?? fetch.bind(globalThis);
     this.csrfCookie = options.csrfCookie ?? (() => undefined);
   }
 
@@ -164,6 +164,9 @@ export class ApiClient {
     };
     if (init.method === "POST") {
       headers["content-type"] = "application/json";
+    }
+    // The legacy reveal GET persists reveal/rewards and is CSRF protected too.
+    if (init.method === "POST" || path.endsWith("/reveal")) {
       const csrf = this.csrfCookie();
       if (csrf) {
         headers["x-sa-csrf"] = csrf;
@@ -297,12 +300,12 @@ export class ApiClient {
   }
 
   public async getBalance(userId: string): Promise<UserBalance> {
-    const payload = await this.request<{ data: unknown }>(
+    const payload = await this.request<{ data: { balance: unknown } }>(
       `/api/v1/users/${encodeURIComponent(userId)}/balance`,
       { method: "GET" }
     );
     try {
-      return UserBalanceSchema.parse(payload.data);
+      return UserBalanceSchema.parse(payload.data.balance);
     } catch {
       throw new ApiError("invalid_response", "Balance failed contract validation", 0);
     }

@@ -257,3 +257,50 @@ test("Telegram auth rate limit is enforced per server boundary", async () => {
   assert.ok(secondResponse.headers["retry-after"]);
   await server.close();
 });
+
+test("production auth enforces CSRF on all authenticated mutations and server-side editor authorization", async () => {
+  const server = buildServer({ authMode: "telegram", telegramBotToken: BOT_TOKEN, now: () => NOW_MS });
+  try {
+    const login = await server.inject({ method: "POST", url: "/api/v1/auth/telegram", payload: { initData: signedInitData() } });
+    const csrf = cookieFrom(login, "sa_csrf");
+    const cookie = `${cookieFrom(login, "sa_session")}; ${csrf}`;
+    for (const url of ["/api/v1/purchases", "/api/v1/purchases/fake/refund", "/api/v1/referrals", "/api/v1/referrals/attribute", "/api/v1/scenario-runs", "/api/v1/auth/logout"]) {
+      for (const headers of [{ cookie }, { cookie, "x-sa-csrf": "fabricated" }]) {
+        const response = await server.inject({ method: "POST", url, headers, payload: {} });
+        assert.equal(response.statusCode, 403, url);
+        assert.equal(response.json().error, "csrf_failed", url);
+      }
+    }
+    for (const url of ["/api/v1/admin/scenarios", "/api/v1/admin/scenarios/fake/review"]) {
+      const response = await server.inject({ method: "POST", url, headers: { cookie, "x-sa-csrf": csrf.slice(8) }, payload: {} });
+      assert.equal(response.statusCode, 403);
+      assert.equal(response.json().error, "admin_forbidden");
+    }
+    const reveal = await server.inject({ method: "GET", url: "/api/v1/scenario-runs/fake/reveal", headers: { cookie } });
+    assert.equal(reveal.statusCode, 403);
+    assert.equal(reveal.json().error, "csrf_failed");
+    const purchase = await server.inject({ method: "POST", url: "/api/v1/purchases", headers: { cookie, "x-sa-csrf": csrf.slice(8) }, payload: { kind: "coin_pack", itemId: "pack_starter", clientKey: "fake", invoiceId: "fabricated" } });
+    assert.equal(purchase.statusCode, 403);
+    assert.equal(purchase.json().error, "verified_payment_required");
+  } finally { await server.close(); }
+});
+
+test("authorized content editor still requires CSRF in production auth mode", async () => {
+  const database = createDatabase();
+  const editors: string[] = [];
+  const server = buildServer({ database, editorUserIds: editors, authMode: "telegram", telegramBotToken: BOT_TOKEN, now: () => NOW_MS });
+  try {
+    const login = await server.inject({ method: "POST", url: "/api/v1/auth/telegram", payload: { initData: signedInitData() } });
+    const csrf = cookieFrom(login, "sa_csrf");
+    const cookie = `${cookieFrom(login, "sa_session")}; ${csrf}`;
+    const me = await server.inject({ method: "GET", url: "/api/v1/users/me", headers: { cookie } });
+    editors.push(me.json().data.userId);
+    for (const url of ["/api/v1/admin/scenarios", "/api/v1/admin/scenarios/fake/review"]) {
+      const denied = await server.inject({ method: "POST", url, headers: { cookie }, payload: {} });
+      assert.equal(denied.statusCode, 403);
+      assert.equal(denied.json().error, "csrf_failed");
+      const allowed = await server.inject({ method: "POST", url, headers: { cookie, "x-sa-csrf": csrf.slice(8) }, payload: {} });
+      assert.equal(allowed.statusCode, 422); // reached payload validation, not authorization denial
+    }
+  } finally { await server.close(); }
+});

@@ -35,7 +35,6 @@ import { importScenarioPackage } from "../../../packages/content/src/validate.js
 import { FOUNDER_SKUS, COIN_PACKS, STORE_SERVICES } from "../../../packages/domain/src/catalog.js";
 import { grantScenarioRewards } from "./economy.js";
 import {
-  purchaseCoinPack,
   purchaseService,
   purchaseSku,
   refundPurchase,
@@ -78,6 +77,8 @@ export type BuildServerOptions = {
   readinessCheck?: () => Promise<void>;
   userId?: string;
   authMode?: AuthMode;
+  /** Trusted server configuration, never populated from request claims. */
+  editorUserIds?: readonly string[];
   seedFoundation?: boolean;
   telegramBotToken?: string;
   sessionTtlSeconds?: number;
@@ -291,6 +292,22 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
 
     return session.userId;
   }
+
+  // Central protection: new authenticated mutation routes inherit CSRF validation.
+  server.addHook("preHandler", async (request, reply) => {
+    const path = request.url.split("?")[0] ?? "";
+    if (!path.startsWith("/api/v1/") || path === "/api/v1/auth/telegram") return;
+    const isAdmin = path.startsWith("/api/v1/admin/");
+    const mutates = !["GET", "HEAD", "OPTIONS"].includes(request.method)
+      || /^\/api\/v1\/scenario-runs\/[^/]+\/reveal$/.test(path);
+    if (!isAdmin && !mutates) return;
+    const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+    if (!authenticatedUserId) return;
+    if (isAdmin && !options.editorUserIds?.includes(authenticatedUserId)) {
+      return reply.code(403).send({ error: "admin_forbidden" });
+    }
+    if (mutates && !requireCsrf(request, reply)) return;
+  });
 
   server.post<{ Body: unknown }>("/api/v1/auth/telegram", async (request, reply) => {
     const rateLimit = rateLimitStore.consume(
@@ -766,12 +783,7 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
       let outcome: PurchaseOutcome;
       try {
         if (input.kind === "coin_pack") {
-          outcome = await purchaseCoinPack(persistence, {
-            userId: authenticatedUserId,
-            packId: input.itemId,
-            invoiceId: input.invoiceId ?? "",
-            clientKey: input.clientKey
-          });
+          return reply.code(403).send({ error: "verified_payment_required" });
         } else if (input.kind === "service") {
           outcome = await purchaseService(persistence, {
             userId: authenticatedUserId,
@@ -799,7 +811,7 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
       }
 
       // The invitee's first confirmed purchase pays the inviter (P1-7b).
-      if (input.kind !== "coin_pack" && !outcome.duplicate) {
+      if (outcome.purchase.state === "completed") {
         await onInviteePurchase(persistence, authenticatedUserId);
       }
 

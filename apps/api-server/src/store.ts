@@ -4,7 +4,6 @@ import type { Purchase } from "../../../packages/contracts/src/catalog.js";
 import { canSpend } from "../../../packages/domain/src/economy.js";
 import {
   getCatalogSku,
-  getCoinPack,
   getStoreService
 } from "../../../packages/domain/src/catalog.js";
 import type { PersistencePort } from "../../../packages/db/src/ports.js";
@@ -24,6 +23,7 @@ import type { UserBalance } from "../../../packages/contracts/src/economy.js";
 
 type StorePersistence = Pick<
   PersistencePort,
+  | "atomic"
   | "deriveUserBalance"
   | "recordLedgerEvent"
   | "createPurchase"
@@ -44,7 +44,10 @@ export class StoreError extends Error {
       | "insufficient_balance"
       | "supply_exhausted"
       | "missing_invoice"
-      | "already_refunded",
+      | "already_refunded"
+      | "verified_refund_required"
+      | "non_refundable_effect"
+      | "entitlement_conflict",
     message: string
   ) {
     super(message);
@@ -58,103 +61,19 @@ export type PurchaseOutcome = {
   balance: UserBalance;
 };
 
-export async function purchaseCoinPack(
+export async function purchaseService(
   persist: StorePersistence,
   params: {
     userId: string;
-    packId: string;
-    invoiceId: string;
+    serviceId: string;
     clientKey: string;
     nowIso?: string;
   }
 ): Promise<PurchaseOutcome> {
-  const nowIso = params.nowIso ?? new Date().toISOString();
-  const pack = getCoinPack(params.packId);
-  if (!pack) {
-    throw new StoreError("unknown_item", `Unknown Coin Pack: ${params.packId}`);
-  }
-  if (!params.invoiceId) {
-    throw new StoreError("missing_invoice", "Coin Pack purchases require a Telegram invoice id");
-  }
-
-  // Reconciliation: one invoice can only ever credit once, no matter how
-  // many times the payment callback (or client) replays it.
-  const byInvoice = await persist.getPurchaseByInvoice(params.invoiceId);
-  if (byInvoice) {
-    return {
-      purchase: byInvoice,
-      duplicate: true,
-      balance: await persist.deriveUserBalance(params.userId, nowIso)
-    };
-  }
-
-  const purchaseId = randomUUID();
-  const idempotencyKey = `purchase:coin_pack:${params.invoiceId}`;
-  const byKey = await persist.getPurchaseByIdempotencyKey(idempotencyKey);
-  if (byKey) {
-    return {
-      purchase: byKey,
-      duplicate: true,
-      balance: await persist.deriveUserBalance(params.userId, nowIso)
-    };
-  }
-
-  const credit = await persist.recordLedgerEvent({
-    userId: params.userId,
-    asset: "coins",
-    amount: pack.coinsGranted,
-    reason: "coin_pack_purchased",
-    sourceId: `invoice:${params.invoiceId}`,
-    idempotencyKey,
-    createdAt: nowIso
-  });
-  if (!credit.inserted) {
-    const existing = await persist.getPurchaseByIdempotencyKey(idempotencyKey);
-    return {
-      purchase: existing ?? {
-        purchaseId,
-        userId: params.userId,
-        kind: "coin_pack",
-        itemId: pack.packId,
-        priceCoins: 0,
-        invoiceId: params.invoiceId,
-        state: "completed",
-        createdAt: nowIso
-      },
-      duplicate: true,
-      balance: await persist.deriveUserBalance(params.userId, nowIso)
-    };
-  }
-
-  const purchase: Purchase = {
-    purchaseId,
-    userId: params.userId,
-    kind: "coin_pack",
-    itemId: pack.packId,
-    priceCoins: 0,
-    invoiceId: params.invoiceId,
-    state: "completed",
-    createdAt: nowIso
-  };
-  await persist.createPurchase({
-    purchaseId,
-    userId: params.userId,
-    kind: "coin_pack",
-    itemId: pack.packId,
-    priceCoins: 0,
-    invoiceId: params.invoiceId,
-    idempotencyKey,
-    createdAt: nowIso
-  });
-
-  return {
-    purchase,
-    duplicate: false,
-    balance: await persist.deriveUserBalance(params.userId, nowIso)
-  };
+  return persist.atomic(() => purchaseServiceInTransaction(persist, params));
 }
 
-export async function purchaseService(
+async function purchaseServiceInTransaction(
   persist: StorePersistence,
   params: {
     userId: string;
@@ -170,7 +89,7 @@ export async function purchaseService(
   }
 
   const purchaseId = randomUUID();
-  const idempotencyKey = `purchase:service:${params.clientKey}`;
+  const idempotencyKey = `purchase:service:${params.userId}:${params.clientKey}`;
   const byKey = await persist.getPurchaseByIdempotencyKey(idempotencyKey);
   if (byKey) {
     return {
@@ -248,12 +167,13 @@ export async function purchaseService(
       });
     }
   } else {
-    await persist.grantEntitlement({
+    const grant = await persist.grantEntitlement({
       userId: params.userId,
       entitlementKey: `${service.effect}:${params.userId}`,
       sourcePurchaseId: purchaseId,
       createdAt: nowIso
     });
+    if (!grant.inserted) throw new StoreError("entitlement_conflict", "Entitlement already exists");
   }
 
   return {
@@ -280,6 +200,18 @@ export async function purchaseSku(
     nowIso?: string;
   }
 ): Promise<PurchaseOutcome> {
+  return persist.atomic(() => purchaseSkuInTransaction(persist, params));
+}
+
+async function purchaseSkuInTransaction(
+  persist: StorePersistence,
+  params: {
+    userId: string;
+    skuId: string;
+    clientKey: string;
+    nowIso?: string;
+  }
+): Promise<PurchaseOutcome> {
   const nowIso = params.nowIso ?? new Date().toISOString();
   const sku = getCatalogSku(params.skuId);
   if (!sku) {
@@ -290,7 +222,7 @@ export async function purchaseSku(
   }
 
   const purchaseId = randomUUID();
-  const idempotencyKey = `purchase:sku:${params.clientKey}`;
+  const idempotencyKey = `purchase:sku:${params.userId}:${params.clientKey}`;
   const byKey = await persist.getPurchaseByIdempotencyKey(idempotencyKey);
   if (byKey) {
     return {
@@ -351,12 +283,13 @@ export async function purchaseSku(
   });
 
   for (const entitlementId of sku.entitlementIds) {
-    await persist.grantEntitlement({
+    const grant = await persist.grantEntitlement({
       userId: params.userId,
       entitlementKey: `${sku.skuId}:${entitlementId}:${params.userId}`,
       sourcePurchaseId: purchaseId,
       createdAt: nowIso
     });
+    if (!grant.inserted) throw new StoreError("entitlement_conflict", "Entitlement already exists");
   }
 
   return {
@@ -383,13 +316,35 @@ export async function refundPurchase(
     nowIso?: string;
   }
 ): Promise<Purchase> {
+  return persist.atomic(() => refundPurchaseInTransaction(persist, params));
+}
+
+async function refundPurchaseInTransaction(
+  persist: StorePersistence,
+  params: {
+    userId: string;
+    purchaseId: string;
+    clientKey: string;
+    nowIso?: string;
+  }
+): Promise<Purchase> {
   const nowIso = params.nowIso ?? new Date().toISOString();
   const purchase = await persist.getPurchase(params.purchaseId, params.userId);
   if (!purchase) {
     throw new StoreError("unknown_item", "Purchase not found");
   }
   if (purchase.state === "refunded") {
-    throw new StoreError("already_refunded", "Purchase is already refunded");
+    return purchase;
+  }
+
+  if (purchase.kind === "coin_pack") {
+    throw new StoreError("verified_refund_required", "Coin Packs require a verified platform refund event");
+  }
+  const service = purchase.kind === "service" ? getStoreService(purchase.itemId) : undefined;
+  // Energy is an immediate consumable. Until consumption provenance exists,
+  // fail closed rather than refund Coins while retaining the granted Energy.
+  if (service?.effect === "energy_one" || service?.effect === "energy_refill") {
+    throw new StoreError("non_refundable_effect", "Immediate Energy grants cannot be refunded here");
   }
 
   const idempotencyKey = `refund:${params.purchaseId}`;
