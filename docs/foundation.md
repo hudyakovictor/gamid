@@ -138,9 +138,9 @@ All must PASS for ACCEPTED status.
 
 After all gates PASS, record:
 
-- Final commit SHA: (to be filled after commit)
+- Final commit SHA: b4f257274035dd9898205647e0e0c8b31a356196
 - Branch: arena/01a0c652-gamid
-- PR: to be created from this branch
+- PR: to be created from this branch (requires workflows permission to push .github/workflows/ci.yml change)
 
 This SHA is the base from which Backend, Frontend, and Content/Data agents start parallel work.
 
