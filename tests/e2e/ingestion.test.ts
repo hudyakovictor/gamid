@@ -24,7 +24,7 @@ async function listCatalog(server: Server): Promise<Array<{ scenarioId: string }
 }
 
 test("ingestion validates, stores, and gates publication by review status", async () => {
-  const server = buildServer();
+  const server = buildServer({ editorUserIds: ["seed-user-001"] });
 
   // 1. Invalid package (post-t0 source) is rejected.
   const invalid = makePackage();
@@ -136,7 +136,7 @@ test("ingestion validates, stores, and gates publication by review status", asyn
 });
 
 test("ingested validated scenario is playable through the full lifecycle", async () => {
-  const server = buildServer();
+  const server = buildServer({ editorUserIds: ["seed-user-001"] });
 
   await server.inject({
     method: "POST",

@@ -293,7 +293,7 @@ export function App() {
 
   const startRun = useCallback(
     async (idempotencyKey?: string) => {
-      if (!state.scenario || !state.run) {
+      if (!state.scenario) {
         return;
       }
       const key = idempotencyKey ?? createIdempotencyKey();

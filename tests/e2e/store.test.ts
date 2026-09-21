@@ -8,6 +8,15 @@ import {
   UserBalanceSchema
 } from "../../packages/contracts/src/index.js";
 
+import { createDatabase, recordLedgerEvent } from "../../packages/db/src/index.js";
+
+function fundedServer(coins: number) {
+  const database = createDatabase();
+  const server = buildServer({ database });
+  recordLedgerEvent(database, { userId: "seed-user-001", asset: "coins", amount: coins, reason: "compensation", idempotencyKey: "test-fixture-funding" });
+  return server;
+}
+
 type Server = ReturnType<typeof buildServer>;
 
 async function getBalance(server: Server, userId: string) {
@@ -34,79 +43,21 @@ test("catalog exposes packs, services and Founder SKUs", async () => {
   await server.close();
 });
 
-test("Coin Pack purchase credits once per invoice (payment reconciliation)", async () => {
+test("fabricated invoice identifiers cannot mint Coins", async () => {
   const server = buildServer();
-  const userId = (await server.inject({ method: "GET", url: "/api/v1/users/me" }))
-    .json<{ data: { userId: string } }>()
-    .data.userId;
-
-  const buy = async (invoiceId: string) =>
-    server.inject({
-      method: "POST",
-      url: "/api/v1/purchases",
-      payload: {
-        clientKey: `pack-${invoiceId}`,
-        kind: "coin_pack",
-        itemId: "pack_starter",
-        invoiceId
-      }
-    });
-
-  const first = await buy("inv-store-001");
-  assert.equal(first.statusCode, 200);
-  const firstBody = first.json<{
-    data: { purchase: unknown; duplicate: boolean; balance: Record<string, unknown> };
-  }>();
-  assert.equal(firstBody.data.duplicate, false);
-  PurchaseSchema.parse(firstBody.data.purchase);
-  assert.equal(UserBalanceSchema.parse(firstBody.data.balance).coins, 100);
-
-  // Replayed payment callback: same invoice, same user — no double credit.
-  const replay = await buy("inv-store-001");
-  assert.equal(replay.statusCode, 200);
-  const replayBody = replay.json<{
-    data: { purchase: unknown; duplicate: boolean; balance: Record<string, unknown> };
-  }>();
-  assert.equal(replayBody.data.duplicate, true);
-  assert.equal(UserBalanceSchema.parse(replayBody.data.balance).coins, 100);
-
-  // A different invoice for the same pack is a distinct payment.
-  const second = await buy("inv-store-002");
-  assert.equal(second.statusCode, 200);
-  const secondBody = second.json<{
-    data: { duplicate: boolean; balance: Record<string, unknown> };
-  }>();
-  assert.equal(secondBody.data.duplicate, false);
-  assert.equal(UserBalanceSchema.parse(secondBody.data.balance).coins, 200);
-
-  // Missing invoice is rejected.
-  const noInvoice = await server.inject({
-    method: "POST",
-    url: "/api/v1/purchases",
-    payload: { clientKey: "x", kind: "coin_pack", itemId: "pack_starter" }
-  });
-  assert.equal(noInvoice.statusCode, 422);
-
-  await server.close();
+  try {
+    for (const invoiceId of ["fabricated", "fabricated", "telegram-charge-looking-id", ""]) {
+      const response = await server.inject({ method: "POST", url: "/api/v1/purchases",
+        payload: { kind: "coin_pack", itemId: "pack_starter", clientKey: "fake", invoiceId } });
+      assert.notEqual(response.statusCode, 200);
+      assert.equal((await getBalance(server, "seed-user-001")).coins, 0);
+    }
+  } finally { await server.close(); }
 });
 
 test("service purchase spends Coins and grants the effect server-side", async () => {
-  const server = buildServer();
-  const userId = (await server.inject({ method: "GET", url: "/api/v1/users/me" }))
-    .json<{ data: { userId: string } }>()
-    .data.userId;
-
-  // Fund the account first.
-  await server.inject({
-    method: "POST",
-    url: "/api/v1/purchases",
-    payload: {
-      clientKey: "fund-1",
-      kind: "coin_pack",
-      itemId: "pack_starter",
-      invoiceId: "inv-svc-001"
-    }
-  });
+  const server = fundedServer(100);
+  const userId = "seed-user-001";
 
   const buyService = await server.inject({
     method: "POST",
@@ -163,23 +114,8 @@ test("insufficient balance is rejected without touching the ledger", async () =>
 });
 
 test("SKU purchase grants entitlements, duplicate is idempotent, refund revokes", async () => {
-  const server = buildServer();
-  const userId = (await server.inject({ method: "GET", url: "/api/v1/users/me" }))
-    .json<{ data: { userId: string } }>()
-    .data.userId;
-
-  // Fund: 1000 Stars pack → 2700 Coins.
-  const fund = await server.inject({
-    method: "POST",
-    url: "/api/v1/purchases",
-    payload: {
-      clientKey: "fund-sku",
-      kind: "coin_pack",
-      itemId: "pack_patron",
-      invoiceId: "inv-sku-001"
-    }
-  });
-  assert.equal(fund.statusCode, 200);
+  const server = fundedServer(2700);
+  const userId = "seed-user-001";
 
   const buySku = await server.inject({
     method: "POST",
@@ -222,13 +158,14 @@ test("SKU purchase grants entitlements, duplicate is idempotent, refund revokes"
   const afterRefund = await getBalance(server, userId);
   assert.equal(afterRefund.coins, 2700);
 
-  // Second refund is rejected.
+  // Repeated refund returns the same terminal purchase without another credit.
   const secondRefund = await server.inject({
     method: "POST",
     url: `/api/v1/purchases/${purchase.purchaseId}/refund`,
     payload: { clientKey: "refund-2" }
   });
-  assert.equal(secondRefund.statusCode, 409);
+  assert.equal(secondRefund.statusCode, 200);
+  assert.equal((await getBalance(server, userId)).coins, 2700);
 
   await server.close();
 });

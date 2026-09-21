@@ -1,135 +1,88 @@
 # Signal Arena Development Status
 
-Status: ACCEPTED_LOCAL
-Scope: current implementation status and evidence snapshot
+Status: BLOCKED
+Scope: existing implementation corrective pass and verified local evidence
 Owner: Signal Arena project owner
 Last reviewed: 2026-09-21
-Supersedes: previous status snapshots
-Required evidence: gate/evidence records for every accepted local or production claim
-Canonical dependencies: `roadmap_and_release_control_plane.md`, `acceptance_matrix.md`, `system_architecture.md`
+Supersedes: previous status snapshot, including unsupported acceptance/manual-smoke claims
+Required evidence: executed gates; automated tests do not imply manual or production acceptance
+Canonical dependencies: `roadmap_and_release_control_plane.md`, `acceptance_matrix.md`, `system_architecture.md`, `security_architecture.md`, `economy_monetization_referrals.md`
 
-Status date: 2026-09-21
+## Current disposition
 
-## Status vocabulary
+The product is **BLOCKED**, not ACCEPTED_LOCAL or PRODUCTION_READY.
 
-```text
-REQUIRED
-PLANNED
-IMPLEMENTED_LOCAL
-ACCEPTED_LOCAL
-PRODUCTION_READY
-BLOCKED
-DEPRECATED
-```
+This corrective pass is on `arena/01a0c61d-gamid`, based on `ec136b04ca7ac29818ad326756b8042f8a2a1a94` from `arena/01a0c554-gamid`, not main. Evidence below applies to the modified working tree, not a newly committed release. No production acceptance or human manual-smoke PASS is claimed.
 
-`developing_status.md` and gate/evidence records are the only sources of actual implementation status. Target architecture and product specifications do not imply implementation.
+### Corrected implementation
 
-## Evidence record minimum
+- A new client run requires a loaded scenario, not an existing run. A mounted App component test covers catalog → brief → start → decision workspace from empty run storage.
+- The Hub API instance is stable across renders. Native browser `fetch` is bound correctly, and the balance client parses the actual `data.balance` response envelope.
+- Authenticated client Coin Pack requests cannot credit Coins. The unsafe invoice-ID credit helper was removed. Fabricated/replayed invoice identifiers are rejected without minting Coins.
+- All `/api/v1/admin/*` routes require an explicit server-configured content-editor user ID. `CONTENT_EDITOR_USER_IDS` contains internal user IDs, is empty by default, and is never read from client claims. Ordinary authenticated users receive 403.
+- A central pre-handler validates CSRF for authenticated mutations in Telegram auth mode, including purchases, refunds, referrals, admin mutations, and the legacy reveal GET (which persists reveal state/rewards). Fixture mode remains a development-only bypass. Production-auth-mode tests exercise missing/invalid tokens and authorized/unauthorized editors.
+- Store service/SKU checkout and refunds execute inside a persistence-owned atomic unit of work. SQLite uses `BEGIN IMMEDIATE` and an async queue shared by adapters on the same connection, preventing unrelated adapter calls from joining or observing an in-progress transaction. PostgreSQL uses one transaction-scoped pool client and a transaction-level advisory lock shared by economic units and standalone ledger writes. Nested adapter operations do not commit the outer transaction.
+- Balance checks, ledger changes, purchase creation, supply reservation and entitlement/effect grants commit or roll back together. Purchase idempotency keys include the user ID. Entitlement conflicts cannot silently charge for a grant that did not occur.
+- Refunds return the existing refunded purchase on replay; concurrent refunds credit/release/revoke once. Immediate Energy purchases are non-refundable through this endpoint, including after consumption. Coin Pack refunds are rejected without a verified platform refund path.
+- Referral activation and both reward grants are atomic. Purchase-bonus grants and their state marker are atomic. Monthly-cap reads and grants serialize in the same economic unit. Failed operations roll back activation and can retry; checkout retries also retry the referral purchase hook after a prior hook failure.
+- Real PostgreSQL economic tests exposed and corrected a boolean-vs-integer comparison and unquoted camel-case aliases in balance/state queries.
 
-Every accepted claim must reference:
+### Open blockers and limitations
 
-```text
-gate_id
-evidence_id
-commit_sha
-environment
-verified_at
-blocker_id
-notes
-```
+| Blocker | Status / required next evidence |
+| --- | --- |
+| PAYMENT-VERIFY | **BLOCKED.** No trusted Telegram successful-payment/refund update verification and order/charge reconciliation path is implemented. Coin Pack purchases/refunds fail closed; rejecting client invoices is not a substitute for completing platform verification. No real-money payment smoke was performed. |
+| REFUND-POLICY | Immediate Energy effects are rejected rather than reversed. Selective refunds of provably unconsumed Energy require consumption provenance and tests; do not claim this capability. |
+| TRANSACTION-OPERATIONS | Local adapter tests pass, but production load, multi-process SQLite contention/retry behavior, backup/restore and staging rehearsal remain unverified. PostgreSQL intentionally serializes economic units globally; throughput is not established. Do not bypass the adapter with raw SQL in runtime code. |
+| HUMAN-QA | Human visual, responsive, keyboard/screen-reader and accessibility QA were not performed. Headless browser flow evidence is not manual acceptance. |
+| PRODUCTION | Shared rate limiting, deployment/payment smoke, operational observability and asset release approval remain open. Existing production startup restrictions remain in place. |
 
-## Current status
+The transactional changes do not repair any pre-existing partial or fraudulent economic records. Deployment against non-fixture data requires an audit/reconciliation plan, including old unscoped purchase keys and unverified Coin Pack credits.
 
-The repository contains the product specification, curriculum, economy rules, motion system, asset provenance workflow, security/deployment/scaling/observability contracts, Vercel alpha and provider migration strategy, AI agent operations architecture, internal roadmap/release-control specification, agent contract, iteration gates, an executable SQLite foundation with ScenarioPackage import, DB-backed public projection, sealed scenario-run lifecycle, a Telegram authentication/session boundary, API security hardening for the local boundary, a `PersistencePort` consumed by the API with SQLite and PostgreSQL adapters, forward-only PostgreSQL migrations with an explicit migration command, a server-authoritative foundation scoring service, a bounded Binance provider adapter boundary, idempotent normalized snapshot persistence, and the `apps/client-prototype` interface-shell client: a Vite + React 19 workspace package implementing the vertical slice (bootstrap → hub → scenario brief → decision workspace → decision lock → server reveal → score breakdown → debrief → rematch) against the API contracts, with a pure flow reducer, local run persistence for refresh recovery, Telegram `initData` auth with fixture fallback, typed contract-validated API responses, and Vitest coverage of the flow, persistence, and client boundary.
+## Verification record — 2026-09-21
 
-The project is **not yet accepted as a complete executable implementation**. Foundation claims below are `ACCEPTED_LOCAL`, not `PRODUCTION_READY`. Iteration 00/01 now provides versioned contracts, content validation, deterministic foundation scoring, DB-backed scenario reads, start/seal/reveal run endpoints, Telegram identity verification, hashed sessions, logout/revocation, tests, scripts, and CI configuration. The repository cleanup and deployment architecture pass is complete at the documentation level; production controls remain planned until implemented and evidenced.
+Evidence ID: `corrective-2026-09-21-local`
+Base commit: `ec136b04ca7ac29818ad326756b8042f8a2a1a94` plus this working-tree patch
+Environment: Debian 12 sandbox, Node 22.22.3, pnpm 11.9.0, SQLite, real PostgreSQL 18.4, headless Chromium 153.0.8010.0
+Release disposition: **BLOCKED (PAYMENT-VERIFY)**
 
-Three further runtime pieces landed on 2026-09-21: (1) the **learning content registry** (`packages/content/src/registry.ts`) — an executable link from curriculum to game data: 15 theory modules (display numbers 00–14), ~110 chapters, 40 skill cards, 9 protocols, 40 canonical (exact-English) entities, and Scenario Level ranges that cover 1–99 exactly once, enforced by `validate:content` (broken-link, canonical-name and level-coverage checks) plus beginner/core/advanced ScenarioPackage fixtures; (2) the **server-authoritative economy runtime** — an immutable `ledger_events` table (event, user, asset, signed amount, reason, source/scenario refs, idempotency key, promo flag, risk state) with derived balances (Coins summed from the ledger, including the promo subset; XP/Mastery/Energy kept in a `user_economy_state` row updated atomically with each event), the XP curve from `game_balance_spec.md` §3.1, quality modifiers, mastery stars, the 500-XP UTC-day cap and 30-minute energy regen, reward grants wired into reveal (idempotent per run, so replayed reveals never double-grant), and `GET /api/v1/users/:userId/balance` + `GET /api/v1/users/:userId/ledger` endpoints; and (3) the **store/checkout + referral runtime** on top of that ledger — `GET /api/v1/catalog` (5 Coin Packs at the canonical Stars prices, 4 services, 3 Founder SKUs per `catalog_sku_spec.md`), `POST /api/v1/purchases` (Coin Pack credit reconciled by Telegram invoice id so a replayed payment can never double-credit; service and SKU purchases with server-side Coins spend authorization, atomic supply reservation, entitlement grants unique per user, and energy grants applied by the server), `POST /api/v1/purchases/:purchaseId/refund` (coins returned, entitlements revoked, purchase marked refunded, double-refund rejected), and the referral loop (`POST /api/v1/referrals` one idempotent code per inviter; attribution with the 7-day window and self-referral rejection; server-driven activation at 3 valid solo scenarios paying 25 promo Coins to both sides exactly once; first confirmed invitee purchase paying the inviter 50 promo Coins once; 250 promo-Coins-per-inviter-per-UTC-month cap enforced from the ledger). The client Top Bar renders only server-derived values (display-only, per `economy_monetization_referrals.md` §8) with a placeholder state while the snapshot loads.
+| Gate | Observed result |
+| --- | --- |
+| `pnpm install --frozen-lockfile` | PASS on final lockfile. Initial attempt failed fetching native-build headers; retried using installed headers with `npm_config_nodedir=/usr/local`. |
+| `pnpm typecheck` | PASS |
+| `pnpm lint` | PASS |
+| `pnpm test` with `POSTGRES_TEST_URL` | PASS — 86 tests, 0 failures, **0 skipped** |
+| `pnpm test:e2e` | PASS — 26 tests, 0 failures, 0 skipped |
+| `pnpm client:typecheck` | PASS |
+| `pnpm client:lint` | PASS |
+| `pnpm client:test` | PASS — 27 tests across 4 files |
+| `pnpm client:build` | PASS |
+| `pnpm design-system:typecheck` | PASS |
+| `pnpm design-system:build` | PASS |
+| `pnpm validate:contracts` | PASS |
+| `pnpm validate:content` | PASS — 3 fixtures and registry validation |
+| `pnpm validate:locales` | PASS |
+| `pnpm validate:assets` | PASS — 87 **draft** assets; not release approval |
+| `pnpm validate:public-client` | PASS |
+| Real PostgreSQL integration | PASS — PostgreSQL 18.4 process, migrations, authoritative lifecycle and economic tests actually executed; not emulation or a skipped test |
+| Automated browser smoke | PASS — live Vite client + fixture-auth SQLite API, empty browser context, catalog → brief → start → workspace → select evidence/action and enter invalidation → seal → reveal; no page errors |
+| Human manual smoke / visual / responsive / accessibility QA | **NOT PERFORMED** |
+| Trusted payment/refund verification | **INCOMPLETE / BLOCKED** |
 
-## Acceptance status
+### Test evidence and reproduction
 
-```text
-Documentation-only: no longer true
-Executable foundation: PASS
-Production vertical slice: NOT YET ACCEPTED
-Overall product: BLOCKED
-```
+- `apps/client-prototype/src/App.test.ts`: mounted component regression, real UI controls, mocked API responses, no pre-existing run.
+- `tests/e2e/auth.test.ts`: Telegram auth mode, authenticated mutation CSRF, ordinary-user denial and explicit editor authorization.
+- `tests/e2e/store.test.ts`: fabricated invoice rejection; test funding comes directly from a fixture ledger grant, never from fabricated payment proof.
+- `packages/db/src/economic-transactions.test.ts`: identical SQLite/PostgreSQL scenarios. Injected exceptions occur **after** real mutations. Covers checkout ledger/purchase/grant rollback, limited checkout reservation rollback, concurrent overspend/duplicate checkout, supply exhaustion, refund ledger/revoke/release/state rollback, concurrent/repeated refunds, Energy/Pack refund denial, activation/reward rollback and retry, duplicate and distinct concurrent monthly-cap grants. PostgreSQL uses a temporary isolated schema.
+- `packages/db/src/postgres-adapter.test.ts`: real authoritative scenario lifecycle. This inherited test truncates its database tables; use a disposable test database only.
 
-The foundation, database/migration/seed gate, ScenarioPackage importer/projection boundary, foundation scenario-run lifecycle, Telegram authentication boundary, local API hardening, SQLite persistence adapter, PostgreSQL pool/repository lifecycle, PostgreSQL migration runner, foundation scoring service, Binance adapter boundary, normalized snapshot persistence, the learning content registry and the server-authoritative economy ledger (SQLite path with idempotent duplicate-reward e2e; Postgres adapter mirrored, its migration included in the ordered runner) are executable and locally evidenced. The product remains blocked until shared production rate limiting, ScenarioPackage ingestion/publication, production scoring governance, store/checkout and referral flows on top of the ledger (the ledger itself — including the promo-balance — is implemented), structured logging/alerting, browser visual/responsive/accessibility QA, visual/release asset QA, backup/restore rehearsal and the production-complete vertical slice are implemented and evidenced. The Phaser runtime foundation slice is executable locally, but its browser and accessibility gates are still open. Entity portraits and Skill Card artwork are original project assets with provenance recorded in `assets/asset-manifest.json`; they remain draft until QA approval. Logging, metrics, tracing, audit events, alerts, and incident response are specified in `observability_and_incident_response.md`; they are not yet shipped by the current foundation.
+For real PostgreSQL verification, start a disposable PostgreSQL instance and set `POSTGRES_TEST_URL` before `pnpm test`. The local run used port 55432 and a database outside the repository. With no URL, PostgreSQL tests still skip; such a run does **not** satisfy the PostgreSQL gate.
 
-## Immediate next sequence
+Local command logs were written outside Git to `/tmp/gamid-verification/`, `/tmp/gamid-install-final.log`, `/tmp/transactions.log`, and `/tmp/browser-smoke.log`. The headless browser was driven by Playwright against ports 5173/3000. Standard browser download failed in this environment; an npm-distributed Chromium binary and its runtime libraries were used from `/tmp`. No database, archive, screenshot, generated build output or installed dependency is included in the patch.
 
-1. Confirm `hudyakovictor/ssarena` as the authoritative runtime repository.
-2. Foundation — executable scaffold, scripts, CI and baseline fixture. **PASS**.
-3. Real contract tests. **PASS**.
-4. Database, migrations and repeatable seed fixtures. **PASS** for the SQLite foundation gate.
-5. ScenarioPackage validator/importer and public/hidden projection boundary. **PASS** for the foundation gate.
-6. DB-backed Scenario Run API: start, immutable seal, and post-seal reveal. **PASS** for the foundation gate.
-7. Telegram auth boundary, session extraction, route protection, logout/revocation and local API hardening. **PASS** for the local gate; shared production rate limiting, structured observability and deployment validation remain open.
-8. Foundation scoring contract, golden fixtures and score persistence. **PASS** for `score-v1` foundation gate; production rubric calibration and review tooling remain open.
-9. Historical provider adapters and point-in-time snapshot pipeline. Binance adapter boundary, security fixtures and normalized snapshot persistence are **PASS**; Snapshot scheduling remains open, ScenarioPackage ingestion/publication is **PASS** (see 13b).
-10. Client prototype vertical slice: interface shell (all 15 stable screen IDs), flow reducer with reveal-before-seal guard, typed contract-validated API client, refresh recovery via persisted idempotency keys, duplicate-seal recovery, and 26 client unit tests **PASS locally**; scenario catalog (`GET /api/v1/scenarios`), user run history (`GET /api/v1/users/:userId/scenario-runs`, `GET /api/v1/users/me`) and server-derived balance (`GET /api/v1/users/:userId/balance`) endpoints are implemented with e2e tests; the Top Bar renders server-derived balance values only (display-only). Browser E2E, visual/responsive/accessibility evidence and production assets remain open (manual QA required).
+## Scope and governance
 
-```text
-bootstrap
-→ scenario
-→ evidence
-→ decision
-→ seal
-→ historical reveal
-→ score
-→ debrief
-→ progression
-→ rematch
-```
+Documents/skills used: `AGENTS.md`, `docs/README.md`, archive `web-games`, Signal Arena skill overlay, security architecture, economy/referral specifications and acceptance matrix. No product redesign, new catalog content, or visual assets were introduced. No new art/source provenance is needed.
 
-11. PostgreSQL pool/repository adapter, readiness/shutdown behavior and migration command. **PASS** locally with a real PostgreSQL integration test; restore drill, staging rehearsal and shared production rate limiting remain open.
-12. Server-authoritative economy ledger (XP/Energy/Mastery/Coins economy v2). **PASS** locally (SQLite path): immutable `ledger_events` with idempotency-keyed duplicates rejected, derived balances (Coins from the ledger incl. promo subset; XP/Mastery/Energy state row), XP curve + quality modifier + 500 XP/UTC-day cap, mastery stars (H-BAL-3), 30-minute energy regen, idempotent reward grants on reveal, `balance`/`ledger` endpoints and duplicate-reward e2e.
-12b. Store/checkout + referrals on the ledger. **PASS** locally (SQLite path): catalog contract + canonical data (5 packs, 4 services, 3 Founder SKUs) with `validateCatalog`-style unit tests, invoice-reconciled Coin Pack purchase (duplicate payment credits once), service/SKU purchases with balance checks, idempotent client keys, atomic supply reservation, unique entitlement grants, refund/revoke, and the full referral lifecycle (code → attribution → 3 scenarios → both sides paid once, purchase bonus once, self-referral rejected, monthly promo cap from the ledger). A full Postgres integration test for ledger/store/referrals remains open.
-13. Learning content registry (curriculum → game data link). **PASS** locally: `packages/content` registry (modules 00–14, ~110 chapters, 40 cards, 9 protocols, 40 canonical entities, levels 1–99 covered exactly once), `validate:content` checks broken links, canonical exact-English Entity names and level coverage, plus beginner (level 3), core (level 32) and advanced (level 78) ScenarioPackage fixtures.
-14. Visual lab, motion/accessibility QA and production asset release approval.
-15. Vercel alpha deployment and provider/payment smoke test.
-16. AI agent runtime contracts, isolated job runner, and CRM approvals.
-17. Roadmap control plane: contracts, gate/evidence ingestion, blocker calculation, Admin API and CRM views.
-18. Full integration audit and release evidence.
-
-## Current evidence
-
-```text
-pnpm install --frozen-lockfile                  PASS
-pnpm typecheck                                  PASS
-pnpm lint                                       PASS
-pnpm test                                       PASS — 67 tests, 1 skipped (incl. economy curve/snapshot, ledger idempotency, catalog spec tables, content registry)
-pnpm test:e2e                                   PASS — 24 tests (incl. duplicate-reward idempotency, balance/ledger, store checkout incl. duplicate payment + refund/revoke, referral lifecycle, scenario ingestion/publication gate)
-pnpm client:typecheck                           PASS
-pnpm client:lint                                PASS
-pnpm client:test                                PASS — 26 tests (flow reducer, persistence, API client incl. balance contract)
-pnpm client:build                               PASS — 307 kB JS / 14 kB CSS (gzip 92 kB)
-pnpm design-system:typecheck                    PASS
-pnpm design-system:build                        PASS
-pnpm validate:contracts                         PASS
-pnpm validate:content                           PASS — 3 fixtures + registry (15 modules 00–14, 40 cards, 9 protocols, 40 entities, levels 1–99 exact coverage)
-pnpm validate:locales                           PASS
-pnpm validate:assets                            PASS — 87 assets (skill-card paths corrected to .svg, topbar mockup path corrected)
-pnpm validate:public-client                     PASS — no hidden/future truth or client-authoritative scoring in apps/client-prototype/src
-pnpm build                                      PASS
-DB_PATH=var/db-validation.sqlite pnpm db:migrate PASS — repeatable, including historical snapshots, 0004_economy_ledger and 0005_catalog_purchases_referrals
-DB_PATH=var/db-validation.sqlite pnpm db:seed    PASS — repeatable
-Manual smoke (live API, fixture mode):          PASS — start → seal → reveal → score 87 → balance (XP +52, ★★) → replayed reveal (no double grant) → ledger (2 idempotency-keyed events) → catalog → pack_arena purchase (+600 Coins) → replayed invoice (no double credit) → energy service (−20 Coins) → referral code + self-referral rejection
-```
-
-Client prototype manual QA notes (pending human browser QA): the vertical slice
-was exercised against a live local API (start → seal → reveal → history) and the
-flow/persistence/client boundaries are covered by unit tests. Visual,
-responsive and accessibility gates for the browser runtime remain open and
-require manual QA with screenshots.
-
-The DB foundation stores full server-side ScenarioPackages, preserves `(scenario_id, version)` records, enforces scenario/user foreign keys, and makes scenario-run creation idempotent by `idempotency_key`. The importer rejects invalid JSON, post-t0/unavailable sources, invalid future ranges, and mismatched future hashes. The API reads versioned packages from SQLite or PostgreSQL through the same `PersistencePort`, returns only public projection before seal, rejects reveal before seal, and exposes reveal data plus the persisted process score only after an immutable sealed decision. Telegram auth, async shared replay protection, session revocation, local CSRF/CORS/header/rate-limit controls, foundation scoring, PostgreSQL lifecycle integration, Binance adapter validation, the scenario catalog and user run-history read endpoints, and the client prototype flow (pure reducer with reveal-before-seal guard, refresh recovery, duplicate-seal recovery, contract-validated responses) are locally evidenced; shared production rate limiting, structured observability, provider ingestion, rubric governance, browser E2E/accessibility evidence, backup/restore rehearsal and production scoring calibration remain open.
-
-## Decision policy
-
-Audit and simulation results are internal inputs. They are not canonical product documents. Final decisions are recorded in the active specifications and this status file, without publishing raw audit output in the main documentation path.
-
-## Acceptance rule
-
-No implementation phase is accepted from documentation alone. Acceptance requires executable code, automated tests, manual QA, evidence, and explicit status.
+Previous invoice-reconciliation and manual-smoke PASS claims are withdrawn. A client invoice identifier is not payment evidence. Local automated verification does not close platform verification, production readiness or human QA gates. No phase is accepted from documentation alone.

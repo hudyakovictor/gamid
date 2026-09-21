@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getKit, WidgetCard, type WidgetSpec } from "@signal-arena/ui-game";
 
@@ -20,7 +20,7 @@ type HubScreenProps = {
 export function HubScreen({ onOpenHubAction, onOpenScenario, activeRun, onContinue }: HubScreenProps) {
   const [scenarios, setScenarios] = useState<ScenarioSummary[] | null>(null);
   const [runs, setRuns] = useState<RunSummary[] | null>(null);
-  const api = new ApiClient();
+  const api = useMemo(() => new ApiClient(), []);
 
   useEffect(() => {
     let cancelled = false;

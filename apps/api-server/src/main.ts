@@ -85,6 +85,7 @@ const server = buildServer({
   ...(closePersistence ? { closePersistence } : {}),
   ...(readinessCheck ? { readinessCheck } : {}),
   authMode: configuredAuthMode,
+  editorUserIds: (process.env.CONTENT_EDITOR_USER_IDS ?? "").split(",").map((id) => id.trim()).filter(Boolean),
   seedFoundation: configuredAuthMode === "fixture" && databaseDriver === "sqlite",
   ...(corsOrigins.length > 0 ? { allowedOrigins: corsOrigins } : {}),
   ...(telegramBotToken ? { telegramBotToken } : {})

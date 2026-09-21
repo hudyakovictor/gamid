@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 
@@ -243,6 +244,29 @@ const SCENARIO_RUN_SELECT = `
 export class PostgresPersistenceAdapter implements PersistencePort {
   public readonly pool: Pool;
   private readonly ownsPool: boolean;
+  private readonly transactionContext = new AsyncLocalStorage<PoolClient>();
+  private get executor(): Pool | PoolClient {
+    return this.transactionContext.getStore() ?? this.pool;
+  }
+
+  public async atomic<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.transactionContext.getStore()) return operation();
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      // One database-wide economic lock also covers absent balance/cap rows.
+      // This intentionally favors correctness over checkout throughput.
+      await client.query("SELECT pg_advisory_xact_lock(724193001)");
+      const result = await this.transactionContext.run(client, operation);
+      await client.query("COMMIT");
+      return result;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
 
   public constructor(options: PostgresPersistenceAdapterOptions) {
     if (options.pool) {
@@ -265,7 +289,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   }
 
   public async migrate(): Promise<void> {
-    const client = await this.pool.connect();
+    const client = this.transactionContext.getStore() ?? await this.pool.connect();
     try {
       await applyPostgresMigrations({
         query: async (text, parameters) => ({
@@ -273,12 +297,12 @@ export class PostgresPersistenceAdapter implements PersistencePort {
         })
       });
     } finally {
-      client.release();
+      if (!this.transactionContext.getStore()) client.release();
     }
   }
 
   public async checkReadiness(): Promise<void> {
-    const rows = await queryRows<{ tableName: string | null }>(this.pool, `
+    const rows = await queryRows<{ tableName: string | null }>(this.executor, `
       SELECT to_regclass('public.scenarios') AS "tableName";
     `);
     if (rows[0]?.tableName !== "scenarios") {
@@ -295,9 +319,9 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   public async getOrCreateUserForIdentity(
     input: PlatformIdentityInput
   ): Promise<{ userId: string; created: boolean }> {
-    const client = await this.pool.connect();
+    const client = this.transactionContext.getStore() ?? await this.pool.connect();
     try {
-      await client.query("BEGIN;");
+      if (!this.transactionContext.getStore()) await client.query("BEGIN;");
       const existingIdentity = (await queryRows<{ userId: string }>(client, `
         SELECT user_id AS "userId"
         FROM user_identities
@@ -305,7 +329,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       `, [input.provider, input.providerUserId]))[0];
 
       if (existingIdentity) {
-        await client.query("COMMIT;");
+        if (!this.transactionContext.getStore()) await client.query("COMMIT;");
         return { userId: existingIdentity.userId, created: false };
       }
 
@@ -348,13 +372,13 @@ export class PostgresPersistenceAdapter implements PersistencePort {
         throw new Error("User identity was not persisted");
       }
 
-      await client.query("COMMIT;");
+      if (!this.transactionContext.getStore()) await client.query("COMMIT;");
       return { userId: identity.userId, created: insertedUser.length === 1 };
     } catch (error) {
-      await client.query("ROLLBACK;");
+      if (!this.transactionContext.getStore()) await client.query("ROLLBACK;");
       throw error;
     } finally {
-      client.release();
+      if (!this.transactionContext.getStore()) client.release();
     }
   }
 
@@ -363,9 +387,9 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     expiresAtMs: number,
     nowMs = Date.now()
   ): Promise<boolean> {
-    const client = await this.pool.connect();
+    const client = this.transactionContext.getStore() ?? await this.pool.connect();
     try {
-      await client.query("BEGIN;");
+      if (!this.transactionContext.getStore()) await client.query("BEGIN;");
       await queryRows(client, "DELETE FROM auth_replay_keys WHERE expires_at <= $1;", [
         new Date(nowMs).toISOString()
       ]);
@@ -375,18 +399,18 @@ export class PostgresPersistenceAdapter implements PersistencePort {
         ON CONFLICT (replay_key) DO NOTHING
         RETURNING replay_key AS "replayKey"
       `, [replayKey, new Date(expiresAtMs).toISOString()]);
-      await client.query("COMMIT;");
+      if (!this.transactionContext.getStore()) await client.query("COMMIT;");
       return inserted.length === 1;
     } catch (error) {
-      await client.query("ROLLBACK;");
+      if (!this.transactionContext.getStore()) await client.query("ROLLBACK;");
       throw error;
     } finally {
-      client.release();
+      if (!this.transactionContext.getStore()) client.release();
     }
   }
 
   public async createAuthSession(input: CreateAuthSessionInput): Promise<AuthSessionRecord> {
-    await queryRows(this.pool, `
+    await queryRows(this.executor, `
       INSERT INTO auth_sessions (
         session_id,
         user_id,
@@ -410,7 +434,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       createdAt: unknown;
       expiresAt: unknown;
       revokedAt: unknown;
-    }>(this.pool, `
+    }>(this.executor, `
       SELECT
         session_id AS "sessionId",
         user_id AS "userId",
@@ -439,7 +463,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     sessionId: string,
     revokedAt = new Date().toISOString()
   ): Promise<boolean> {
-    const rows = await queryRows<{ sessionId: string }>(this.pool, `
+    const rows = await queryRows<{ sessionId: string }>(this.executor, `
       UPDATE auth_sessions
       SET revoked_at = $1
       WHERE session_id = $2 AND revoked_at IS NULL
@@ -454,7 +478,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     createdAt: string = new Date().toISOString()
   ): Promise<HistoricalSnapshotRecord> {
     const parsed = HistoricalMarketSnapshotSchema.parse(snapshot);
-    await queryRows(this.pool, `
+    await queryRows(this.executor, `
       INSERT INTO historical_snapshots (
         snapshot_id,
         provider,
@@ -485,7 +509,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       contentHash: string;
       snapshotJson: unknown;
       createdAt: unknown;
-    }>(this.pool, `
+    }>(this.executor, `
       SELECT
         snapshot_id AS "snapshotId",
         provider,
@@ -527,7 +551,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       contentHash: string;
       snapshotJson: unknown;
       createdAt: unknown;
-    }>(this.pool, `
+    }>(this.executor, `
       SELECT
         snapshot_id AS "snapshotId",
         provider,
@@ -561,7 +585,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     scenarioId: string,
     version: string
   ): Promise<ScenarioPackage | undefined> {
-    const row = (await queryRows<{ packageJson: unknown }>(this.pool, `
+    const row = (await queryRows<{ packageJson: unknown }>(this.executor, `
       SELECT package_json AS "packageJson"
       FROM scenarios
       WHERE scenario_id = $1 AND version = $2
@@ -578,7 +602,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     const now = nowIso ?? new Date().toISOString();
     const existing = (
       await queryRows(
-        this.pool,
+        this.executor,
         "SELECT package_json FROM scenarios WHERE scenario_id = $1 AND version = $2",
         [package_.scenarioId, package_.version]
       )
@@ -593,7 +617,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       );
     }
     await queryRows(
-      this.pool,
+      this.executor,
       `INSERT INTO scenarios (
         scenario_id, version, scenario_level, mode, content_version, data_version,
         future_hash, package_json, review_status, created_at, updated_at
@@ -622,7 +646,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   ): Promise<boolean> {
     const now = nowIso ?? new Date().toISOString();
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `UPDATE scenarios SET review_status = $3, updated_at = $4
        WHERE scenario_id = $1 AND version = $2
        RETURNING scenario_id`,
@@ -632,7 +656,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   }
 
   public async listScenarioPackages(): Promise<ScenarioPackageSummary[]> {
-    const rows = await queryRows<{ packageJson: unknown }>(this.pool, `
+    const rows = await queryRows<{ packageJson: unknown }>(this.executor, `
       SELECT package_json AS "packageJson"
       FROM scenarios
       WHERE review_status IN ('validated', 'published')
@@ -656,7 +680,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
 
   public async createScenarioRun(input: CreateScenarioRunInput): Promise<ScenarioRunRecord> {
     const createdAt = new Date().toISOString();
-    await queryRows(this.pool, `
+    await queryRows(this.executor, `
       INSERT INTO scenario_runs (
         run_id,
         user_id,
@@ -676,7 +700,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       createdAt
     ]);
 
-    const record = (await queryRows<ScenarioRunDbRow>(this.pool, `
+    const record = (await queryRows<ScenarioRunDbRow>(this.executor, `
       ${SCENARIO_RUN_SELECT}
       WHERE idempotency_key = $1
     `, [input.idempotencyKey]))[0];
@@ -704,7 +728,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       scoreJson: unknown;
       createdAt: unknown;
       sealedAt: unknown;
-    }>(this.pool, `
+    }>(this.executor, `
       SELECT
         run_id AS "runId",
         scenario_id AS "scenarioId",
@@ -736,7 +760,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     runId: string,
     userId: string
   ): Promise<ScenarioRunRecord | undefined> {
-    const row = (await queryRows<ScenarioRunDbRow>(this.pool, `
+    const row = (await queryRows<ScenarioRunDbRow>(this.executor, `
       ${SCENARIO_RUN_SELECT}
       WHERE run_id = $1 AND user_id = $2
     `, [runId, userId]))[0];
@@ -751,9 +775,9 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   ): Promise<ScenarioRunRecord> {
     const parsedDecision = DecisionTraceSchema.parse(decision);
     const parsedScore = ScoreResultSchema.parse(score);
-    const client = await this.pool.connect();
+    const client = this.transactionContext.getStore() ?? await this.pool.connect();
     try {
-      await client.query("BEGIN;");
+      if (!this.transactionContext.getStore()) await client.query("BEGIN;");
       const currentRow = (await queryRows<ScenarioRunDbRow>(client, `
         ${SCENARIO_RUN_SELECT}
         WHERE run_id = $1 AND user_id = $2
@@ -765,7 +789,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       const current = readScenarioRunRow(currentRow);
       if (current.state !== "started") {
         if (current.decision && isDeepStrictEqual(current.decision, parsedDecision)) {
-          await client.query("COMMIT;");
+          if (!this.transactionContext.getStore()) await client.query("COMMIT;");
           return current;
         }
         throw new Error(`Scenario run is already sealed: ${runId}`);
@@ -788,13 +812,13 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       if (!["sealed", "revealed", "completed"].includes(sealed.state)) {
         throw new Error(`Scenario run was not sealed: ${runId}`);
       }
-      await client.query("COMMIT;");
+      if (!this.transactionContext.getStore()) await client.query("COMMIT;");
       return sealed;
     } catch (error) {
-      await client.query("ROLLBACK;");
+      if (!this.transactionContext.getStore()) await client.query("ROLLBACK;");
       throw error;
     } finally {
-      client.release();
+      if (!this.transactionContext.getStore()) client.release();
     }
   }
 
@@ -804,7 +828,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     toIso: string
   ): Promise<number> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `SELECT COALESCE(SUM(amount) FILTER (WHERE risk_state = 'cleared'), 0) AS total
        FROM ledger_events
        WHERE user_id = $1 AND asset = 'coins' AND promo = TRUE AND amount > 0
@@ -825,7 +849,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     createdAt: string;
   }): Promise<Purchase> {
     await queryRows(
-      this.pool,
+      this.executor,
       `INSERT INTO purchases (
         purchase_id, user_id, kind, item_id, price_coins, invoice_id,
         idempotency_key, state, created_at
@@ -857,7 +881,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     idempotencyKey: string
   ): Promise<Purchase | undefined> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       "SELECT * FROM purchases WHERE idempotency_key = $1",
       [idempotencyKey]
     );
@@ -866,7 +890,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
 
   public async getPurchaseByInvoice(invoiceId: string): Promise<Purchase | undefined> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       "SELECT * FROM purchases WHERE invoice_id = $1",
       [invoiceId]
     );
@@ -878,7 +902,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     userId: string
   ): Promise<Purchase | undefined> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       "SELECT * FROM purchases WHERE purchase_id = $1 AND user_id = $2",
       [purchaseId, userId]
     );
@@ -891,7 +915,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     refundedAt: string
   ): Promise<boolean> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `UPDATE purchases SET state = 'refunded', refunded_at = $3
        WHERE purchase_id = $1 AND user_id = $2 AND state = 'completed'
        RETURNING purchase_id`,
@@ -907,9 +931,9 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     if (supplyLimit === undefined) {
       return true;
     }
-    const client = await this.pool.connect();
+    const client = this.transactionContext.getStore() ?? await this.pool.connect();
     try {
-      await client.query("BEGIN;");
+      if (!this.transactionContext.getStore()) await client.query("BEGIN;");
       await queryRows(
         client,
         `INSERT INTO supply_counters (item_id, supply_limit, reserved)
@@ -924,19 +948,19 @@ export class PostgresPersistenceAdapter implements PersistencePort {
          RETURNING item_id`,
         [itemId]
       );
-      await client.query("COMMIT;");
+      if (!this.transactionContext.getStore()) await client.query("COMMIT;");
       return result.length > 0;
     } catch (error) {
-      await client.query("ROLLBACK;");
+      if (!this.transactionContext.getStore()) await client.query("ROLLBACK;");
       throw error;
     } finally {
-      client.release();
+      if (!this.transactionContext.getStore()) client.release();
     }
   }
 
   public async releaseSupply(itemId: string): Promise<void> {
     await queryRows(
-      this.pool,
+      this.executor,
       `UPDATE supply_counters SET reserved = GREATEST(0, reserved - 1) WHERE item_id = $1`,
       [itemId]
     );
@@ -950,7 +974,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   }): Promise<{ inserted: boolean; entitlementId: string }> {
     const entitlementId = randomUUID();
     const inserted = await queryRows(
-      this.pool,
+      this.executor,
       `INSERT INTO user_entitlements (
         entitlement_id, user_id, entitlement_key, source_purchase_id, created_at
       ) VALUES ($1, $2, $3, $4, $5)
@@ -968,7 +992,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       return { inserted: true, entitlementId };
     }
     const existing = await queryRows(
-      this.pool,
+      this.executor,
       "SELECT entitlement_id FROM user_entitlements WHERE entitlement_key = $1",
       [input.entitlementKey]
     );
@@ -981,7 +1005,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     revokedAt: string
   ): Promise<boolean> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `UPDATE user_entitlements SET revoked_at = $3
        WHERE user_id = $1 AND entitlement_key = $2 AND revoked_at IS NULL
        RETURNING entitlement_id`,
@@ -994,7 +1018,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     userId: string
   ): Promise<Array<{ entitlementKey: string; sourcePurchaseId: string; createdAt: string }>> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `SELECT entitlement_key, source_purchase_id, created_at
        FROM user_entitlements
        WHERE user_id = $1 AND revoked_at IS NULL
@@ -1016,7 +1040,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   }): Promise<{ created: boolean; referral: ReferralRecord }> {
     if (input.code) {
       const byCode = (
-        await queryRows(this.pool, "SELECT * FROM referrals WHERE code = $1", [input.code])
+        await queryRows(this.executor, "SELECT * FROM referrals WHERE code = $1", [input.code])
       )[0];
       if (byCode) {
         return { created: false, referral: referralRowToRecord(byCode) };
@@ -1024,7 +1048,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     }
     const byInviter = (
       await queryRows(
-        this.pool,
+        this.executor,
         "SELECT * FROM referrals WHERE inviter_id = $1 AND state != 'rejected' LIMIT 1",
         [input.inviterId]
       )
@@ -1039,7 +1063,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       for (let i = 0; i < 6; i += 1) {
         candidate += alphabet[Math.floor(Math.random() * alphabet.length)];
       }
-      const exists = (await queryRows(this.pool, "SELECT code FROM referrals WHERE code = $1", [candidate]))[0];
+      const exists = (await queryRows(this.executor, "SELECT code FROM referrals WHERE code = $1", [candidate]))[0];
       if (!exists) {
         code = candidate;
         break;
@@ -1049,11 +1073,11 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       throw new Error("Could not allocate a unique referral code");
     }
     await queryRows(
-      this.pool,
+      this.executor,
       "INSERT INTO referrals (code, inviter_id, created_at, state) VALUES ($1, $2, $3, 'invited')",
       [code, input.inviterId, input.createdAt]
     );
-    const created = (await queryRows(this.pool, "SELECT * FROM referrals WHERE code = $1", [code]))[0];
+    const created = (await queryRows(this.executor, "SELECT * FROM referrals WHERE code = $1", [code]))[0];
     if (!created) {
       throw new Error("Referral row disappeared after insert");
     }
@@ -1061,14 +1085,14 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   }
 
   public async getReferralByCode(code: string): Promise<ReferralRecord | undefined> {
-    const row = (await queryRows(this.pool, "SELECT * FROM referrals WHERE code = $1", [code]))[0];
+    const row = (await queryRows(this.executor, "SELECT * FROM referrals WHERE code = $1", [code]))[0];
     return row ? referralRowToRecord(row) : undefined;
   }
 
   public async findReferralByInvitee(inviteeId: string): Promise<ReferralRecord | undefined> {
     const row = (
       await queryRows(
-        this.pool,
+        this.executor,
         `SELECT * FROM referrals
          WHERE invitee_id = $1 AND state IN ('attributed', 'activated')
          ORDER BY attributed_at DESC
@@ -1086,7 +1110,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     windowExpiresAt: string;
   }): Promise<boolean> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `UPDATE referrals SET
         invitee_id = $1, attributed_at = $2, window_expires_at = $3, state = 'attributed'
        WHERE code = $4 AND state = 'invited' AND invitee_id IS NULL
@@ -1098,7 +1122,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
 
   public async countValidScenarios(userId: string): Promise<number> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `SELECT COUNT(*) AS count FROM scenario_runs
        WHERE user_id = $1 AND state IN ('sealed', 'revealed', 'completed')`,
       [userId]
@@ -1110,7 +1134,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     code: string,
     inviteeValidScenarios: number
   ): Promise<void> {
-    await queryRows(this.pool, "UPDATE referrals SET invitee_valid_scenarios = $1 WHERE code = $2", [
+    await queryRows(this.executor, "UPDATE referrals SET invitee_valid_scenarios = $1 WHERE code = $2", [
       inviteeValidScenarios,
       code
     ]);
@@ -1118,7 +1142,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
 
   public async activateReferral(code: string, activatedAt: string): Promise<boolean> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `UPDATE referrals SET state = 'activated', activated_at = $2
        WHERE code = $1 AND state = 'attributed'
        RETURNING code`,
@@ -1132,7 +1156,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     bonusAt: string
   ): Promise<boolean> {
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `UPDATE referrals SET purchase_bonus_at = $2
        WHERE code = $1 AND state = 'activated' AND purchase_bonus_at IS NULL
        RETURNING code`,
@@ -1141,7 +1165,11 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     return rows.length > 0;
   }
 
-  public async recordLedgerEvent(
+  public async recordLedgerEvent(input: LedgerEventInput): Promise<{ inserted: boolean; event: LedgerEvent }> {
+    return this.atomic(() => this.recordLedgerEventInTransaction(input));
+  }
+
+  private async recordLedgerEventInTransaction(
     input: LedgerEventInput
   ): Promise<{ inserted: boolean; event: LedgerEvent }> {
     const nowIso = input.createdAt ?? new Date().toISOString();
@@ -1159,9 +1187,9 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       createdAt: nowIso
     };
 
-    const client = await this.pool.connect();
+    const client = this.transactionContext.getStore() ?? await this.pool.connect();
     try {
-      await client.query("BEGIN;");
+      if (!this.transactionContext.getStore()) await client.query("BEGIN;");
       const existing = (
         await queryRows(
           client,
@@ -1170,7 +1198,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
         )
       )[0];
       if (existing) {
-        await client.query("COMMIT;");
+        if (!this.transactionContext.getStore()) await client.query("COMMIT;");
         return {
           inserted: false,
           event: { ...event, eventId: String(existing.event_id) }
@@ -1200,15 +1228,15 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       const stateRow = (
         await queryRows(client, `
           SELECT
-            xp_total AS xpTotal,
-            account_level AS accountLevel,
-            xp_day_utc AS xpDayUtc,
-            xp_day_amount AS xpDayAmount,
-            mastery_stars AS masteryStars,
+            xp_total AS "xpTotal",
+            account_level AS "accountLevel",
+            xp_day_utc AS "xpDayUtc",
+            xp_day_amount AS "xpDayAmount",
+            mastery_stars AS "masteryStars",
             energy,
-            energy_cap AS energyCap,
-            energy_regen_at AS energyRegenAt,
-            updated_at AS updatedAt
+            energy_cap AS "energyCap",
+            energy_regen_at AS "energyRegenAt",
+            updated_at AS "updatedAt"
           FROM user_economy_state
           WHERE user_id = $1
           FOR UPDATE
@@ -1262,13 +1290,13 @@ export class PostgresPersistenceAdapter implements PersistencePort {
           ]);
       }
 
-      await client.query("COMMIT;");
+      if (!this.transactionContext.getStore()) await client.query("COMMIT;");
       return { inserted: true, event };
     } catch (error) {
-      await client.query("ROLLBACK;");
+      if (!this.transactionContext.getStore()) await client.query("ROLLBACK;");
       throw error;
     } finally {
-      client.release();
+      if (!this.transactionContext.getStore()) client.release();
     }
   }
 
@@ -1278,7 +1306,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   ): Promise<LedgerEvent[]> {
     const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 500);
     const rows = await queryRows(
-      this.pool,
+      this.executor,
       `SELECT * FROM ledger_events WHERE user_id = $1
        ORDER BY created_at DESC, event_id DESC
        LIMIT $2`,
@@ -1305,28 +1333,28 @@ export class PostgresPersistenceAdapter implements PersistencePort {
   ): Promise<UserBalance> {
     const stamped = nowIso ?? new Date().toISOString();
     const stateRows = await queryRows(
-      this.pool,
+      this.executor,
       `
       SELECT
-        xp_total AS xpTotal,
-        account_level AS accountLevel,
-        xp_day_utc AS xpDayUtc,
-        xp_day_amount AS xpDayAmount,
-        mastery_stars AS masteryStars,
+        xp_total AS "xpTotal",
+        account_level AS "accountLevel",
+        xp_day_utc AS "xpDayUtc",
+        xp_day_amount AS "xpDayAmount",
+        mastery_stars AS "masteryStars",
         energy,
-        energy_cap AS energyCap,
-        energy_regen_at AS energyRegenAt,
-        updated_at AS updatedAt
+        energy_cap AS "energyCap",
+        energy_regen_at AS "energyRegenAt",
+        updated_at AS "updatedAt"
       FROM user_economy_state
       WHERE user_id = $1
     `,
       [userId]
     );
     const coinsRows = await queryRows(
-      this.pool,
+      this.executor,
       `SELECT
          COALESCE(SUM(amount) FILTER (WHERE risk_state = 'cleared'), 0) AS total,
-         COALESCE(SUM(amount) FILTER (WHERE promo = 1 AND risk_state = 'cleared'), 0) AS promoTotal
+         COALESCE(SUM(amount) FILTER (WHERE promo = TRUE AND risk_state = 'cleared'), 0) AS "promoTotal"
        FROM ledger_events
        WHERE user_id = $1 AND asset = 'coins'`
     , [userId]);
@@ -1353,9 +1381,9 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     runId: string,
     userId: string
   ): Promise<ScenarioRunRecord> {
-    const client = await this.pool.connect();
+    const client = this.transactionContext.getStore() ?? await this.pool.connect();
     try {
-      await client.query("BEGIN;");
+      if (!this.transactionContext.getStore()) await client.query("BEGIN;");
       const currentRow = (await queryRows<ScenarioRunDbRow>(client, `
         ${SCENARIO_RUN_SELECT}
         WHERE run_id = $1 AND user_id = $2
@@ -1369,7 +1397,7 @@ export class PostgresPersistenceAdapter implements PersistencePort {
         throw new Error(`Scenario run must be sealed before reveal: ${runId}`);
       }
       if (current.state === "revealed" || current.state === "completed") {
-        await client.query("COMMIT;");
+        if (!this.transactionContext.getStore()) await client.query("COMMIT;");
         return current;
       }
 
@@ -1390,13 +1418,13 @@ export class PostgresPersistenceAdapter implements PersistencePort {
       if (revealed.state !== "revealed" && revealed.state !== "completed") {
         throw new Error(`Scenario run was not revealed: ${runId}`);
       }
-      await client.query("COMMIT;");
+      if (!this.transactionContext.getStore()) await client.query("COMMIT;");
       return revealed;
     } catch (error) {
-      await client.query("ROLLBACK;");
+      if (!this.transactionContext.getStore()) await client.query("ROLLBACK;");
       throw error;
     } finally {
-      client.release();
+      if (!this.transactionContext.getStore()) client.release();
     }
   }
 }

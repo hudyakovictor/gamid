@@ -15,6 +15,7 @@ import type { ReferralRecord } from "../../../packages/db/src/store.js";
 
 type ReferralPersistence = Pick<
   PersistencePort,
+  | "atomic"
   | "getOrCreateReferral"
   | "getReferralByCode"
   | "findReferralByInvitee"
@@ -102,6 +103,13 @@ export async function attributeReferral(
   persist: ReferralPersistence,
   params: { code: string; inviteeId: string; nowIso?: string }
 ): Promise<ReferralRecord> {
+  return persist.atomic(() => attributeReferralInTransaction(persist, params));
+}
+
+async function attributeReferralInTransaction(
+  persist: ReferralPersistence,
+  params: { code: string; inviteeId: string; nowIso?: string }
+): Promise<ReferralRecord> {
   const now = params.nowIso ?? new Date().toISOString();
   const referral = await persist.getReferralByCode(params.code);
   if (!referral) {
@@ -138,6 +146,14 @@ export async function attributeReferral(
  * attribution window.
  */
 export async function syncReferralProgress(
+  persist: ReferralPersistence,
+  inviteeId: string,
+  nowIso?: string
+): Promise<{ activated: boolean; inviterRewardGranted: boolean; inviteeRewardGranted: boolean }> {
+  return persist.atomic(() => syncReferralProgressInTransaction(persist, inviteeId, nowIso));
+}
+
+async function syncReferralProgressInTransaction(
   persist: ReferralPersistence,
   inviteeId: string,
   nowIso?: string
@@ -197,6 +213,14 @@ export async function syncReferralProgress(
  * Grants the inviter the 50-coin purchase bonus once, under the monthly cap.
  */
 export async function onInviteePurchase(
+  persist: ReferralPersistence,
+  inviteeId: string,
+  nowIso?: string
+): Promise<{ bonusGranted: boolean }> {
+  return persist.atomic(() => onInviteePurchaseInTransaction(persist, inviteeId, nowIso));
+}
+
+async function onInviteePurchaseInTransaction(
   persist: ReferralPersistence,
   inviteeId: string,
   nowIso?: string

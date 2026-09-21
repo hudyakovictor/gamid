@@ -258,7 +258,7 @@ describe("ApiClient", () => {
   it("parses the server-derived balance through the economy contract", async () => {
     const { fetchImpl } = makeFetch(() => ({
       body: {
-        data: {
+        data: { balance: {
           userId: "user-1",
           coins: 105,
           coinsPromo: 25,
@@ -272,7 +272,7 @@ describe("ApiClient", () => {
           xpToday: 52,
           xpDailyCap: 500,
           asOf: "2026-09-21T10:10:00.000Z"
-        }
+        } }
       }
     }));
     const client = new ApiClient({ fetchImpl });
@@ -285,7 +285,7 @@ describe("ApiClient", () => {
   it("rejects a balance that leaks unknown fields", async () => {
     const { fetchImpl } = makeFetch(() => ({
       body: {
-        data: {
+        data: { balance: {
           userId: "user-1",
           coins: 1,
           coinsPromo: 0,
@@ -300,7 +300,7 @@ describe("ApiClient", () => {
           xpDailyCap: 500,
           asOf: "2026-09-21T10:10:00.000Z",
           hiddenEntityIds: ["fomo_wraith"]
-        }
+        } }
       }
     }));
     const client = new ApiClient({ fetchImpl });
