@@ -25,6 +25,7 @@
     "node_modules",
     "dist",
     "apps/design-system-lab",
+    "apps/client-prototype",
     "packages/ui-game"
   ]
 }

@@ -159,3 +159,63 @@ export const scenarioRuns = sqliteTable(
     )
   })
 );
+
+export const ledgerEvents = sqliteTable(
+  "ledger_events",
+  {
+    eventId: text("event_id").primaryKey(),
+    userId: text("user_id").notNull(),
+    asset: text("asset").notNull(),
+    amount: integer("amount").notNull(),
+    reason: text("reason").notNull(),
+    sourceId: text("source_id"),
+    scenarioId: text("scenario_id"),
+    idempotencyKey: text("idempotency_key").notNull().unique(),
+    promo: integer("promo", { mode: "boolean" }).notNull().default(false),
+    riskState: text("risk_state").notNull().default("cleared"),
+    createdAt: text("created_at").notNull()
+  },
+  (table) => ({
+    userReference: foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.userId],
+      name: "ledger_events_user_fk"
+    }),
+    userCreatedIndex: index("idx_ledger_events_user_created").on(
+      table.userId,
+      table.createdAt
+    ),
+    assetCheck: check(
+      "ledger_event_asset",
+      sql`${table.asset} IN ('coins', 'xp', 'mastery_stars', 'energy')`
+    ),
+    nonzeroAmount: check("ledger_event_amount", sql`${table.amount} <> 0`)
+  })
+);
+
+export const userEconomyState = sqliteTable(
+  "user_economy_state",
+  {
+    userId: text("user_id").primaryKey(),
+    xpTotal: integer("xp_total").notNull().default(0),
+    accountLevel: integer("account_level").notNull().default(1),
+    xpDayUtc: text("xp_day_utc").notNull().default(""),
+    xpDayAmount: integer("xp_day_amount").notNull().default(0),
+    masteryStars: integer("mastery_stars").notNull().default(0),
+    energy: integer("energy").notNull().default(5),
+    energyCap: integer("energy_cap").notNull().default(5),
+    energyRegenAt: text("energy_regen_at").notNull(),
+    updatedAt: text("updated_at").notNull()
+  },
+  (table) => ({
+    userReference: foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.userId],
+      name: "user_economy_state_user_fk"
+    }),
+    levelCheck: check(
+      "user_economy_state_level",
+      sql`${table.accountLevel} BETWEEN 1 AND 99`
+    )
+  })
+);

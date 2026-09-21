@@ -17,10 +17,38 @@ import {
   type RateLimitStore
 } from "./security.js";
 import {
+  CatalogResponseSchema,
   DecisionTraceSchema,
+  LedgerEventPageSchema,
+  PurchaseRequestSchema,
+  PurchaseSchema,
+  ReviewStatusSchema,
   ScenarioRunStartRequestSchema,
-  TelegramAuthRequestSchema
+  ScenarioRunSummarySchema,
+  ScenarioPackageSummarySchema,
+  TelegramAuthRequestSchema,
+  UserBalanceSchema,
+  type PurchaseRequest,
+  type ScenarioPackage
 } from "../../../packages/contracts/src/index.js";
+import { importScenarioPackage } from "../../../packages/content/src/validate.js";
+import { FOUNDER_SKUS, COIN_PACKS, STORE_SERVICES } from "../../../packages/domain/src/catalog.js";
+import { grantScenarioRewards } from "./economy.js";
+import {
+  purchaseCoinPack,
+  purchaseService,
+  purchaseSku,
+  refundPurchase,
+  StoreError,
+  type PurchaseOutcome
+} from "./store.js";
+import {
+  attributeReferral,
+  createReferralCode,
+  onInviteePurchase,
+  ReferralError,
+  syncReferralProgress
+} from "./referrals.js";
 import {
   closeDatabase,
   createDatabase,
@@ -368,6 +396,100 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
     }
   });
 
+  server.get("/api/v1/scenarios", async (request, reply) => {
+    if (!(await getAuthenticatedUserId(request, reply))) {
+      return;
+    }
+
+    const scenarios = await persistence.listScenarioPackages();
+    return {
+      data: {
+        scenarios: scenarios.map((summary) =>
+          ScenarioPackageSummarySchema.parse(summary)
+        )
+      }
+    };
+  });
+
+  server.get<{
+    Params: { userId: string };
+  }>(
+    "/api/v1/users/:userId/balance",
+    async (request, reply) => {
+      const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+      if (!authenticatedUserId) {
+        return;
+      }
+
+      if (request.params.userId !== authenticatedUserId) {
+        return reply.code(404).send({ error: "user_not_found" });
+      }
+
+      const balance = await persistence.deriveUserBalance(authenticatedUserId);
+      return {
+        data: {
+          balance: UserBalanceSchema.parse(balance)
+        }
+      };
+    }
+  );
+
+  server.get<{
+    Params: { userId: string };
+    Querystring: { limit?: string };
+  }>(
+    "/api/v1/users/:userId/ledger",
+    async (request, reply) => {
+      const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+      if (!authenticatedUserId) {
+        return;
+      }
+
+      if (request.params.userId !== authenticatedUserId) {
+        return reply.code(404).send({ error: "user_not_found" });
+      }
+
+      const limit = request.query.limit
+        ? Math.min(Math.max(Number.parseInt(request.query.limit, 10) || 50, 1), 500)
+        : 50;
+      const events = await persistence.listLedgerEvents(authenticatedUserId, limit);
+      return {
+        data: LedgerEventPageSchema.parse({ events, asOf: new Date().toISOString() })
+      };
+    }
+  );
+
+  server.get<{
+    Params: { userId: string };
+  }>(
+    "/api/v1/users/:userId/scenario-runs",
+    async (request, reply) => {
+      const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+      if (!authenticatedUserId) {
+        return;
+      }
+
+      if (request.params.userId !== authenticatedUserId) {
+        return reply.code(404).send({ error: "user_not_found" });
+      }
+
+    const runs = await persistence.listScenarioRunsForUser(authenticatedUserId);
+    return {
+      data: {
+        runs: runs.map((summary) => ScenarioRunSummarySchema.parse(summary))
+      }
+    };
+  });
+
+  server.get("/api/v1/users/me", async (request, reply) => {
+    const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+    if (!authenticatedUserId) {
+      return;
+    }
+
+    return { data: { userId: authenticatedUserId } };
+  });
+
   server.get<{
     Params: { scenarioId: string };
     Querystring: { version?: string };
@@ -517,6 +639,19 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
     }
 
     const revealed = await persistence.revealScenarioRun(request.params.runId, authenticatedUserId);
+    if (revealed.score) {
+      // Server-authoritative, idempotent reward grant (P1-7). Replayed
+      // reveals re-run this call; idempotency keys prevent double grants.
+      await grantScenarioRewards(persistence, {
+        userId: authenticatedUserId,
+        runId: revealed.runId,
+        scenarioId: revealed.scenarioId,
+        mode: scenario.mode,
+        score: revealed.score
+      });
+      // Referral progress is server-driven (3 valid scenarios → activation).
+      await syncReferralProgress(persistence, authenticatedUserId);
+    }
     return {
       data: {
         run: toRunResponse(revealed, true),
@@ -524,6 +659,242 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
       }
     };
   });
+
+  server.post<{ Body: unknown }>(
+    "/api/v1/admin/scenarios",
+    async (request, reply) => {
+      const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+      if (!authenticatedUserId) {
+        return;
+      }
+
+      let package_: ScenarioPackage;
+      try {
+        package_ = importScenarioPackage(request.body);
+      } catch (error) {
+        return reply.code(422).send({
+          error: "invalid_scenario_package",
+          message: error instanceof Error ? error.message : "invalid package"
+        });
+      }
+
+      try {
+        const { created } = await persistence.upsertScenarioPackage(package_);
+        const body = {
+          scenarioId: package_.scenarioId,
+          version: package_.version,
+          reviewStatus: package_.reviewStatus,
+          created
+        };
+        return created
+          ? reply.code(201).send({ data: body })
+          : reply.code(200).send({ data: body });
+      } catch (error) {
+        return reply.code(409).send({
+          error: "scenario_conflict",
+          message: error instanceof Error ? error.message : "conflict"
+        });
+      }
+    }
+  );
+
+  server.post<{
+    Params: { scenarioId: string };
+    Body: { version?: unknown; status?: unknown };
+  }>(
+    "/api/v1/admin/scenarios/:scenarioId/review",
+    async (request, reply) => {
+      const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+      if (!authenticatedUserId) {
+        return;
+      }
+
+      const version = request.body?.version;
+      const status = request.body?.status;
+      if (typeof version !== "string" || version.length === 0) {
+        return reply.code(422).send({ error: "invalid_request" });
+      }
+      const parsedStatus = ReviewStatusSchema.safeParse(status);
+      if (!parsedStatus.success) {
+        return reply.code(422).send({ error: "invalid_request" });
+      }
+
+      const updated = await persistence.setScenarioReviewStatus(
+        request.params.scenarioId,
+        version,
+        parsedStatus.data
+      );
+      if (!updated) {
+        return reply.code(404).send({ error: "scenario_not_found" });
+      }
+      return {
+        data: {
+          scenarioId: request.params.scenarioId,
+          version,
+          reviewStatus: parsedStatus.data
+        }
+      };
+    }
+  );
+
+  server.get("/api/v1/catalog", async (request, reply) => {
+    if (!(await getAuthenticatedUserId(request, reply))) {
+      return;
+    }
+    const catalog = CatalogResponseSchema.parse({
+      packs: COIN_PACKS,
+      services: STORE_SERVICES,
+      skus: FOUNDER_SKUS
+    });
+    return { data: catalog };
+  });
+
+  server.post<{ Body: PurchaseRequest }>(
+    "/api/v1/purchases",
+    async (request, reply) => {
+      const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+      if (!authenticatedUserId) {
+        return;
+      }
+
+      const parsed = PurchaseRequestSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(422).send({ error: "invalid_request" });
+      }
+      const input = parsed.data;
+
+      let outcome: PurchaseOutcome;
+      try {
+        if (input.kind === "coin_pack") {
+          outcome = await purchaseCoinPack(persistence, {
+            userId: authenticatedUserId,
+            packId: input.itemId,
+            invoiceId: input.invoiceId ?? "",
+            clientKey: input.clientKey
+          });
+        } else if (input.kind === "service") {
+          outcome = await purchaseService(persistence, {
+            userId: authenticatedUserId,
+            serviceId: input.itemId,
+            clientKey: input.clientKey
+          });
+        } else {
+          outcome = await purchaseSku(persistence, {
+            userId: authenticatedUserId,
+            skuId: input.itemId,
+            clientKey: input.clientKey
+          });
+        }
+      } catch (error) {
+        if (error instanceof StoreError) {
+          const statusCode =
+            error.code === "unknown_item"
+              ? 404
+              : error.code === "supply_exhausted"
+                ? 409
+                : 422;
+          return reply.code(statusCode).send({ error: error.code, message: error.message });
+        }
+        throw error;
+      }
+
+      // The invitee's first confirmed purchase pays the inviter (P1-7b).
+      if (input.kind !== "coin_pack" && !outcome.duplicate) {
+        await onInviteePurchase(persistence, authenticatedUserId);
+      }
+
+      return {
+        data: {
+          purchase: PurchaseSchema.parse(outcome.purchase),
+          duplicate: outcome.duplicate,
+          balance: UserBalanceSchema.parse(outcome.balance)
+        }
+      };
+    }
+  );
+
+  server.post<{
+    Params: { purchaseId: string };
+    Body: { clientKey?: unknown };
+  }>(
+    "/api/v1/purchases/:purchaseId/refund",
+    async (request, reply) => {
+      const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+      if (!authenticatedUserId) {
+        return;
+      }
+
+      try {
+        const purchase = await refundPurchase(persistence, {
+          userId: authenticatedUserId,
+          purchaseId: request.params.purchaseId,
+          clientKey:
+            typeof request.body?.clientKey === "string" ? request.body.clientKey : "refund"
+        });
+        return { data: { purchase: PurchaseSchema.parse(purchase) } };
+      } catch (error) {
+        if (error instanceof StoreError) {
+          const statusCode = error.code === "unknown_item" ? 404 : 409;
+          return reply.code(statusCode).send({ error: error.code, message: error.message });
+        }
+        throw error;
+      }
+    }
+  );
+
+  server.post<{ Body: { clientKey?: unknown } }>(
+    "/api/v1/referrals",
+    async (request, reply) => {
+      const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+      if (!authenticatedUserId) {
+        return;
+      }
+      const { created, referral } = await createReferralCode(
+        persistence,
+        authenticatedUserId
+      );
+      return {
+        data: {
+          code: referral.code,
+          state: referral.state,
+          created
+        }
+      };
+    }
+  );
+
+  server.post<{ Body: { code?: unknown } }>(
+    "/api/v1/referrals/attribute",
+    async (request, reply) => {
+      const authenticatedUserId = await getAuthenticatedUserId(request, reply);
+      if (!authenticatedUserId) {
+        return;
+      }
+      const code = request.body?.code;
+      if (typeof code !== "string" || code.length < 3) {
+        return reply.code(422).send({ error: "invalid_request" });
+      }
+      try {
+        const referral = await attributeReferral(persistence, {
+          code,
+          inviteeId: authenticatedUserId
+        });
+        return {
+          data: {
+            state: referral.state,
+            inviteeRewardPreview: "25 promo Coins after 3 valid solo scenarios"
+          }
+        };
+      } catch (error) {
+        if (error instanceof ReferralError) {
+          const statusCode =
+            error.code === "referral_not_found" ? 404 : 409;
+          return reply.code(statusCode).send({ error: error.code, message: error.message });
+        }
+        throw error;
+      }
+    }
+  );
 
   return server;
 }

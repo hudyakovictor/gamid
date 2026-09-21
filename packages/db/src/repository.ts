@@ -15,6 +15,28 @@ import type { DatabaseHandle } from "./database.js";
 
 export type ScenarioRunState = "started" | "sealed" | "revealed" | "completed";
 
+export type ScenarioPackageSummary = {
+  scenarioId: string;
+  version: string;
+  mode: ScenarioPackage["mode"];
+  scenarioLevel: number;
+  assetClass: string;
+  assetId: string;
+  marketSegment: string;
+  timeframe: string;
+  decisionPointT0: string;
+};
+
+export type ScenarioRunSummary = {
+  runId: string;
+  scenarioId: string;
+  scenarioVersion: string;
+  state: ScenarioRunState;
+  score: number | null;
+  createdAt: string;
+  sealedAt: string | null;
+};
+
 export type HistoricalSnapshotRecord = {
   snapshotId: string;
   provider: "binance";
@@ -348,6 +370,137 @@ export function getHistoricalSnapshot(
     snapshot: HistoricalMarketSnapshotSchema.parse(JSON.parse(row.snapshotJson) as unknown),
     createdAt: row.createdAt
   };
+}
+
+/**
+ * Public catalog read: only reviewed content is visible to players.
+ * `validated` and `published` pass the publication gate; everything else
+ * (draft/research/point_in_time_validation/review) stays admin-only.
+ */
+export function listScenarioPackages(
+  { sqlite }: DatabaseHandle
+): ScenarioPackageSummary[] {
+  const rows = sqlite.prepare(`
+    SELECT package_json AS packageJson
+    FROM scenarios
+    WHERE review_status IN ('validated', 'published')
+    ORDER BY scenario_id, version
+  `).all() as Array<{ packageJson: string }>;
+
+  return rows.map((row) => {
+    const package_ = ScenarioPackageSchema.parse(JSON.parse(row.packageJson) as unknown);
+    return {
+      scenarioId: package_.scenarioId,
+      version: package_.version,
+      mode: package_.mode,
+      scenarioLevel: package_.scenarioLevel,
+      assetClass: package_.assetClass,
+      assetId: package_.assetId,
+      marketSegment: package_.marketSegment,
+      timeframe: package_.timeframe,
+      decisionPointT0: package_.decisionPoint.t0
+    };
+  });
+}
+
+export function upsertScenarioPackage(
+  { sqlite }: DatabaseHandle,
+  package_: ScenarioPackage,
+  nowIso?: string
+): { created: boolean } {
+  const now = nowIso ?? new Date().toISOString();
+  const existing = sqlite
+    .prepare("SELECT package_json FROM scenarios WHERE scenario_id = ? AND version = ?")
+    .get(package_.scenarioId, package_.version) as { package_json: string } | undefined;
+  if (existing) {
+    if (
+      JSON.stringify(JSON.parse(existing.package_json) as unknown) ===
+      JSON.stringify(package_)
+    ) {
+      return { created: false };
+    }
+    throw new Error(
+      `Scenario ${package_.scenarioId}@${package_.version} already exists with different content`
+    );
+  }
+  sqlite
+    .prepare(
+      `INSERT INTO scenarios (
+        scenario_id, version, scenario_level, mode, content_version, data_version,
+        future_hash, package_json, review_status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      package_.scenarioId,
+      package_.version,
+      package_.scenarioLevel,
+      package_.mode,
+      package_.contentVersion,
+      package_.dataVersion,
+      package_.futureHash,
+      JSON.stringify(package_),
+      package_.reviewStatus,
+      now,
+      now
+    );
+  return { created: true };
+}
+
+export function setScenarioReviewStatus(
+  { sqlite }: DatabaseHandle,
+  scenarioId: string,
+  version: string,
+  status: string,
+  nowIso?: string
+): boolean {
+  const now = nowIso ?? new Date().toISOString();
+  const result = sqlite
+    .prepare(
+      `UPDATE scenarios SET review_status = ?, updated_at = ?
+       WHERE scenario_id = ? AND version = ?`
+    )
+    .run(status, now, scenarioId, version);
+  return result.changes > 0;
+}
+
+export function listScenarioRunsForUser(
+  { sqlite }: DatabaseHandle,
+  userId: string
+): ScenarioRunSummary[] {
+  const rows = sqlite.prepare(`
+    SELECT
+      run_id AS runId,
+      scenario_id AS scenarioId,
+      scenario_version AS scenarioVersion,
+      state,
+      score_json AS scoreJson,
+      created_at AS createdAt,
+      sealed_at AS sealedAt
+    FROM scenario_runs
+    WHERE user_id = ?
+    ORDER BY created_at DESC, run_id DESC
+  `).all(userId) as Array<{
+    runId: string;
+    scenarioId: string;
+    scenarioVersion: string;
+    state: ScenarioRunState;
+    scoreJson: string | null;
+    createdAt: string;
+    sealedAt: string | null;
+  }>;
+
+  return rows.map((row) => ({
+    runId: row.runId,
+    scenarioId: row.scenarioId,
+    scenarioVersion: row.scenarioVersion,
+    state: row.state,
+    score:
+      row.scoreJson === null
+        ? null
+        : ScoreResultSchema.parse(JSON.parse(row.scoreJson) as unknown).score,
+    createdAt: row.createdAt,
+    sealedAt: row.sealedAt
+  }));
 }
 
 export function getScenarioPackage(
