@@ -141,6 +141,9 @@ describe("ApiClient", () => {
     expect(revealFetch.requests[0]?.headers["x-sa-csrf"]).toBe("csrf-token-1");
     expect(revealFetch.requests[0]?.method).toBe("POST");
     expect(revealFetch.requests[0]?.url).toContain("/reveal");
+    // Reveal is a body-less POST: it must NOT advertise a JSON content-type,
+    // otherwise the server rejects it with FST_ERR_CTP_EMPTY_JSON_BODY (400).
+    expect(revealFetch.requests[0]?.headers["content-type"]).toBeUndefined();
 
     const me = makeFetch(() => ({ body: { data: { userId: "u1" } } }));
     const meClient = new ApiClient({ fetchImpl: me.fetchImpl, csrfCookie: () => "csrf-token-1" });
