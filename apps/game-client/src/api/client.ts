@@ -162,7 +162,12 @@ export class ApiClient {
     const headers: Record<string, string> = {
       accept: "application/json"
     };
-    if (init.method === "POST") {
+    // Only advertise a JSON content-type when we actually send a body. A POST
+    // with `content-type: application/json` but no body is rejected by the
+    // server (FST_ERR_CTP_EMPTY_JSON_BODY); reveal and logout are body-less
+    // POSTs, so setting the header unconditionally broke them in a real
+    // browser (server.inject-based tests did not exercise this path).
+    if (init.method === "POST" && init.body !== undefined) {
       headers["content-type"] = "application/json";
     }
     // All mutating operations (POST) are CSRF protected. Reveal is POST.

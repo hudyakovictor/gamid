@@ -25,19 +25,17 @@ export function WidgetCard({ spec, onAction }: WidgetProps) {
           : 1
   } as CSSProperties;
 
+  // A widget is a passive card; only its footer CTA is interactive. The
+  // native <button> is the single focusable control and provides correct
+  // keyboard semantics (Enter on keydown, Space on keyup) on its own. We do
+  // NOT add a parent key handler or make the <article> focusable: doing so
+  // nested a second interactive control inside the card and let keyboard
+  // events bubble from the button to the article, firing onAction twice.
   return (
     <article
       className={`widget ${tone(spec.tone)} fp-${spec.footprint}`}
       style={style}
-      tabIndex={0}
       aria-label={`${spec.eyebrow}: ${spec.title}`}
-      onKeyDown={(event) => {
-        if (!onAction) return;
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onAction();
-        }
-      }}
     >
       <header>
         <span className="eyebrow">{spec.eyebrow}</span>
