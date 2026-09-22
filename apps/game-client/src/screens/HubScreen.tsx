@@ -102,9 +102,15 @@ export function HubScreen({ onOpenHubAction, onOpenScenario, activeRun, onContin
   return (
     <div className="hub">
       <div className="bento-grid" data-page={hubKit.id}>
-        {widgets.map((spec) => (
-          <WidgetCard key={spec.id} spec={spec} />
-        ))}
+        {widgets.map((spec) => {
+          const onAction =
+            spec.id === "featured" && featured
+              ? () => onOpenScenario(featured.scenarioId, featured.version)
+              : spec.id === "continue" && onContinue
+                ? onContinue
+                : undefined;
+          return <WidgetCard key={spec.id} spec={spec} onAction={onAction} />;
+        })}
       </div>
       <div className="hub-actions">
         {featured && (

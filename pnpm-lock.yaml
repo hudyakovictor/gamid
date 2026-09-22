@@ -45,7 +45,38 @@ importers:
         specifier: ^5.2.1
         version: 5.12.4
 
-  apps/client-prototype:
+  apps/design-system-lab:
+    dependencies:
+      '@signal-arena/ui-game':
+        specifier: workspace:*
+        version: link:../../packages/ui-game
+      react:
+        specifier: 19.2.6
+        version: 19.2.6
+      react-dom:
+        specifier: 19.2.6
+        version: 19.2.6(react@19.2.6)
+    devDependencies:
+      '@types/node':
+        specifier: 22.19.17
+        version: 22.19.17
+      '@types/react':
+        specifier: 19.2.7
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: 19.2.3
+        version: 19.2.3(@types/react@19.2.7)
+      '@vitejs/plugin-react':
+        specifier: 5.1.1
+        version: 5.1.1(vite@7.3.6(@types/node@22.19.17)(tsx@4.23.13))
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vite:
+        specifier: 7.3.6
+        version: 7.3.6(@types/node@22.19.17)(tsx@4.23.13)
+
+  apps/game-client:
     dependencies:
       '@signal-arena/contracts':
         specifier: workspace:*
@@ -84,37 +115,6 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.7(@types/node@22.19.17)(happy-dom@20.14.5)(tsx@4.23.13)
-
-  apps/design-system-lab:
-    dependencies:
-      '@signal-arena/ui-game':
-        specifier: workspace:*
-        version: link:../../packages/ui-game
-      react:
-        specifier: 19.2.6
-        version: 19.2.6
-      react-dom:
-        specifier: 19.2.6
-        version: 19.2.6(react@19.2.6)
-    devDependencies:
-      '@types/node':
-        specifier: 22.19.17
-        version: 22.19.17
-      '@types/react':
-        specifier: 19.2.7
-        version: 19.2.7
-      '@types/react-dom':
-        specifier: 19.2.3
-        version: 19.2.3(@types/react@19.2.7)
-      '@vitejs/plugin-react':
-        specifier: 5.1.1
-        version: 5.1.1(vite@7.3.6(@types/node@22.19.17)(tsx@4.23.13))
-      typescript:
-        specifier: 5.9.3
-        version: 5.9.3
-      vite:
-        specifier: 7.3.6
-        version: 7.3.6(@types/node@22.19.17)(tsx@4.23.13)
 
   packages/content:
     dependencies:

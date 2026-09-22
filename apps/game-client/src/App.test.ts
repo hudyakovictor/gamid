@@ -48,3 +48,36 @@ it("catalog → scenario brief → start a new run → decision workspace withou
     container.remove();
   }
 });
+
+it("featured Hub card action opens the scenario brief (regression for dead CTA)", async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  window.location.hash = "";
+  window.localStorage.clear();
+  vi.spyOn(ApiClient.prototype, "me").mockResolvedValue({ userId: "component-user" });
+  vi.spyOn(ApiClient.prototype, "getBalance").mockRejectedValue(new Error("optional balance unavailable"));
+  vi.spyOn(ApiClient.prototype, "listRuns").mockResolvedValue([]);
+  vi.spyOn(ApiClient.prototype, "listScenarios").mockResolvedValue([{
+    scenarioId: scenario.scenarioId, version: scenario.version, scenarioLevel: scenario.scenarioLevel,
+    mode: scenario.mode, assetClass: scenario.assetClass, assetId: scenario.assetId,
+    marketSegment: scenario.marketSegment, decisionPointT0: scenario.decisionPoint.t0, timeframe: scenario.timeframe
+  }]);
+  const load = vi.spyOn(ApiClient.prototype, "getScenario").mockResolvedValue(scenario);
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(async () => root.render(createElement(App)));
+    const featuredButton = [...container.querySelectorAll(".widget button")].find((node) =>
+      node.textContent?.includes("Открыть брифинг")
+    ) as HTMLButtonElement | undefined;
+    expect(featuredButton, "featured card CTA").toBeDefined();
+    expect(featuredButton!.tagName).toBe("BUTTON");
+    await act(async () => featuredButton!.click());
+    expect(load).toHaveBeenCalledWith(scenario.scenarioId, scenario.version);
+    expect(window.location.hash).toBe("#/scenario_brief");
+    expect(container.textContent).toContain("Брифинг сценария");
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+  }
+});

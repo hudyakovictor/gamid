@@ -108,7 +108,7 @@ test("scenario run API seals decisions and reveals server-only history after sea
   assert.equal(retryBody.data.run.runId, startBody.data.run.runId);
 
   const beforeSeal = await server.inject({
-    method: "GET",
+    method: "POST",
     url: `/api/v1/scenario-runs/${startBody.data.run.runId}/reveal`
   });
   assert.equal(beforeSeal.statusCode, 409);
@@ -132,7 +132,7 @@ test("scenario run API seals decisions and reveals server-only history after sea
   assert.equal("score" in sealBody.data.run, false);
 
   const revealResponse = await server.inject({
-    method: "GET",
+    method: "POST",
     url: `/api/v1/scenario-runs/${startBody.data.run.runId}/reveal`
   });
   const revealBody = revealResponse.json<{

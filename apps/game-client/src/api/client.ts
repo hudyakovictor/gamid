@@ -165,8 +165,8 @@ export class ApiClient {
     if (init.method === "POST") {
       headers["content-type"] = "application/json";
     }
-    // The legacy reveal GET persists reveal/rewards and is CSRF protected too.
-    if (init.method === "POST" || path.endsWith("/reveal")) {
+    // All mutating operations (POST) are CSRF protected. Reveal is POST.
+    if (init.method === "POST") {
       const csrf = this.csrfCookie();
       if (csrf) {
         headers["x-sa-csrf"] = csrf;
@@ -270,10 +270,10 @@ export class ApiClient {
     return readRunResponse(payload.data.run);
   }
 
-  public async getReveal(runId: string): Promise<RevealResult> {
+  public async revealRun(runId: string): Promise<RevealResult> {
     const payload = await this.request<{
       data: { run: unknown; reveal: unknown };
-    }>(`/api/v1/scenario-runs/${encodeURIComponent(runId)}/reveal`, { method: "GET" });
+    }>(`/api/v1/scenario-runs/${encodeURIComponent(runId)}/reveal`, { method: "POST" });
     const run = readRunResponse(payload.data.run);
     if (run.score !== undefined) {
       run.score = parseScore(run.score);
@@ -285,6 +285,11 @@ export class ApiClient {
       throw new ApiError("invalid_response", "Reveal failed contract validation", 0);
     }
     return { run, reveal };
+  }
+
+  /** @deprecated Use revealRun (POST) instead. Kept for compatibility, now POST. */
+  public async getReveal(runId: string): Promise<RevealResult> {
+    return this.revealRun(runId);
   }
 
   public async listRuns(userId: string): Promise<RunSummary[]> {

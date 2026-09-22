@@ -65,16 +65,16 @@ Executable contracts and validation are canonical for implementation boundaries:
 
 ## Prototype and interface evidence
 
-- `../apps/client-prototype/package.json`
-- `../apps/client-prototype/index.html`
-- `../apps/client-prototype/README.md`
-- `../apps/client-prototype/interface-shell.html`
-- `../apps/client-prototype/src/main.ts`
-- `../apps/client-prototype/src/api-client.ts`
-- `../apps/client-prototype/src/client-flow.ts`
-- `../apps/client-prototype/src/phaser-runtime.ts`
-- `../apps/client-prototype/src/scenes.ts`
-- `../apps/client-prototype/viewport-qa.json` — planned browser/responsive/accessibility evidence
+- `../apps/game-client/package.json`
+- `../apps/game-client/index.html`
+- `../apps/game-client/README.md`
+- `../apps/game-client/interface-shell.html`
+- `../apps/game-client/src/main.ts`
+- `../apps/game-client/src/api-client.ts`
+- `../apps/game-client/src/client-flow.ts`
+- `../apps/game-client/src/phaser-runtime.ts`
+- `../apps/game-client/src/scenes.ts`
+- `../apps/game-client/viewport-qa.json` — planned browser/responsive/accessibility evidence
 
 The canonical root section is Hub and it comes first in primary navigation; `arena_hub` remains its stable screen ID. `Home` and `Lobby` are deprecated aliases. Mission names are destinations, and Skill Hand is a Decision Workspace component.
 

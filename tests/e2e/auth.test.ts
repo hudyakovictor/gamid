@@ -264,7 +264,7 @@ test("production auth enforces CSRF on all authenticated mutations and server-si
     const login = await server.inject({ method: "POST", url: "/api/v1/auth/telegram", payload: { initData: signedInitData() } });
     const csrf = cookieFrom(login, "sa_csrf");
     const cookie = `${cookieFrom(login, "sa_session")}; ${csrf}`;
-    for (const url of ["/api/v1/purchases", "/api/v1/purchases/fake/refund", "/api/v1/referrals", "/api/v1/referrals/attribute", "/api/v1/scenario-runs", "/api/v1/auth/logout"]) {
+    for (const url of ["/api/v1/purchases", "/api/v1/purchases/fake/refund", "/api/v1/referrals", "/api/v1/referrals/attribute", "/api/v1/scenario-runs", "/api/v1/scenario-runs/fake/reveal", "/api/v1/auth/logout"]) {
       for (const headers of [{ cookie }, { cookie, "x-sa-csrf": "fabricated" }]) {
         const response = await server.inject({ method: "POST", url, headers, payload: {} });
         assert.equal(response.statusCode, 403, url);
@@ -276,9 +276,9 @@ test("production auth enforces CSRF on all authenticated mutations and server-si
       assert.equal(response.statusCode, 403);
       assert.equal(response.json().error, "admin_forbidden");
     }
-    const reveal = await server.inject({ method: "GET", url: "/api/v1/scenario-runs/fake/reveal", headers: { cookie } });
-    assert.equal(reveal.statusCode, 403);
-    assert.equal(reveal.json().error, "csrf_failed");
+    // GET reveal must not be operational (mutating GET removed)
+    const getReveal = await server.inject({ method: "GET", url: "/api/v1/scenario-runs/fake/reveal", headers: { cookie, "x-sa-csrf": csrf.slice(8) } });
+    assert.equal(getReveal.statusCode, 404);
     const purchase = await server.inject({ method: "POST", url: "/api/v1/purchases", headers: { cookie, "x-sa-csrf": csrf.slice(8) }, payload: { kind: "coin_pack", itemId: "pack_starter", clientKey: "fake", invoiceId: "fabricated" } });
     assert.equal(purchase.statusCode, 403);
     assert.equal(purchase.json().error, "verified_payment_required");
