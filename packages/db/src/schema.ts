@@ -219,3 +219,114 @@ export const userEconomyState = sqliteTable(
     )
   })
 );
+
+export const historicalImports = sqliteTable(
+  "historical_imports",
+  {
+    importId: text("import_id").primaryKey(),
+    importHash: text("import_hash").notNull().unique(),
+    status: text("status").notNull(),
+    summaryJson: text("summary_json").notNull(),
+    createdBy: text("created_by"),
+    createdAt: text("created_at").notNull()
+  },
+  (table) => ({
+    statusCheck: check(
+      "historical_import_status",
+      sql`${table.status} IN ('completed', 'conflict', 'rejected')`
+    ),
+    createdIndex: index("idx_historical_imports_created").on(
+      table.createdAt,
+      table.importId
+    )
+  })
+);
+
+export const historicalSnapshotMetadata = sqliteTable(
+  "historical_snapshot_metadata",
+  {
+    snapshotId: text("snapshot_id").primaryKey(),
+    licensingJson: text("licensing_json"),
+    captureJson: text("capture_json"),
+    createdAt: text("created_at").notNull()
+  },
+  (table) => ({
+    snapshotReference: foreignKey({
+      columns: [table.snapshotId],
+      foreignColumns: [historicalSnapshots.snapshotId],
+      name: "historical_snapshot_metadata_snapshot_fk"
+    })
+  })
+);
+
+export const scenarioSnapshotLinks = sqliteTable(
+  "scenario_snapshot_links",
+  {
+    scenarioId: text("scenario_id").notNull(),
+    scenarioVersion: text("scenario_version").notNull(),
+    snapshotId: text("snapshot_id").notNull(),
+    sourceId: text("source_id").notNull(),
+    snapshotContentHash: text("snapshot_content_hash").notNull(),
+    linkRole: text("link_role").notNull().default("source"),
+    createdAt: text("created_at").notNull()
+  },
+  (table) => ({
+    primaryKey: primaryKey({
+      columns: [table.scenarioId, table.scenarioVersion, table.snapshotId, table.sourceId]
+    }),
+    scenarioReference: foreignKey({
+      columns: [table.scenarioId, table.scenarioVersion],
+      foreignColumns: [scenarios.scenarioId, scenarios.version],
+      name: "scenario_snapshot_links_scenario_fk"
+    }),
+    snapshotReference: foreignKey({
+      columns: [table.snapshotId],
+      foreignColumns: [historicalSnapshots.snapshotId],
+      name: "scenario_snapshot_links_snapshot_fk"
+    }),
+    roleCheck: check(
+      "scenario_snapshot_link_role",
+      sql`${table.linkRole} IN ('source', 'public', 'future')`
+    ),
+    snapshotIndex: index("idx_scenario_snapshot_links_snapshot").on(table.snapshotId),
+    scenarioIndex: index("idx_scenario_snapshot_links_scenario").on(
+      table.scenarioId,
+      table.scenarioVersion
+    )
+  })
+);
+
+export const scenarioReviewTransitions = sqliteTable(
+  "scenario_review_transitions",
+  {
+    transitionId: text("transition_id").primaryKey(),
+    scenarioId: text("scenario_id").notNull(),
+    scenarioVersion: text("scenario_version").notNull(),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    actorUserId: text("actor_user_id").notNull(),
+    reason: text("reason"),
+    createdAt: text("created_at").notNull()
+  },
+  (table) => ({
+    scenarioReference: foreignKey({
+      columns: [table.scenarioId, table.scenarioVersion],
+      foreignColumns: [scenarios.scenarioId, scenarios.version],
+      name: "scenario_review_transitions_scenario_fk"
+    }),
+    actorReference: foreignKey({
+      columns: [table.actorUserId],
+      foreignColumns: [users.userId],
+      name: "scenario_review_transitions_actor_fk"
+    }),
+    scenarioIndex: index("idx_scenario_review_transitions_scenario").on(
+      table.scenarioId,
+      table.scenarioVersion,
+      table.createdAt
+    ),
+    actorIndex: index("idx_scenario_review_transitions_actor").on(
+      table.actorUserId,
+      table.createdAt
+    )
+  })
+);

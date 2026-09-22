@@ -49,6 +49,11 @@ import {
   syncReferralProgress
 } from "./referrals.js";
 import {
+  handleReviewTransition,
+  registerHistoricalAdminRoutes,
+  ReviewTransitionRequestSchema
+} from "./historical-admin.js";
+import {
   closeDatabase,
   createDatabase,
   seedFoundation,
@@ -717,7 +722,7 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
 
   server.post<{
     Params: { scenarioId: string };
-    Body: { version?: unknown; status?: unknown };
+    Body: { version?: unknown; status?: unknown; reason?: unknown };
   }>(
     "/api/v1/admin/scenarios/:scenarioId/review",
     async (request, reply) => {
@@ -726,33 +731,38 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
         return;
       }
 
-      const version = request.body?.version;
-      const status = request.body?.status;
-      if (typeof version !== "string" || version.length === 0) {
+      // Shape validation first (stable 422s), then the strict server-side
+      // transition policy: frozen matrix, publication readiness gate, audit.
+      const parsedBody = ReviewTransitionRequestSchema.safeParse(request.body);
+      if (!parsedBody.success) {
         return reply.code(422).send({ error: "invalid_request" });
       }
-      const parsedStatus = ReviewStatusSchema.safeParse(status);
+      const parsedStatus = ReviewStatusSchema.safeParse(parsedBody.data.status);
       if (!parsedStatus.success) {
         return reply.code(422).send({ error: "invalid_request" });
       }
 
-      const updated = await persistence.setScenarioReviewStatus(
-        request.params.scenarioId,
-        version,
-        parsedStatus.data
-      );
-      if (!updated) {
-        return reply.code(404).send({ error: "scenario_not_found" });
-      }
-      return {
-        data: {
-          scenarioId: request.params.scenarioId,
-          version,
-          reviewStatus: parsedStatus.data
-        }
-      };
+      const outcome = await handleReviewTransition(persistence, {
+        scenarioId: request.params.scenarioId,
+        version: parsedBody.data.version,
+        status: parsedStatus.data,
+        actor: {
+          userId: authenticatedUserId,
+          isEditor: options.editorUserIds?.includes(authenticatedUserId) ?? false
+        },
+        ...(parsedBody.data.reason === undefined ? {} : { reason: parsedBody.data.reason }),
+        nowIso: new Date(now()).toISOString()
+      });
+      return reply.code(outcome.status).send(outcome.body);
     }
   );
+
+  registerHistoricalAdminRoutes(server, {
+    persistence,
+    editorUserIds: options.editorUserIds ?? [],
+    getAuthenticatedUserId,
+    now
+  });
 
   server.get("/api/v1/catalog", async (request, reply) => {
     if (!(await getAuthenticatedUserId(request, reply))) {

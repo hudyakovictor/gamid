@@ -22,8 +22,9 @@ test("migration registry has canonical source documented and ordered ids", () =>
     "0003_historical_snapshots",
     "0004_economy_ledger",
     "0005_catalog_purchases_referrals",
+    "0006_historical_pipeline",
   ]);
-  assert.equal(MIGRATION_REGISTRY.count, 5);
+  assert.equal(MIGRATION_REGISTRY.count, 6);
 });
 
 test("migration drift check passes for current SQLite and Postgres dialects", () => {
@@ -170,19 +171,19 @@ test("SQLite migrations are idempotent and forward-only from empty database", ()
   const firstCount = handle.sqlite
     .prepare("SELECT COUNT(*) AS count FROM _migrations")
     .get() as { count: number };
-  assert.equal(firstCount.count, 5);
+  assert.equal(firstCount.count, 6);
 
   applyMigrations(handle.sqlite);
   const secondCount = handle.sqlite
     .prepare("SELECT COUNT(*) AS count FROM _migrations")
     .get() as { count: number };
-  assert.equal(secondCount.count, 5);
+  assert.equal(secondCount.count, 6);
 
   applyMigrations(handle.sqlite);
   const thirdCount = handle.sqlite
     .prepare("SELECT COUNT(*) AS count FROM _migrations")
     .get() as { count: number };
-  assert.equal(thirdCount.count, 5);
+  assert.equal(thirdCount.count, 6);
 
   const tables = handle.sqlite
     .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
@@ -194,6 +195,10 @@ test("SQLite migrations are idempotent and forward-only from empty database", ()
   assert.ok(tableNames.includes("ledger_events"));
   assert.ok(tableNames.includes("purchases"));
   assert.ok(tableNames.includes("referrals"));
+  assert.ok(tableNames.includes("historical_imports"));
+  assert.ok(tableNames.includes("historical_snapshot_metadata"));
+  assert.ok(tableNames.includes("scenario_snapshot_links"));
+  assert.ok(tableNames.includes("scenario_review_transitions"));
 
   closeDatabase(handle);
 });

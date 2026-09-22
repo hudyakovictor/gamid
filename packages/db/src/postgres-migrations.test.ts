@@ -38,7 +38,8 @@ test("PostgreSQL migrations are ordered, locked and transactional", async () => 
       "0002_auth_boundary",
       "0003_historical_snapshots",
       "0004_economy_ledger",
-      "0005_catalog_purchases_referrals"
+      "0005_catalog_purchases_referrals",
+      "0006_historical_pipeline"
     ]
   );
   assert.equal(executor.calls[0]?.sql, "BEGIN;");

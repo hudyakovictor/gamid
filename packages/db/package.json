@@ -10,7 +10,8 @@
     "@signal-arena/contracts": "workspace:*",
     "better-sqlite3": "^11.8.1",
     "drizzle-orm": "^0.45.2",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/pg": "^8.23.1"

@@ -193,6 +193,65 @@ CREATE TABLE IF NOT EXISTS referrals (
 CREATE INDEX IF NOT EXISTS idx_referrals_invitee
   ON referrals(invitee_id, state);
 `
+  },
+  {
+    id: "0006_historical_pipeline",
+    sql: `
+CREATE TABLE IF NOT EXISTS historical_imports (
+  import_id TEXT PRIMARY KEY,
+  import_hash TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL CHECK (status IN ('completed', 'conflict', 'rejected')),
+  summary_json JSONB NOT NULL,
+  created_by TEXT,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_historical_imports_created
+  ON historical_imports(created_at, import_id);
+
+CREATE TABLE IF NOT EXISTS historical_snapshot_metadata (
+  snapshot_id TEXT PRIMARY KEY REFERENCES historical_snapshots(snapshot_id),
+  licensing_json JSONB,
+  capture_json JSONB,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS scenario_snapshot_links (
+  scenario_id TEXT NOT NULL,
+  scenario_version TEXT NOT NULL,
+  snapshot_id TEXT NOT NULL REFERENCES historical_snapshots(snapshot_id),
+  source_id TEXT NOT NULL,
+  snapshot_content_hash TEXT NOT NULL,
+  link_role TEXT NOT NULL DEFAULT 'source' CHECK (link_role IN ('source', 'public', 'future')),
+  created_at TIMESTAMPTZ NOT NULL,
+  PRIMARY KEY (scenario_id, scenario_version, snapshot_id, source_id),
+  FOREIGN KEY (scenario_id, scenario_version)
+    REFERENCES scenarios(scenario_id, version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_scenario_snapshot_links_snapshot
+  ON scenario_snapshot_links(snapshot_id);
+CREATE INDEX IF NOT EXISTS idx_scenario_snapshot_links_scenario
+  ON scenario_snapshot_links(scenario_id, scenario_version);
+
+CREATE TABLE IF NOT EXISTS scenario_review_transitions (
+  transition_id TEXT PRIMARY KEY,
+  scenario_id TEXT NOT NULL,
+  scenario_version TEXT NOT NULL,
+  from_status TEXT NOT NULL,
+  to_status TEXT NOT NULL,
+  actor_user_id TEXT NOT NULL REFERENCES users(user_id),
+  reason TEXT,
+  created_at TIMESTAMPTZ NOT NULL,
+  FOREIGN KEY (scenario_id, scenario_version)
+    REFERENCES scenarios(scenario_id, version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_scenario_review_transitions_scenario
+  ON scenario_review_transitions(scenario_id, scenario_version, created_at);
+CREATE INDEX IF NOT EXISTS idx_scenario_review_transitions_actor
+  ON scenario_review_transitions(actor_user_id, created_at);
+`
   }
 ] as const;
 

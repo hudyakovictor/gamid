@@ -8,6 +8,7 @@
     "@signal-arena/contracts": "workspace:*",
     "@signal-arena/db": "workspace:*",
     "@signal-arena/domain": "workspace:*",
-    "fastify": "^5.2.1"
+    "fastify": "^5.2.1",
+    "zod": "^3.24.1"
   }
 }

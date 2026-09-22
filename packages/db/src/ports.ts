@@ -21,6 +21,15 @@ import type {
   PurchaseRecord,
   ReferralRecord
 } from "./store.js";
+import type {
+  HistoricalImportRecord,
+  HistoricalImportStatus,
+  HistoricalSnapshotSummary,
+  ReviewTransitionRecord,
+  ScenarioSnapshotLinkRecord,
+  ScenarioSnapshotLinkRole,
+  SnapshotMetadataRecord
+} from "./historical-import-store.js";
 
 export type PersistencePort = {
   /** Serialized economic unit of work; nested calls share the transaction. */
@@ -120,4 +129,86 @@ export type PersistencePort = {
   setReferralScenarioCount(code: string, inviteeValidScenarios: number): Promise<void>;
   activateReferral(code: string, activatedAt: string): Promise<boolean>;
   grantReferralPurchaseBonus(code: string, bonusAt: string): Promise<boolean>;
+  // ---- Historical pipeline (Batch 01): race-safe, constraint-backed ----
+  /** Insert-first scenario write; never check-then-insert. */
+  insertScenarioPackageIgnoreConflict(
+    package_: ScenarioPackage,
+    nowIso?: string
+  ): Promise<boolean>;
+  /** Authoritative review-status COLUMN value (not package_json). */
+  getScenarioReviewStatusColumn(
+    scenarioId: string,
+    version: string
+  ): Promise<string | undefined>;
+  /** Raw stored package_json for fail-closed readiness evaluation. */
+  getStoredScenarioPackageJson(
+    scenarioId: string,
+    version: string
+  ): Promise<unknown | undefined>;
+  getHistoricalSnapshotByContentHash(
+    contentHash: string
+  ): Promise<HistoricalSnapshotRecord | undefined>;
+  /** Insert-first snapshot write keyed by content hash. */
+  insertHistoricalSnapshotIgnoreConflict(
+    snapshot: HistoricalMarketSnapshot,
+    snapshotId: string,
+    createdAt: string
+  ): Promise<boolean>;
+  listHistoricalSnapshots(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<HistoricalSnapshotSummary[]>;
+  countHistoricalSnapshots(): Promise<number>;
+  createHistoricalImport(input: {
+    importId: string;
+    importHash: string;
+    status: HistoricalImportStatus;
+    summaryJson: string;
+    createdBy: string | null;
+    createdAt: string;
+  }): Promise<{ created: boolean; record: HistoricalImportRecord }>;
+  getHistoricalImport(importId: string): Promise<HistoricalImportRecord | undefined>;
+  getHistoricalImportByHash(importHash: string): Promise<HistoricalImportRecord | undefined>;
+  listHistoricalImports(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<HistoricalImportRecord[]>;
+  countHistoricalImports(): Promise<number>;
+  upsertSnapshotMetadata(input: {
+    snapshotId: string;
+    licensingJson: string | null;
+    captureJson: string | null;
+    createdAt: string;
+  }): Promise<{ created: boolean }>;
+  getSnapshotMetadata(snapshotId: string): Promise<SnapshotMetadataRecord | undefined>;
+  createScenarioSnapshotLink(input: {
+    scenarioId: string;
+    scenarioVersion: string;
+    snapshotId: string;
+    sourceId: string;
+    snapshotContentHash: string;
+    linkRole: ScenarioSnapshotLinkRole;
+    createdAt: string;
+  }): Promise<{ created: boolean }>;
+  listScenarioSnapshotLinks(
+    scenarioId: string,
+    scenarioVersion: string
+  ): Promise<ScenarioSnapshotLinkRecord[]>;
+  listLinksForSnapshot(snapshotId: string): Promise<ScenarioSnapshotLinkRecord[]>;
+  recordReviewTransition(input: {
+    transitionId: string;
+    scenarioId: string;
+    scenarioVersion: string;
+    fromStatus: string;
+    toStatus: string;
+    actorUserId: string;
+    reason: string | null;
+    createdAt: string;
+  }): Promise<void>;
+  listReviewTransitions(
+    scenarioId: string,
+    scenarioVersion: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<ReviewTransitionRecord[]>;
+  countReviewTransitions(scenarioId: string, scenarioVersion: string): Promise<number>;
 };

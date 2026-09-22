@@ -6,6 +6,8 @@ export * from "./schema-manifest.js";
 export * from "./ledger.js";
 export * from "./store.js";
 export * from "./repository.js";
+export * from "./historical-import-store.js";
+export * from "./historical-import-service.js";
 export * from "./schema.js";
 export * from "./seed.js";
 export * from "./ports.js";

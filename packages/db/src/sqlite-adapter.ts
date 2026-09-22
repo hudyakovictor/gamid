@@ -37,6 +37,35 @@ import {
 } from "./store.js";
 import type { DatabaseHandle } from "./database.js";
 import {
+  countHistoricalImports,
+  countHistoricalSnapshots,
+  countReviewTransitions,
+  createHistoricalImport,
+  createScenarioSnapshotLink,
+  getHistoricalImport,
+  getHistoricalImportByHash,
+  getHistoricalSnapshotByContentHash,
+  getScenarioReviewStatusColumn,
+  getSnapshotMetadata,
+  getStoredScenarioPackageJson,
+  insertHistoricalSnapshotIgnoreConflict,
+  insertScenarioPackageIgnoreConflict,
+  listHistoricalImports,
+  listHistoricalSnapshots,
+  listLinksForSnapshot,
+  listReviewTransitions,
+  listScenarioSnapshotLinks,
+  recordReviewTransition,
+  upsertSnapshotMetadata,
+  type HistoricalImportRecord,
+  type HistoricalImportStatus,
+  type HistoricalSnapshotSummary,
+  type ReviewTransitionRecord,
+  type ScenarioSnapshotLinkRecord,
+  type ScenarioSnapshotLinkRole,
+  type SnapshotMetadataRecord
+} from "./historical-import-store.js";
+import {
   consumeAuthReplayKey,
   createAuthSession,
   createScenarioRun,
@@ -350,5 +379,147 @@ export class SqlitePersistenceAdapter implements PersistencePort {
     bonusAt: string
   ): Promise<boolean> {
     return grantReferralPurchaseBonus(this.handle, code, bonusAt);
+  }
+
+  public async insertScenarioPackageIgnoreConflict(
+    package_: ScenarioPackage,
+    nowIso?: string
+  ): Promise<boolean> {
+    return insertScenarioPackageIgnoreConflict(this.handle, package_, nowIso);
+  }
+
+  public async getScenarioReviewStatusColumn(
+    scenarioId: string,
+    version: string
+  ): Promise<string | undefined> {
+    return getScenarioReviewStatusColumn(this.handle, scenarioId, version);
+  }
+
+  public async getStoredScenarioPackageJson(
+    scenarioId: string,
+    version: string
+  ): Promise<unknown | undefined> {
+    return getStoredScenarioPackageJson(this.handle, scenarioId, version);
+  }
+
+  public async getHistoricalSnapshotByContentHash(
+    contentHash: string
+  ): Promise<HistoricalSnapshotRecord | undefined> {
+    return getHistoricalSnapshotByContentHash(this.handle, contentHash);
+  }
+
+  public async insertHistoricalSnapshotIgnoreConflict(
+    snapshot: HistoricalMarketSnapshot,
+    snapshotId: string,
+    createdAt: string
+  ): Promise<boolean> {
+    return insertHistoricalSnapshotIgnoreConflict(this.handle, snapshot, snapshotId, createdAt);
+  }
+
+  public async listHistoricalSnapshots(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<HistoricalSnapshotSummary[]> {
+    return listHistoricalSnapshots(this.handle, options ?? {});
+  }
+
+  public async countHistoricalSnapshots(): Promise<number> {
+    return countHistoricalSnapshots(this.handle);
+  }
+
+  public async createHistoricalImport(input: {
+    importId: string;
+    importHash: string;
+    status: HistoricalImportStatus;
+    summaryJson: string;
+    createdBy: string | null;
+    createdAt: string;
+  }): Promise<{ created: boolean; record: HistoricalImportRecord }> {
+    return createHistoricalImport(this.handle, input);
+  }
+
+  public async getHistoricalImport(importId: string): Promise<HistoricalImportRecord | undefined> {
+    return getHistoricalImport(this.handle, importId);
+  }
+
+  public async getHistoricalImportByHash(
+    importHash: string
+  ): Promise<HistoricalImportRecord | undefined> {
+    return getHistoricalImportByHash(this.handle, importHash);
+  }
+
+  public async listHistoricalImports(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<HistoricalImportRecord[]> {
+    return listHistoricalImports(this.handle, options ?? {});
+  }
+
+  public async countHistoricalImports(): Promise<number> {
+    return countHistoricalImports(this.handle);
+  }
+
+  public async upsertSnapshotMetadata(input: {
+    snapshotId: string;
+    licensingJson: string | null;
+    captureJson: string | null;
+    createdAt: string;
+  }): Promise<{ created: boolean }> {
+    return upsertSnapshotMetadata(this.handle, input);
+  }
+
+  public async getSnapshotMetadata(snapshotId: string): Promise<SnapshotMetadataRecord | undefined> {
+    return getSnapshotMetadata(this.handle, snapshotId);
+  }
+
+  public async createScenarioSnapshotLink(input: {
+    scenarioId: string;
+    scenarioVersion: string;
+    snapshotId: string;
+    sourceId: string;
+    snapshotContentHash: string;
+    linkRole: ScenarioSnapshotLinkRole;
+    createdAt: string;
+  }): Promise<{ created: boolean }> {
+    return createScenarioSnapshotLink(this.handle, input);
+  }
+
+  public async listScenarioSnapshotLinks(
+    scenarioId: string,
+    scenarioVersion: string
+  ): Promise<ScenarioSnapshotLinkRecord[]> {
+    return listScenarioSnapshotLinks(this.handle, scenarioId, scenarioVersion);
+  }
+
+  public async listLinksForSnapshot(snapshotId: string): Promise<ScenarioSnapshotLinkRecord[]> {
+    return listLinksForSnapshot(this.handle, snapshotId);
+  }
+
+  public async recordReviewTransition(input: {
+    transitionId: string;
+    scenarioId: string;
+    scenarioVersion: string;
+    fromStatus: string;
+    toStatus: string;
+    actorUserId: string;
+    reason: string | null;
+    createdAt: string;
+  }): Promise<void> {
+    recordReviewTransition(this.handle, input);
+  }
+
+  public async listReviewTransitions(
+    scenarioId: string,
+    scenarioVersion: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<ReviewTransitionRecord[]> {
+    return listReviewTransitions(this.handle, scenarioId, scenarioVersion, options ?? {});
+  }
+
+  public async countReviewTransitions(
+    scenarioId: string,
+    scenarioVersion: string
+  ): Promise<number> {
+    return countReviewTransitions(this.handle, scenarioId, scenarioVersion);
   }
 }

@@ -289,6 +289,87 @@ export const SCHEMA_MANIFEST: SchemaManifest = {
       uniqueConstraints: [],
       foreignKeys: [{ columns: ["inviter_id"], references: "users", refColumns: ["user_id"] }],
     },
+    // ---- 0006_historical_pipeline ----
+    {
+      table: "historical_imports",
+      migrationId: "0006_historical_pipeline",
+      columns: [
+        "import_id",
+        "import_hash",
+        "status",
+        "summary_json",
+        "created_by",
+        "created_at",
+      ],
+      primaryKey: ["import_id"],
+      uniqueConstraints: [["import_hash"]],
+      foreignKeys: [],
+    },
+    {
+      table: "historical_snapshot_metadata",
+      migrationId: "0006_historical_pipeline",
+      columns: ["snapshot_id", "licensing_json", "capture_json", "created_at"],
+      primaryKey: ["snapshot_id"],
+      uniqueConstraints: [],
+      foreignKeys: [
+        {
+          columns: ["snapshot_id"],
+          references: "historical_snapshots",
+          refColumns: ["snapshot_id"],
+        },
+      ],
+    },
+    {
+      table: "scenario_snapshot_links",
+      migrationId: "0006_historical_pipeline",
+      columns: [
+        "scenario_id",
+        "scenario_version",
+        "snapshot_id",
+        "source_id",
+        "snapshot_content_hash",
+        "link_role",
+        "created_at",
+      ],
+      primaryKey: ["scenario_id", "scenario_version", "snapshot_id", "source_id"],
+      uniqueConstraints: [],
+      foreignKeys: [
+        {
+          columns: ["snapshot_id"],
+          references: "historical_snapshots",
+          refColumns: ["snapshot_id"],
+        },
+        {
+          columns: ["scenario_id", "scenario_version"],
+          references: "scenarios",
+          refColumns: ["scenario_id", "version"],
+        },
+      ],
+    },
+    {
+      table: "scenario_review_transitions",
+      migrationId: "0006_historical_pipeline",
+      columns: [
+        "transition_id",
+        "scenario_id",
+        "scenario_version",
+        "from_status",
+        "to_status",
+        "actor_user_id",
+        "reason",
+        "created_at",
+      ],
+      primaryKey: ["transition_id"],
+      uniqueConstraints: [],
+      foreignKeys: [
+        { columns: ["actor_user_id"], references: "users", refColumns: ["user_id"] },
+        {
+          columns: ["scenario_id", "scenario_version"],
+          references: "scenarios",
+          refColumns: ["scenario_id", "version"],
+        },
+      ],
+    },
   ],
   indexes: [
     { name: "idx_scenarios_review_status", table: "scenarios", unique: false },
@@ -302,5 +383,10 @@ export const SCHEMA_MANIFEST: SchemaManifest = {
     { name: "idx_purchases_user_created", table: "purchases", unique: false },
     { name: "idx_user_entitlements_user", table: "user_entitlements", unique: false },
     { name: "idx_referrals_invitee", table: "referrals", unique: false },
+    { name: "idx_historical_imports_created", table: "historical_imports", unique: false },
+    { name: "idx_scenario_snapshot_links_snapshot", table: "scenario_snapshot_links", unique: false },
+    { name: "idx_scenario_snapshot_links_scenario", table: "scenario_snapshot_links", unique: false },
+    { name: "idx_scenario_review_transitions_scenario", table: "scenario_review_transitions", unique: false },
+    { name: "idx_scenario_review_transitions_actor", table: "scenario_review_transitions", unique: false },
   ],
 };

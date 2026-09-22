@@ -35,6 +35,17 @@ import {
   defaultEconomyState,
   type LedgerEventInput
 } from "./ledger.js";
+import {
+  clampPageLimit,
+  clampPageOffset,
+  type HistoricalImportRecord,
+  type HistoricalImportStatus,
+  type HistoricalSnapshotSummary,
+  type ReviewTransitionRecord,
+  type ScenarioSnapshotLinkRecord,
+  type ScenarioSnapshotLinkRole,
+  type SnapshotMetadataRecord
+} from "./historical-import-store.js";
 import type { PersistencePort } from "./ports.js";
 
 type QueryRow = Record<string, unknown>;
@@ -1426,5 +1437,560 @@ export class PostgresPersistenceAdapter implements PersistencePort {
     } finally {
       if (!this.transactionContext.getStore()) client.release();
     }
+  }
+
+  // ---- Historical pipeline (Batch 01) ----
+
+  public async insertScenarioPackageIgnoreConflict(
+    package_: ScenarioPackage,
+    nowIso?: string
+  ): Promise<boolean> {
+    const now = nowIso ?? new Date().toISOString();
+    const rows = await queryRows(
+      this.executor,
+      `INSERT INTO scenarios (
+        scenario_id, version, scenario_level, mode, content_version, data_version,
+        future_hash, package_json, review_status, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $10)
+      ON CONFLICT (scenario_id, version) DO NOTHING
+      RETURNING scenario_id`,
+      [
+        package_.scenarioId,
+        package_.version,
+        package_.scenarioLevel,
+        package_.mode,
+        package_.contentVersion,
+        package_.dataVersion,
+        package_.futureHash,
+        JSON.stringify(package_),
+        package_.reviewStatus,
+        now
+      ]
+    );
+    return rows.length === 1;
+  }
+
+  public async getScenarioReviewStatusColumn(
+    scenarioId: string,
+    version: string
+  ): Promise<string | undefined> {
+    const row = (await queryRows<{ reviewStatus: string }>(this.executor, `
+      SELECT review_status AS "reviewStatus"
+      FROM scenarios
+      WHERE scenario_id = $1 AND version = $2
+    `, [scenarioId, version]))[0];
+    return row?.reviewStatus;
+  }
+
+  public async getStoredScenarioPackageJson(
+    scenarioId: string,
+    version: string
+  ): Promise<unknown | undefined> {
+    const row = (await queryRows<{ packageJson: unknown }>(this.executor, `
+      SELECT package_json AS "packageJson"
+      FROM scenarios
+      WHERE scenario_id = $1 AND version = $2
+    `, [scenarioId, version]))[0];
+    return row ? parseJsonValue(row.packageJson) ?? undefined : undefined;
+  }
+
+  public async getHistoricalSnapshotByContentHash(
+    contentHash: string
+  ): Promise<HistoricalSnapshotRecord | undefined> {
+    const row = (await queryRows<{
+      snapshotId: string;
+      provider: "binance";
+      symbol: string;
+      interval: string;
+      asOf: unknown;
+      contentHash: string;
+      snapshotJson: unknown;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        snapshot_id AS "snapshotId",
+        provider,
+        symbol,
+        interval,
+        as_of AS "asOf",
+        content_hash AS "contentHash",
+        snapshot_json AS "snapshotJson",
+        created_at AS "createdAt"
+      FROM historical_snapshots
+      WHERE content_hash = $1
+    `, [contentHash]))[0];
+    if (!row) {
+      return undefined;
+    }
+    return {
+      snapshotId: row.snapshotId,
+      provider: row.provider,
+      symbol: row.symbol,
+      interval: row.interval,
+      asOf: readRequiredTimestamp(row.asOf),
+      contentHash: row.contentHash,
+      snapshot: HistoricalMarketSnapshotSchema.parse(parseJsonValue(row.snapshotJson)),
+      createdAt: readRequiredTimestamp(row.createdAt)
+    };
+  }
+
+  public async insertHistoricalSnapshotIgnoreConflict(
+    snapshot: HistoricalMarketSnapshot,
+    snapshotId: string,
+    createdAt: string
+  ): Promise<boolean> {
+    const parsed = HistoricalMarketSnapshotSchema.parse(snapshot);
+    const rows = await queryRows(this.executor, `
+      INSERT INTO historical_snapshots (
+        snapshot_id,
+        provider,
+        symbol,
+        interval,
+        as_of,
+        content_hash,
+        snapshot_json,
+        created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8)
+      ON CONFLICT (content_hash) DO NOTHING
+      RETURNING snapshot_id
+    `, [
+      snapshotId,
+      parsed.provider,
+      parsed.symbol,
+      parsed.interval,
+      parsed.asOf,
+      parsed.provenance.contentHash,
+      JSON.stringify(parsed),
+      createdAt
+    ]);
+    return rows.length === 1;
+  }
+
+  public async listHistoricalSnapshots(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<HistoricalSnapshotSummary[]> {
+    const rows = await queryRows<{
+      snapshotId: string;
+      provider: string;
+      symbol: string;
+      interval: string;
+      asOf: unknown;
+      contentHash: string;
+      snapshotJson: unknown;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        snapshot_id AS "snapshotId",
+        provider,
+        symbol,
+        interval,
+        as_of AS "asOf",
+        content_hash AS "contentHash",
+        snapshot_json AS "snapshotJson",
+        created_at AS "createdAt"
+      FROM historical_snapshots
+      ORDER BY created_at ASC, snapshot_id ASC
+      LIMIT $1 OFFSET $2
+    `, [clampPageLimit(options?.limit), clampPageOffset(options?.offset)]);
+    return rows.map((row) => {
+      const parsed = parseJsonValue(row.snapshotJson) as { candles?: unknown[] } | null;
+      return {
+        snapshotId: row.snapshotId,
+        provider: row.provider,
+        symbol: row.symbol,
+        interval: row.interval,
+        asOf: readRequiredTimestamp(row.asOf),
+        contentHash: row.contentHash,
+        candleCount: parsed && Array.isArray(parsed.candles) ? parsed.candles.length : 0,
+        createdAt: readRequiredTimestamp(row.createdAt)
+      };
+    });
+  }
+
+  public async countHistoricalSnapshots(): Promise<number> {
+    const rows = await queryRows(this.executor, "SELECT COUNT(*) AS count FROM historical_snapshots");
+    return Number(rows[0]?.count ?? 0);
+  }
+
+  private static readImportRow(row: {
+    importId: string;
+    importHash: string;
+    status: HistoricalImportStatus;
+    summaryJson: unknown;
+    createdBy: string | null;
+    createdAt: unknown;
+  }): HistoricalImportRecord {
+    const summaryJson = parseJsonValue(row.summaryJson);
+    return {
+      importId: row.importId,
+      importHash: row.importHash,
+      status: row.status,
+      summaryJson: typeof summaryJson === "string" ? summaryJson : JSON.stringify(summaryJson),
+      createdBy: row.createdBy,
+      createdAt: readRequiredTimestamp(row.createdAt)
+    };
+  }
+
+  public async createHistoricalImport(input: {
+    importId: string;
+    importHash: string;
+    status: HistoricalImportStatus;
+    summaryJson: string;
+    createdBy: string | null;
+    createdAt: string;
+  }): Promise<{ created: boolean; record: HistoricalImportRecord }> {
+    await queryRows(this.executor, `
+      INSERT INTO historical_imports (
+        import_id, import_hash, status, summary_json, created_by, created_at
+      ) VALUES ($1, $2, $3, $4::jsonb, $5, $6)
+      ON CONFLICT (import_hash) DO NOTHING
+    `, [
+      input.importId,
+      input.importHash,
+      input.status,
+      input.summaryJson,
+      input.createdBy,
+      input.createdAt
+    ]);
+    const row = (await queryRows<{
+      importId: string;
+      importHash: string;
+      status: HistoricalImportStatus;
+      summaryJson: unknown;
+      createdBy: string | null;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        import_id AS "importId",
+        import_hash AS "importHash",
+        status,
+        summary_json AS "summaryJson",
+        created_by AS "createdBy",
+        created_at AS "createdAt"
+      FROM historical_imports
+      WHERE import_hash = $1
+    `, [input.importHash]))[0];
+    if (!row) {
+      throw new Error(`Historical import was not persisted: ${input.importHash}`);
+    }
+    const record = PostgresPersistenceAdapter.readImportRow(row);
+    return { created: record.importId === input.importId, record };
+  }
+
+  public async getHistoricalImport(importId: string): Promise<HistoricalImportRecord | undefined> {
+    const row = (await queryRows<{
+      importId: string;
+      importHash: string;
+      status: HistoricalImportStatus;
+      summaryJson: unknown;
+      createdBy: string | null;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        import_id AS "importId",
+        import_hash AS "importHash",
+        status,
+        summary_json AS "summaryJson",
+        created_by AS "createdBy",
+        created_at AS "createdAt"
+      FROM historical_imports
+      WHERE import_id = $1
+    `, [importId]))[0];
+    return row ? PostgresPersistenceAdapter.readImportRow(row) : undefined;
+  }
+
+  public async getHistoricalImportByHash(
+    importHash: string
+  ): Promise<HistoricalImportRecord | undefined> {
+    const row = (await queryRows<{
+      importId: string;
+      importHash: string;
+      status: HistoricalImportStatus;
+      summaryJson: unknown;
+      createdBy: string | null;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        import_id AS "importId",
+        import_hash AS "importHash",
+        status,
+        summary_json AS "summaryJson",
+        created_by AS "createdBy",
+        created_at AS "createdAt"
+      FROM historical_imports
+      WHERE import_hash = $1
+    `, [importHash]))[0];
+    return row ? PostgresPersistenceAdapter.readImportRow(row) : undefined;
+  }
+
+  public async listHistoricalImports(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<HistoricalImportRecord[]> {
+    const rows = await queryRows<{
+      importId: string;
+      importHash: string;
+      status: HistoricalImportStatus;
+      summaryJson: unknown;
+      createdBy: string | null;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        import_id AS "importId",
+        import_hash AS "importHash",
+        status,
+        summary_json AS "summaryJson",
+        created_by AS "createdBy",
+        created_at AS "createdAt"
+      FROM historical_imports
+      ORDER BY created_at DESC, import_id DESC
+      LIMIT $1 OFFSET $2
+    `, [clampPageLimit(options?.limit), clampPageOffset(options?.offset)]);
+    return rows.map((row) => PostgresPersistenceAdapter.readImportRow(row));
+  }
+
+  public async countHistoricalImports(): Promise<number> {
+    const rows = await queryRows(this.executor, "SELECT COUNT(*) AS count FROM historical_imports");
+    return Number(rows[0]?.count ?? 0);
+  }
+
+  public async upsertSnapshotMetadata(input: {
+    snapshotId: string;
+    licensingJson: string | null;
+    captureJson: string | null;
+    createdAt: string;
+  }): Promise<{ created: boolean }> {
+    const rows = await queryRows(this.executor, `
+      INSERT INTO historical_snapshot_metadata (
+        snapshot_id, licensing_json, capture_json, created_at
+      ) VALUES ($1, $2::jsonb, $3::jsonb, $4)
+      ON CONFLICT (snapshot_id) DO NOTHING
+      RETURNING snapshot_id
+    `, [input.snapshotId, input.licensingJson, input.captureJson, input.createdAt]);
+    if (rows.length === 0) {
+      // Monotonic gap-fill: complete NULL columns from later imports without
+      // ever overwriting a present value (immutability preserved).
+      await this.executor.query(`
+        UPDATE historical_snapshot_metadata
+        SET
+          licensing_json = COALESCE(licensing_json, $2::jsonb),
+          capture_json = COALESCE(capture_json, $3::jsonb)
+        WHERE snapshot_id = $1
+      `, [input.snapshotId, input.licensingJson, input.captureJson]);
+      return { created: false };
+    }
+    return { created: true };
+  }
+
+  public async getSnapshotMetadata(snapshotId: string): Promise<SnapshotMetadataRecord | undefined> {
+    const row = (await queryRows<{
+      snapshotId: string;
+      licensingJson: unknown;
+      captureJson: unknown;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        snapshot_id AS "snapshotId",
+        licensing_json AS "licensingJson",
+        capture_json AS "captureJson",
+        created_at AS "createdAt"
+      FROM historical_snapshot_metadata
+      WHERE snapshot_id = $1
+    `, [snapshotId]))[0];
+    if (!row) {
+      return undefined;
+    }
+    const licensing = parseJsonValue(row.licensingJson);
+    const capture = parseJsonValue(row.captureJson);
+    return {
+      snapshotId: row.snapshotId,
+      licensingJson: licensing === null ? null : typeof licensing === "string" ? licensing : JSON.stringify(licensing),
+      captureJson: capture === null ? null : typeof capture === "string" ? capture : JSON.stringify(capture),
+      createdAt: readRequiredTimestamp(row.createdAt)
+    };
+  }
+
+  public async createScenarioSnapshotLink(input: {
+    scenarioId: string;
+    scenarioVersion: string;
+    snapshotId: string;
+    sourceId: string;
+    snapshotContentHash: string;
+    linkRole: ScenarioSnapshotLinkRole;
+    createdAt: string;
+  }): Promise<{ created: boolean }> {
+    const rows = await queryRows(this.executor, `
+      INSERT INTO scenario_snapshot_links (
+        scenario_id, scenario_version, snapshot_id, source_id,
+        snapshot_content_hash, link_role, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+      ON CONFLICT (scenario_id, scenario_version, snapshot_id, source_id) DO NOTHING
+      RETURNING scenario_id
+    `, [
+      input.scenarioId,
+      input.scenarioVersion,
+      input.snapshotId,
+      input.sourceId,
+      input.snapshotContentHash,
+      input.linkRole,
+      input.createdAt
+    ]);
+    return { created: rows.length === 1 };
+  }
+
+  private static readLinkRow(row: {
+    scenarioId: string;
+    scenarioVersion: string;
+    snapshotId: string;
+    sourceId: string;
+    snapshotContentHash: string;
+    linkRole: ScenarioSnapshotLinkRole;
+    createdAt: unknown;
+  }): ScenarioSnapshotLinkRecord {
+    return {
+      scenarioId: row.scenarioId,
+      scenarioVersion: row.scenarioVersion,
+      snapshotId: row.snapshotId,
+      sourceId: row.sourceId,
+      snapshotContentHash: row.snapshotContentHash,
+      linkRole: row.linkRole,
+      createdAt: readRequiredTimestamp(row.createdAt)
+    };
+  }
+
+  public async listScenarioSnapshotLinks(
+    scenarioId: string,
+    scenarioVersion: string
+  ): Promise<ScenarioSnapshotLinkRecord[]> {
+    const rows = await queryRows<{
+      scenarioId: string;
+      scenarioVersion: string;
+      snapshotId: string;
+      sourceId: string;
+      snapshotContentHash: string;
+      linkRole: ScenarioSnapshotLinkRole;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        scenario_id AS "scenarioId",
+        scenario_version AS "scenarioVersion",
+        snapshot_id AS "snapshotId",
+        source_id AS "sourceId",
+        snapshot_content_hash AS "snapshotContentHash",
+        link_role AS "linkRole",
+        created_at AS "createdAt"
+      FROM scenario_snapshot_links
+      WHERE scenario_id = $1 AND scenario_version = $2
+      ORDER BY source_id ASC, snapshot_id ASC
+    `, [scenarioId, scenarioVersion]);
+    return rows.map((row) => PostgresPersistenceAdapter.readLinkRow(row));
+  }
+
+  public async listLinksForSnapshot(snapshotId: string): Promise<ScenarioSnapshotLinkRecord[]> {
+    const rows = await queryRows<{
+      scenarioId: string;
+      scenarioVersion: string;
+      snapshotId: string;
+      sourceId: string;
+      snapshotContentHash: string;
+      linkRole: ScenarioSnapshotLinkRole;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        scenario_id AS "scenarioId",
+        scenario_version AS "scenarioVersion",
+        snapshot_id AS "snapshotId",
+        source_id AS "sourceId",
+        snapshot_content_hash AS "snapshotContentHash",
+        link_role AS "linkRole",
+        created_at AS "createdAt"
+      FROM scenario_snapshot_links
+      WHERE snapshot_id = $1
+      ORDER BY scenario_id ASC, scenario_version ASC, source_id ASC
+    `, [snapshotId]);
+    return rows.map((row) => PostgresPersistenceAdapter.readLinkRow(row));
+  }
+
+  public async recordReviewTransition(input: {
+    transitionId: string;
+    scenarioId: string;
+    scenarioVersion: string;
+    fromStatus: string;
+    toStatus: string;
+    actorUserId: string;
+    reason: string | null;
+    createdAt: string;
+  }): Promise<void> {
+    await queryRows(this.executor, `
+      INSERT INTO scenario_review_transitions (
+        transition_id, scenario_id, scenario_version, from_status,
+        to_status, actor_user_id, reason, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [
+      input.transitionId,
+      input.scenarioId,
+      input.scenarioVersion,
+      input.fromStatus,
+      input.toStatus,
+      input.actorUserId,
+      input.reason,
+      input.createdAt
+    ]);
+  }
+
+  public async listReviewTransitions(
+    scenarioId: string,
+    scenarioVersion: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<ReviewTransitionRecord[]> {
+    const rows = await queryRows<{
+      transitionId: string;
+      scenarioId: string;
+      scenarioVersion: string;
+      fromStatus: string;
+      toStatus: string;
+      actorUserId: string;
+      reason: string | null;
+      createdAt: unknown;
+    }>(this.executor, `
+      SELECT
+        transition_id AS "transitionId",
+        scenario_id AS "scenarioId",
+        scenario_version AS "scenarioVersion",
+        from_status AS "fromStatus",
+        to_status AS "toStatus",
+        actor_user_id AS "actorUserId",
+        reason,
+        created_at AS "createdAt"
+      FROM scenario_review_transitions
+      WHERE scenario_id = $1 AND scenario_version = $2
+      ORDER BY created_at ASC, transition_id ASC
+      LIMIT $3 OFFSET $4
+    `, [
+      scenarioId,
+      scenarioVersion,
+      clampPageLimit(options?.limit),
+      clampPageOffset(options?.offset)
+    ]);
+    return rows.map((row) => ({
+      transitionId: row.transitionId,
+      scenarioId: row.scenarioId,
+      scenarioVersion: row.scenarioVersion,
+      fromStatus: row.fromStatus,
+      toStatus: row.toStatus,
+      actorUserId: row.actorUserId,
+      reason: row.reason,
+      createdAt: readRequiredTimestamp(row.createdAt)
+    }));
+  }
+
+  public async countReviewTransitions(scenarioId: string, scenarioVersion: string): Promise<number> {
+    const rows = await queryRows(this.executor, `
+      SELECT COUNT(*) AS count
+      FROM scenario_review_transitions
+      WHERE scenario_id = $1 AND scenario_version = $2
+    `, [scenarioId, scenarioVersion]);
+    return Number(rows[0]?.count ?? 0);
   }
 }
