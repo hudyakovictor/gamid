@@ -1,6 +1,6 @@
 # Batch 01 — Backend Historical Pipeline
 
-Status: IN_PROGRESS
+Status: COMPLETE
 Owner: Backend Agent
 Branch: `arena/01a0c6cf-gamid` (session-fixed; see §0.1)
 Starting commit: `80498e993ea220e9455bb5708b5188f822986b25`
@@ -398,7 +398,7 @@ a design source (forbidden to modify; status snapshot, not spec). Proceeding.
 
 Role: Backend Agent
 Starting commit: `80498e993ea220e9455bb5708b5188f822986b25`
-Final commit: implementation `__IMPLEMENTATION_SHA__`; report finalized at
+Final commit: implementation `2808b1364c08d674b1012e7256d493d47a977ee2`; report finalized at
 the tip of `arena/01a0c6cf-gamid` (verify: `git rev-parse HEAD`).
 Branch/PR: `arena/01a0c6cf-gamid` (session-fixed; requested branch name
 `arena/batch-01-backend-historical-pipeline` could not be honoured — see
