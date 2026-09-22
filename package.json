@@ -4,11 +4,13 @@
   "type": "module",
   "packageManager": "pnpm@11.9.0",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && pnpm design-system:typecheck && pnpm design-system:build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
     "test": "node --import tsx --test packages/contracts/src/*.test.ts packages/content/src/*.test.ts packages/domain/src/*.test.ts packages/db/src/*.test.ts packages/providers/src/*.test.ts",
-    "test:e2e": "node --import tsx --test tests/e2e/*.test.ts",
+    "test:e2e": "node --import tsx --test tests/e2e/api.test.ts tests/e2e/auth.test.ts tests/e2e/catalog.test.ts tests/e2e/economy.test.ts tests/e2e/ingestion.test.ts tests/e2e/referrals.test.ts tests/e2e/security.test.ts tests/e2e/store.test.ts && pnpm test:e2e:browser",
+    "test:e2e:browser": "pnpm --filter @signal-arena/game-client build && node --import tsx --test tests/e2e/browser-smoke.test.ts",
+    "browser:smoke": "pnpm --filter @signal-arena/game-client build && node --import tsx --test tests/e2e/browser-smoke.test.ts",
     "validate:contracts": "node --import tsx scripts/validate-contracts.ts",
     "validate:content": "node --import tsx scripts/validate-content.ts",
     "validate:locales": "node --import tsx scripts/validate-locales.ts",
@@ -32,6 +34,7 @@
     "@types/node": "^22.10.2",
     "@typescript-eslint/parser": "^8.18.0",
     "eslint": "^9.17.0",
+    "puppeteer-core": "^24.12.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
