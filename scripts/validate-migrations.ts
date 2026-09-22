@@ -7,16 +7,24 @@ import { resolve } from "node:path";
 function main(): void {
   console.log(`Canonical migration source: ${MIGRATION_REGISTRY.canonicalSource}`);
   console.log(`Dialect rendering: ${MIGRATION_REGISTRY.dialectRendering}`);
+  console.log(`Schema manifest: ${MIGRATION_REGISTRY.schemaManifest}`);
   console.log(`Migration count: ${MIGRATION_REGISTRY.count}`);
   console.log(`IDs: ${MIGRATION_REGISTRY.ids.join(", ")}`);
 
-  // Check legacy infra/migrations is not present or is empty
+  // Legacy infra/migrations/** is not canonical. If it returns with files it
+  // is a hard FAILURE (not a warning): a second, drifting migration source
+  // must never re-enter the tree.
   const infraPath = resolve(process.cwd(), "infra/migrations");
   if (existsSync(infraPath)) {
-    const files = readdirSync(infraPath);
+    const entries = readdirSync(infraPath, { recursive: true, withFileTypes: true });
+    const files = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name);
     if (files.length > 0) {
-      console.warn(`Warning: legacy infra/migrations still contains files: ${files.join(", ")}. Expected to be removed or empty.`);
-      // Not failing yet, but drift check will warn.
+      throw new Error(
+        `Legacy infra/migrations/** must not contain files (found: ${files.join(", ")}). ` +
+          `The canonical migration source is ${MIGRATION_REGISTRY.canonicalSource}. Remove infra/migrations/**.`
+      );
     }
   }
 
